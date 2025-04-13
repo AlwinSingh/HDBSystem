@@ -134,6 +134,9 @@ public class OfficerService {
             Applicant applicant = userService.getApplicantByNric(nric);
             if (applicant == null) continue;
 
+            // Ensure the applicant actually applied to this officer's assigned project else just SKIP
+            if (!projectName.equalsIgnoreCase(applicant.getAppliedProjectName())) continue;
+
             String appStatus = applicant.getApplicationStatus();
             if (!grouped.containsKey(appStatus)) {
                 grouped.put(appStatus, new ArrayList<>());

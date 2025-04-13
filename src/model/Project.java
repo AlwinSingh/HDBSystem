@@ -102,12 +102,32 @@ public class Project {
         return closeDate;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public void setTwoRoomUnits(int units2Room) {
         this.units2Room = units2Room;
     }
 
+    public void setTwoRoomPrice(double price2Room) {
+        this.price2Room = price2Room;
+    }
+
     public void setThreeRoomUnits(int units3Room) {
         this.units3Room = units3Room;
+    }
+
+    public void setThreeRoomPrice(double price3Room) {
+        this.price3Room = price3Room;
+    }
+
+    public void setOpenDate(LocalDate openDate) {
+        this.openDate = openDate;
+    }
+
+    public void setCloseDate(LocalDate closeDate) {
+        this.closeDate = closeDate;
     }
 
     public boolean isOpen() {
@@ -119,7 +139,7 @@ public class Project {
         return visibility;
     }
 
-    public void toggleVisibility(boolean visible) {
+    public void setVisibility(boolean visible) {
         this.visibility = visible;
     }
 
@@ -141,6 +161,10 @@ public class Project {
             return true;
         }
         return false;
+    }
+
+    public void decreaseOfficerSlot() {
+        officerSlot = officerSlot - 1;
     }
 
     public void addOfficer(String officerNric) {

@@ -1,11 +1,11 @@
 package src.model;
 
-import java.util.Scanner;
-
 import src.service.ApplicantService;
 import src.service.ProjectService;
 import src.service.UserService;
+import src.util.CSVWriter;
 import src.util.ConsoleUtils;
+import src.util.InputValidator;
 
 /**
  * Applicant class, represents a user who applies for a BTO project.
@@ -82,7 +82,6 @@ public class Applicant extends User {
 
     @Override
     public void showMenu(ProjectService projectService, UserService userService) {
-        Scanner sc = new Scanner(System.in);
         ApplicantService applicantService = new ApplicantService(projectService, userService);
 
         int choice;
@@ -96,10 +95,9 @@ public class Applicant extends User {
             System.out.println("5. Change Password");
             System.out.println("0. Logout");
             ConsoleUtils.lineBreak();
-            System.out.print("Enter your choice: ");
 
             try {
-                choice = Integer.parseInt(sc.nextLine());
+                choice = InputValidator.getInt("Enter your choice: ");
             } catch (NumberFormatException e) {
                 choice = -1; // keep loop going safely
             }
@@ -118,18 +116,16 @@ public class Applicant extends User {
                     }
                 }
                 case 3 -> {
-                    System.out.print("Enter project name to apply: ");
-                    String projectName = sc.nextLine();
-                    System.out.print("Enter flat type (2-Room / 3-Room): ");
-                    String flatType = sc.nextLine();
+                    String projectName = InputValidator.getNonEmptyString("Enter project name to apply: ");
+                    String flatType = InputValidator.getNonEmptyString("Enter flat type (2-Room / 3-Room): ");
                     applicantService.apply(this, projectName, flatType);
                 }
                 case 4 -> applicantService.withdraw(this);
                 case 5 -> {
-                    System.out.print("Enter new password: ");
-                    String newPass = sc.nextLine();
+                    String newPass = InputValidator.getNonEmptyString("Enter new password: ");
                     changePassword(newPass);
-                    System.out.println("✅ Password updated.");
+                    boolean updatedSuccessfully = CSVWriter.updateUserPassword(this);
+                    System.out.println(updatedSuccessfully ? "✅ Password updated." : "❌ Failed to update password.");
                 }
                 case 0 -> System.out.println("Logging out...");
                 default -> System.out.println("⚠️ Invalid input. Please enter a valid option.");

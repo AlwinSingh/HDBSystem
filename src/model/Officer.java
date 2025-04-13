@@ -1,11 +1,11 @@
 package src.model;
 
-import java.util.Scanner;
-
 import src.service.OfficerService;
 import src.service.ProjectService;
 import src.service.UserService;
+import src.util.CSVWriter;
 import src.util.ConsoleUtils;
+import src.util.InputValidator;
 
 /**
  * Officer class, inherits from Applicant and adds BTO project handling capability.
@@ -52,43 +52,8 @@ public class Officer extends Applicant {
         this.assignedProjectName = assignedProjectName;
     }
 
-    public void bookFlatForApplicant(Applicant applicant, String flatType) {
-        if (!AppStatusType.SUCCESSFUL.name().equals(applicant.getApplicationStatus())) {
-            System.out.println("Applicant is not eligible for flat booking.");
-            return;
-        }
-
-        applicant.applicationStatus = AppStatusType.BOOKED.name();
-        applicant.flatTypeApplied = flatType;
-
-        System.out.println("Flat booked successfully for " + applicant.getName());
-        // Todo: We also need to reduce flat count, update project data, generate receipt, etc.
-    }
-
-    public void generateReceipt(Applicant applicant) {
-        if (!AppStatusType.BOOKED.name().equals(applicant.getApplicationStatus())) {
-            System.out.println("Cannot generate receipt. Applicant has not booked a flat.");
-            return;
-        }
-
-        System.out.println("\n--- Flat Booking Receipt ---");
-        System.out.println("Name: " + applicant.getName());
-        System.out.println("NRIC: " + applicant.getNric());
-        System.out.println("Age: " + applicant.getAge());
-        System.out.println("Marital Status: " + applicant.getMaritalStatus());
-        System.out.println("Flat Type: " + applicant.getFlatTypeApplied());
-        System.out.println("Project: " + applicant.getAppliedProjectName());
-        System.out.println("-----------------------------");
-    }
-
-    public void replyToEnquiry(String enquiryId, String replyMessage) {
-        // Placeholder — will be connected to Enquiry system later
-        System.out.println("Reply submitted to enquiry: " + enquiryId);
-    }
-
     @Override
     public void showMenu(ProjectService ps, UserService us) {
-        Scanner sc = new Scanner(System.in);
         OfficerService officerService = new OfficerService(ps, us);
 
         int choice;
@@ -105,42 +70,41 @@ public class Officer extends Applicant {
             System.out.println("7. Change Password");
             System.out.println("0. Logout");
             ConsoleUtils.lineBreak();
-            System.out.print("Enter your choice: ");
-            choice = Integer.parseInt(sc.nextLine());
+
+            try {
+                choice = InputValidator.getInt("Enter your choice: ");
+            } catch (NumberFormatException e) {
+                choice = -1; // keep loop going safely
+            }
 
             ConsoleUtils.clear();
 
             switch (choice) {
                 case 1 -> {
                     System.out.print("Enter project name to register: ");
-                    String projName = sc.nextLine();
+                    String projName = InputValidator.getNonEmptyString("Enter project name to register: ");
                     officerService.registerForProject(this, projName);
                 }
                 case 2 -> officerService.viewAssignedProject(this);
                 case 3 -> officerService.viewApplicantList(this);
                 case 4 -> {
-                    System.out.print("Enter applicant NRIC to approve/reject: ");
-                    String nric = sc.nextLine().trim();
-                    System.out.print("Approve? (Y/N): ");
-                    String input = sc.nextLine().trim().toUpperCase();
-                    boolean approve = input.equals("Y");
+                    String nric = InputValidator.getNonEmptyString("Enter applicant NRIC to approve/reject: ");
+                    boolean approve = InputValidator.getYesNo("Approve this applicant? (Y/N): ");
                     officerService.handleApplication(nric, approve);
                 }
                 case 5 -> {
-                    System.out.print("Enter applicant NRIC to book flat: ");
-                    String nric = sc.nextLine().trim();
+                    String nric = InputValidator.getNonEmptyString("Enter applicant NRIC to book flat: ");
                     officerService.bookFlat(nric);
                 }
                 case 6 -> {
-                    System.out.print("Enter applicant NRIC to generate receipt: ");
-                    String nric = sc.nextLine().trim();
+                    String nric = InputValidator.getNonEmptyString("Enter applicant NRIC to generate receipt: ");
                     officerService.generateReceipt(nric);
                 }
                 case 7 -> {
-                    System.out.print("Enter new password: ");
-                    String newPass = sc.nextLine();
+                    String newPass = InputValidator.getNonEmptyString("Enter new password: ");
                     changePassword(newPass);
-                    System.out.println("✅ Password updated.");
+                    boolean updatedSuccessfully = CSVWriter.updateUserPassword(this);
+                    System.out.println(updatedSuccessfully ? "✅ Password updated." : "❌ Failed to update password.");
                 }
                 case 0 -> System.out.println("Logging out...");
                 default -> System.out.println("Invalid option.");

@@ -7,6 +7,7 @@ import src.model.User;
 import src.service.ProjectService;
 import src.service.UserService;
 import src.util.ConsoleUtils;
+import src.util.InputValidator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +19,7 @@ public class Main {
     private static List<Applicant> applicants = new ArrayList<>();
     private static List<Officer> officers = new ArrayList<>();
     private static List<Manager> managers = new ArrayList<>();
-
-    private static final Scanner sc = new Scanner(System.in);
+    
     private static UserService userService = null;
     private static ProjectService projectService = null;
 
@@ -37,12 +37,10 @@ public class Main {
         ConsoleUtils.lineBreak();
 
         while (true) {
-            System.out.print("\nEnter NRIC (or type EXIT): ");
-            String nric = sc.nextLine().trim();
+            String nric = InputValidator.getNonEmptyString("\nEnter NRIC (or type EXIT): ");
             if (nric.equalsIgnoreCase("EXIT")) break;
 
-            System.out.print("Enter Password: ");
-            String password = sc.nextLine();
+            String password = InputValidator.getNonEmptyString("Enter Password: ");
 
             User user = null;
 
