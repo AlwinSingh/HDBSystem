@@ -48,11 +48,8 @@ public abstract class User {
     }
 
     public void changePassword(String newPassword) {
-        // password validation can be handled in InputValidator, if password is valid then only will this method be called
         this.password = newPassword;
     }
-
-    //public abstract void showMenu(); // Each subclass will have its own menu (CLI-based)
 
     public abstract void showMenu(ProjectService projectService, UserService userService);
 }

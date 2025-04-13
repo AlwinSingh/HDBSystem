@@ -1,7 +1,5 @@
 package src.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import src.service.ManagerService;
@@ -11,46 +9,17 @@ import src.util.CSVWriter;
 import src.util.ConsoleUtils;
 import src.util.InputValidator;
 
-/**
- * Manager class, represents HDB staff who can create and manage BTO projects.
- */
 public class Manager extends User {
-    //private List<String> projectsCreated;
 
     public Manager(String nric, String password, String name, int age, String maritalStatus) {
         super(nric, password, name, age, maritalStatus);
-        //this.projectsCreated = new ArrayList<>();
     }
-
-    /*public List<String> getProjectsCreated() {
-        return projectsCreated;
-    }
-
-    public void setProjectsCreated(String newProject) {
-        projectsCreated.add(newProject);
-    }
-
-    public void addProject(String projectName) {
-        projectsCreated.add(projectName);
-        System.out.println("Project \"" + projectName + "\" created and assigned to manager: " + name);
-    }
-
-    public void replaceProjectName(String oldName, String newName) {
-        int index = projectsCreated.indexOf(oldName);
-        if (index != -1) {
-            projectsCreated.set(index, newName);
-            System.out.println("✅ Project name updated from \"" + oldName + "\" to \"" + newName + "\" for manager: " + name);
-        } else {
-            System.out.println("⚠️ Project \"" + oldName + "\" not found in manager’s list.");
-        }
-    }*/
 
     @Override
     public void showMenu(ProjectService ps, UserService us) {
         ManagerService managerService = new ManagerService(ps, us);
 
         int choice;
-
         do {
             System.out.println("=== Manager Menu ===");
             System.out.println("1. View All Projects");
@@ -74,7 +43,6 @@ public class Manager extends User {
                 case 1 -> managerService.viewAllProjects(this);
                 case 2 -> managerService.createProject(this);
                 case 3 -> {
-                    // Struggling with this....can't seem to pull the projects by manager nric
                     Map<String,Project> projects = managerService.getProjectsByManagerNric(this.getNric());
 
                     if (projects.size() > 0) {
@@ -86,6 +54,7 @@ public class Manager extends User {
                 }
                 case 4 -> managerService.viewOfficerRegistrations(this);
                 case 5 -> {
+                    //Todo:
                     // Here u need to check if manager has an assigned project...
                     // If he does then proceed to allow to approve/reject
                     String officerNRIC = InputValidator.getNonEmptyString("Enter officer NRIC to approve/reject: ");

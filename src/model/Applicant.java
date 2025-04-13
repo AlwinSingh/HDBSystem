@@ -7,11 +7,6 @@ import src.util.CSVWriter;
 import src.util.ConsoleUtils;
 import src.util.InputValidator;
 
-import java.util.Map;
-
-/**
- * Applicant class, represents a user who applies for a BTO project.
- */
 public class Applicant extends User {
     protected String appliedProjectName;
     protected String flatTypeApplied; // 2-Room or 3-Room only...
@@ -98,11 +93,10 @@ public class Applicant extends User {
 
     @Override
     public void showMenu(ProjectService projectService, UserService userService) {
-        ApplicantService applicantService = new ApplicantService(projectService, userService);
+        ApplicantService applicantService = new ApplicantService(projectService);
 
         int choice;
         do {
-            //ConsoleUtils.clear();
             System.out.println("=== Applicant Menu ===");
             System.out.println("1. View Application Status");
             System.out.println("2. View Eligible Projects");
@@ -121,7 +115,7 @@ public class Applicant extends User {
             ConsoleUtils.clear();
 
             switch (choice) {
-                case 1 -> applicantService.viewStatus(this);
+                case 1 -> applicantService.viewApplicationStatus(this);
                 case 2 -> printEligibleProjects(this, applicantService);
                 case 3 -> {
                     if (this.getAppliedProjectName() != null && !this.getAppliedProjectName().isEmpty()) {
@@ -135,11 +129,11 @@ public class Applicant extends User {
                             System.out.println("Project not found.");
                         } else {
                             String flatType = InputValidator.getNonEmptyString("Enter flat type (2-Room / 3-Room): ");
-                            applicantService.apply(this, project, flatType);
+                            applicantService.applyForProject(this, project, flatType);
                         }
                     }
                 }
-                case 4 -> applicantService.withdraw(this);
+                case 4 -> applicantService.withdrawFromProject(this);
                 case 5 -> {
                     String newPass = InputValidator.getNonEmptyString("Enter new password: ");
                     changePassword(newPass);

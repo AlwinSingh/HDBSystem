@@ -10,9 +10,7 @@ import java.util.*;
  */
 public class CSVReader {
 
-    /**
-     * Reads a CSV and returns a list of maps (1 map = 1 row).
-     */
+    /* Reads a CSV and returns a list of maps (1 map = 1 row) */
     public static List<Map<String, String>> readCSV(String path, List<String> requiredHeaders) {
         List<Map<String, String>> records = new ArrayList<>();
 
@@ -25,13 +23,8 @@ public class CSVReader {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                //String[] values = line.split(",", -1);
                 String[] values = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
 
-                /*Map<String, String> row = new LinkedHashMap<>();
-                for (int i = 0; i < existingHeaders.size(); i++) {
-                    row.put(existingHeaders.get(i), values[i].trim());
-                }*/
                 Map<String, String> row = new LinkedHashMap<>();
                 for (int i = 0; i < headers.length; i++) {
                     row.put(headers[i], i < values.length ? values[i].replace("\"", "") : "");
@@ -62,9 +55,7 @@ public class CSVReader {
         return records;
     }
 
-    /**
-     * Reads a CSV and returns a map where key = a specific column (In this case we used NRIC and Project Name)
-     */
+    /* Reads a CSV and returns a map where key = a specific column (In this case we used NRIC and Project Name) */
     public static Map<String, Map<String, String>> readCSVByKey(String path, List<String> requiredHeaders, String keyColumn) {
         List<Map<String, String>> rows = readCSV(path, requiredHeaders);
         Map<String, Map<String, String>> indexedMap = new LinkedHashMap<>();

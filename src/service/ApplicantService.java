@@ -3,38 +3,22 @@ package src.service;
 import src.model.Applicant;
 import src.model.Project;
 import src.util.CSVWriter;
+import src.util.FilePath;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-/**
- * Service class to handle all applicant-related functionality.
- */
 public class ApplicantService {
 
     private ProjectService projectService = null;
-    private UserService userService = null;
 
-    /*public ApplicantService(ProjectService projectService) {
+    public ApplicantService(ProjectService projectService) {
         this.projectService = projectService;
-    }*/
-
-    public ApplicantService(ProjectService projectService, UserService userService) {
-        this.projectService = projectService;
-        this.userService = userService;
     }
 
-    /**
-     * Shows all visible and open projects that the applicant is eligible for.
-     */
     public List<Project> getEligibleProjects(Applicant applicant) {
         List<Project> eligible = new ArrayList<>();
         for (Project project : projectService.getAllProjects().values()) {
-            //System.out.printf("Checking: %s | Visible: %b | Open: %b | 2-Room units: %d\n",
-            //        project.getName(), project.isVisible(), project.isOpen(), project.getTwoRoomUnits());
-
             if (!project.isVisible() || !project.isOpen()) continue;
 
             boolean isSingle = applicant.getMaritalStatus().equalsIgnoreCase("Single");
@@ -49,7 +33,7 @@ public class ApplicantService {
         return eligible;
     }
 
-    public boolean apply(Applicant applicant, Project project, String flatType) {
+    public boolean applyForProject(Applicant applicant, Project project, String flatType) {
         if (project == null) {
             System.out.println("❌ Project not found.");
             return false;
@@ -79,13 +63,13 @@ public class ApplicantService {
         project.addApplicant(applicant.getNric());
 
         System.out.println("✅ Application submitted!");
-        CSVWriter.saveApplicants(userService.getAllApplicants(), "data/ApplicantList.csv");
-        CSVWriter.saveProject(project, "data/ProjectList.csv");
+        CSVWriter.updateApplicant(applicant, FilePath.APPLICANT_LIST_FILE);
+        CSVWriter.saveProject(project, FilePath.PROJECT_LIST_FILE);
 
         return true;
     }
 
-    public void withdraw(Applicant applicant) {
+    public void withdrawFromProject(Applicant applicant) {
         if (applicant.getAppliedProjectName() == null) {
             System.out.println("⚠️ You have not applied for any project.");
             return;
@@ -100,11 +84,11 @@ public class ApplicantService {
         }
 
         applicant.withdrawApplication();
-        CSVWriter.saveApplicants(userService.getAllApplicants(), "data/ApplicantList.csv");
-        CSVWriter.saveProject(project, "data/ProjectList.csv");
+        CSVWriter.updateApplicant(applicant, FilePath.APPLICANT_LIST_FILE);
+        CSVWriter.saveProject(project, FilePath.PROJECT_LIST_FILE);
     }
 
-    public void viewStatus(Applicant applicant) {
+    public void viewApplicationStatus(Applicant applicant) {
         applicant.viewApplicationStatus();
     }
 

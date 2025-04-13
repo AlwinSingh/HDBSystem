@@ -54,7 +54,6 @@ public class OfficerService {
         return true;
     }
 
-
     // 2. View assigned project details
     public void viewAssignedProject(Officer officer) {
         String assignedProject = officer.getAssignedProjectName();
@@ -76,7 +75,6 @@ public class OfficerService {
             return;
         }
 
-        // Todo: Maybe include the LIST OF APPLICANTS for the project?
         System.out.println("=== Assigned Project Details ===");
         System.out.println("Project Name: " + project.getName());
         System.out.println("Location: " + project.getNeighbourhood());
@@ -85,7 +83,6 @@ public class OfficerService {
         System.out.println("Application Window: " + project.getOpenDate() + " to " + project.getCloseDate());
         System.out.println("Visibility: " + project.isVisible());
     }
-
 
     // 3. View applicant NRICs for assigned project
     // Alwin: I have implemented this such that it segregates it by application status
@@ -181,7 +178,7 @@ public class OfficerService {
             System.out.println("❌ Applicant " + applicantNRIC + " rejected.");
         }
 
-        CSVWriter.saveApplicants(userService.getAllApplicants(), "data/ApplicantList.csv");
+        CSVWriter.updateApplicant(applicant, "data/ApplicantList.csv");
         CSVWriter.saveProject(project, "data/ProjectList.csv");
 
         return true;
@@ -236,8 +233,7 @@ public class OfficerService {
         applicant.setApplicationStatus(Applicant.AppStatusType.BOOKED.name());
         System.out.println("🏠 Flat booked successfully for " + applicantNRIC);
 
-        CSVWriter.saveApplicants(userService.getAllApplicants(), "data/ApplicantList.csv");
-        //CSVWriter.saveProjects(projectService.getAllProjects(), "data/ProjectList.csv");
+        CSVWriter.updateApplicant(applicant, "data/ApplicantList.csv");
 
         return true;
     }

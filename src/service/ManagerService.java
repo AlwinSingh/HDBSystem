@@ -73,7 +73,7 @@ public class ManagerService {
 
         // Add to service and persist
         projectService.getAllProjects().put(name, project);
-        boolean createdProjectSuccessfully = CSVWriter.appendProject(project, "data/ProjectList.csv");
+        boolean createdProjectSuccessfully = CSVWriter.saveNewProject(project, "data/ProjectList.csv");
         System.out.println(createdProjectSuccessfully ? "✅ Project created successfully!" : "❌ Failed to create project!");
     }
 
@@ -95,14 +95,14 @@ public class ManagerService {
         Scanner sc = new Scanner(System.in);
 
         while (true) {
+            int choice;
+
             System.out.println("=== Edit Project: " + project.getName() + " ===");
             System.out.println("1. Rename project");
             System.out.println("2. Update unit counts & prices");
             System.out.println("3. Change application open/close dates");
             System.out.println("4. Toggle visibility (" + project.isVisible() + ")");
             System.out.println("0. Save and return");
-
-            int choice;
 
             try {
                 choice = InputValidator.getInt("Enter your choice: ");

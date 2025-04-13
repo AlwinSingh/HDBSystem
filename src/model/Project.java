@@ -1,30 +1,8 @@
 package src.model;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
-/* Fields required based on CSV and brief
-name, neighbourhood
-units2Room, units3Room
-price2Room, price3Room
-openDate, closeDate
-visibility
-managerNRIC
-officerNRICs (comma-separated list)
-Optionally: applicantNRICs
-
-This means the following methods ARE NEEDED:
-isOpen() — checks if current date is within range
-hasAvailableUnits(String flatType)
-bookUnit(String flatType)
-toggleVisibility(boolean)
-displaySummary() — for CLI display
-*/
-
-/**
- * Represents a BTO Project with limited units and application period.
- */
 public class Project {
     private String name;
     private String neighbourhood;
@@ -152,23 +130,6 @@ public class Project {
         return false;
     }
 
-    public boolean bookUnit(String flatType) {
-        if ("2-Room".equalsIgnoreCase(flatType) && units2Room > 0) {
-            units2Room--;
-            return true;
-        } else if ("3-Room".equalsIgnoreCase(flatType) && units3Room > 0) {
-            units3Room--;
-            return true;
-        }
-        return false;
-    }
-
-    public void addOfficer(String officerNric) {
-        if (!officerNRICs.contains(officerNric)) {
-            officerNRICs.add(officerNric);
-        }
-    }
-
     public void addApplicant(String applicantNric) {
         if (!applicantNRICs.contains(applicantNric)) {
             applicantNRICs.add(applicantNric);
@@ -177,10 +138,6 @@ public class Project {
 
     public String getManagerNRIC() {
         return managerNRIC;
-    }
-
-    public void setManagerNRIC(String managerNRIC) {
-        this.managerNRIC = managerNRIC;
     }
 
     public List<String> getOfficerNames() {
@@ -197,10 +154,6 @@ public class Project {
 
     public String getManagerName() {
         return managerName;
-    }
-
-    public void setManagerName(String managerName) {
-        this.managerName = managerName;
     }
 
     public int getOfficerSlot() {

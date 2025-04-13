@@ -11,11 +11,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Service for loading and managing BTO projects (adapted to legacy headers).
- */
-public class ProjectService {
 
+public class ProjectService {
     private final Map<String, Project> projects = new HashMap<>();
     private final UserService userService;
 

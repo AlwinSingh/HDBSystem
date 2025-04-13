@@ -3,14 +3,12 @@ package src.util;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 import java.util.Scanner;
 
 public class InputValidator {
     private static final Scanner sc = new Scanner(System.in);
     private static final DateTimeFormatter[] dateFormats = new DateTimeFormatter[]{
-            DateTimeFormatter.ofPattern("yyyy-MM-dd"),
-            //DateTimeFormatter.ofPattern("M/d/yyyy")
+            DateTimeFormatter.ofPattern("dd-MM-yyyy")
     };
 
     public static int getInt(String prompt) {
@@ -82,16 +80,7 @@ public class InputValidator {
                 } catch (DateTimeParseException ignored) {}
             }
             //System.out.println("❌ Invalid date format. Use YYYY-MM-DD or M/D/YYYY.");
-            System.out.println("❌ Invalid date format. Use YYYY-MM-DD or M/D/YYYY.");
-        }
-    }
-
-    public static String getOption(String prompt, List<String> options) {
-        while (true) {
-            System.out.print(prompt);
-            String input = sc.nextLine().trim();
-            if (options.contains(input)) return input;
-            System.out.println("❌ Invalid option. Please choose from: " + String.join(", ", options));
+            System.out.println("❌ Invalid date format. Use DD-MM-YYYY.");
         }
     }
 }

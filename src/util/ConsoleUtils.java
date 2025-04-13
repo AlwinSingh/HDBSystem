@@ -7,10 +7,9 @@ import java.util.Scanner;
  */
 public class ConsoleUtils {
 
-    /**
-     * Clears the console screen by printing several empty lines.
-     * Works reliably in IDEs and CLI terminals.
-     * The other alternative which is clear2() works best in Native Command Prompts, so it isn't used in this app but i (Alwin) have included it for future-proofing
+    /*
+     * Clears the console screen by printing several empty lines
+     * Works reliably in IDEs and CLI terminals
      */
     public static void clear() {
         for (int i = 0; i < 30; i++) {
@@ -18,31 +17,13 @@ public class ConsoleUtils {
         }
     }
 
-    /* CURRENTLY NOT USED IN THE PROJECT AT ALL , THUS SET TO PACKAGE-PRIVATE */
-    protected static void clear2() {
-        try {
-            if (System.getProperty("os.name").contains("Windows")) {
-                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-            } else {
-                System.out.print("\033[H\033[2J");
-                System.out.flush();
-            }
-        } catch (Exception e) {
-            System.out.println("Could not clear console.");
-        }
-    }
-
-    /**
-     * Pauses the console until the user presses Enter.
-     */
+    /* Pauses the console until the user presses Enter */
     public static void pause() {
         System.out.println("\nPress Enter to continue...");
         new Scanner(System.in).nextLine();
     }
 
-    /**
-     * Prints a horizontal divider line.
-     */
+    /* Prints a horizontal divider line */
     public static void lineBreak() {
         System.out.println("--------------------------------------------------");
     }

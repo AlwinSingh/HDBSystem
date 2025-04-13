@@ -1,6 +1,5 @@
 package src.model;
 
-import src.service.ApplicantService;
 import src.service.OfficerService;
 import src.service.ProjectService;
 import src.service.UserService;
@@ -13,9 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Officer class, inherits from Applicant and adds BTO project handling capability.
- */
 public class Officer extends Applicant {
     private String assignedProjectName;
     private String registrationStatus; // "PENDING", "APPROVED", "REJECTED"
@@ -40,16 +36,6 @@ public class Officer extends Applicant {
         return registrationStatus;
     }
 
-    public void registerForProject(String projectName) {
-        if (assignedProjectName != null) {
-            System.out.println("You are already registered for a project: " + assignedProjectName);
-        } else {
-            this.assignedProjectName = projectName;
-            this.registrationStatus = RegistrationStatusType.PENDING.name();
-            System.out.println("Officer registration submitted for project: " + projectName);
-        }
-    }
-
     public void setRegistrationStatus(String status) {
         this.registrationStatus = status;
     }
@@ -58,7 +44,7 @@ public class Officer extends Applicant {
         this.assignedProjectName = assignedProjectName;
     }
 
-    private void printVacantProjects(Officer officer, ProjectService projectService) {
+    private void printVacantProjects(ProjectService projectService) {
         Map<String, Project> allProjects = projectService.getAllProjects();
 
         System.out.println("=== Vacant Projects (Open & Visible) ===");
@@ -99,8 +85,6 @@ public class Officer extends Applicant {
 
         int choice;
         do {
-            // ConsoleUtils.clear(); // Optional: comment if you want to disable screen clearing
-
             System.out.println("=== Officer Menu ===");
             System.out.println("1. Register for Project");
             System.out.println("2. View Assigned Project Details");
@@ -125,7 +109,7 @@ public class Officer extends Applicant {
                     if (this.getAssignedProjectName() != null && !this.getAssignedProjectName().isEmpty()) {
                         System.out.println("⚠️ You have already applied for project " + this.getAssignedProjectName());
                     } else {
-                        printVacantProjects(this, ps);
+                        printVacantProjects(ps);
                         String projName = InputValidator.getNonEmptyString("Enter project name to register: ");
                         officerService.registerForProject(this, projName);
                     }

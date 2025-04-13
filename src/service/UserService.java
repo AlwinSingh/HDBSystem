@@ -5,12 +5,11 @@ import src.model.Manager;
 import src.model.Officer;
 import src.model.User;
 import src.util.CSVReader;
+import src.util.FilePath;
 
 import java.util.*;
 
-/**
- * Service class for loading and managing users from CSV files.
- */
+/* Service class for loading and managing users from CSV files */
 public class UserService {
     private final Map<String, Applicant> applicants = new HashMap<>();
     private final Map<String, Officer> officers = new HashMap<>();
@@ -74,7 +73,7 @@ public class UserService {
     private void loadManagers() {
         List<String> requiredHeaders = List.of("NRIC", "Password", "Name", "Age", "Marital Status");
         Map<String, Map<String, String>> data =
-                CSVReader.readCSVByKey("data/ManagerList.csv", requiredHeaders, "NRIC");
+                CSVReader.readCSVByKey(FilePath.MANAGER_LIST_FILE, requiredHeaders, "NRIC");
 
         for (Map.Entry<String, Map<String, String>> entry : data.entrySet()) {
             Map<String, String> row = entry.getValue();
@@ -93,10 +92,7 @@ public class UserService {
         }
     }
 
-    /**
-     * Attempts to authenticate a user from any role by NRIC and password.
-     * Todo: Hash password
-     */
+    /* Attempts to authenticate a user from any role by NRIC and password */
     public User authenticateUser(String nric, String password) {
         if (officers.containsKey(nric) && officers.get(nric).checkPassword(password)) {
             return officers.get(nric);
@@ -110,6 +106,7 @@ public class UserService {
         return null;
     }
 
+    /* FOLLOWING METHODS ARE TO GET ALL USERS */
     public Map<String, Applicant> getAllApplicants() {
         return applicants;
     }

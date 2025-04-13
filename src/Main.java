@@ -1,8 +1,5 @@
 package src;
 
-import src.model.Applicant;
-import src.model.Officer;
-import src.model.Manager;
 import src.model.User;
 import src.service.ProjectService;
 import src.service.UserService;
@@ -13,12 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
-    public static final boolean DEBUG_MODE = false;
-
-    private static List<Applicant> applicants = new ArrayList<>();
-    private static List<Officer> officers = new ArrayList<>();
-    private static List<Manager> managers = new ArrayList<>();
-
     private static UserService userService = null;
     private static ProjectService projectService = null;
 
