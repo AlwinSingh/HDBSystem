@@ -4,7 +4,9 @@ import src.model.Officer;
 import src.model.Project;
 import src.model.Applicant;
 import src.util.CSVWriter;
+import src.util.InputValidator;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,16 +22,54 @@ public class OfficerService {
         this.userService = userService;
     }
 
+    private void printVacantProjects(ProjectService projectService) {
+        Map<String, Project> allProjects = projectService.getAllProjects();
+
+        System.out.println("=== Vacant Projects (Open & Visible) ===");
+        boolean found = false;
+
+        LocalDate today = LocalDate.now();
+
+        for (Project project : allProjects.values()) {
+            // Only include projects that are:
+            // 1. Visible
+            // 2. Application window is open
+            // 3. Officer slots are not fully filled
+            boolean isVisible = project.isVisible();
+            boolean isOpen = (today.isEqual(project.getOpenDate()) || today.isAfter(project.getOpenDate())) &&
+                    (today.isBefore(project.getCloseDate()) || today.isEqual(project.getCloseDate()));
+            int assigned = project.getOfficerNRICs().size();
+            int allowed = project.getOfficerSlot();
+
+            if (isVisible && isOpen && assigned < allowed) {
+                found = true;
+                System.out.printf("• %s (%s) — %d Vacant Officer Slot%s\n\n",
+                        project.getName(),
+                        project.getNeighbourhood(),
+                        allowed - assigned,
+                        (allowed - assigned == 1 ? "" : "s")
+                );
+            }
+        }
+
+        if (!found) {
+            System.out.println("⚠️ No projects currently open and available for officer registration.\n");
+        }
+    }
+
     // 1. Officer requests to register for a project
-    public boolean registerForProject(Officer officer, String projectName) {
+    public boolean registerForProject(Officer officer) {
         // If their registration status is not empty AND their status is NOT REJECTED then they are not allowed to apply...
         // Officers that were rejected, can try again to apply but pending/approved are NOT allowed
 
-        if (!officer.getRegistrationStatus().isBlank() &&
-                !officer.getRegistrationStatus().equalsIgnoreCase("REJECTED")) {
-            System.out.println("⚠️ You have already registered or been approved/rejected.");
+        if (officer.getAssignedProjectName() != null && !officer.getAssignedProjectName().isEmpty()) {
+            System.out.println("⚠️ You have already applied for project " + officer.getAssignedProjectName());
             return false;
         }
+
+        //Request for project name
+        printVacantProjects(projectService);
+        String projectName = InputValidator.getNonEmptyString("Enter project name to register: ");
 
         Project project = projectService.getProjectByName(projectName);
         if (project == null) {
@@ -156,7 +196,45 @@ public class OfficerService {
         Applicant must be in the assigned project
         Applicant's application status must be PENDING
      */
-    public boolean handleApplication(Project project, String applicantNRIC, boolean approve) {
+    public boolean handleApplication(Officer officer) {
+        if (officer.getAssignedProjectName() == null || officer.getAssignedProjectName().isEmpty()) {
+            System.out.println("⚠️ You have not applied for any project.");
+            return false;
+        }
+
+        if (!officer.getRegistrationStatus().equalsIgnoreCase(Officer.RegistrationStatusType.APPROVED.name())) {
+            System.out.println("⚠️ Your registration status has not been approved for " + officer.getAssignedProjectName());
+            return false;
+        }
+
+        Project project = projectService.getProjectByName(officer.getAssignedProjectName());
+
+        if (project == null) {
+            System.out.println("❌ Project not found.");
+            return false;
+        }
+
+        List<Applicant> pendingApplicants = new ArrayList<Applicant>();
+
+        for (int i = 0; i < project.getApplicantNRICs().size(); i++) {
+            Applicant applicant = userService.getApplicantByNric(project.getApplicantNRICs().get(i));
+            if (applicant.getApplicationStatus().equalsIgnoreCase(Applicant.AppStatusType.PENDING.name())) {
+                pendingApplicants.add(applicant);
+            }
+        }
+
+        if (pendingApplicants.isEmpty()) {
+            System.out.println("⚠️ You have no applicants to approve/reject for " + officer.getAssignedProjectName() + ".");
+            return false;
+        }
+
+        System.out.println("Applicant List:");
+        for (int i = 0; i < pendingApplicants.size(); i++) {
+            System.out.println((i+1) + ". " + pendingApplicants.get(i).getName() + " (" + pendingApplicants.get(i).getNric() + ")");
+        }
+
+        String applicantNRIC = InputValidator.getNonEmptyString("Enter applicant NRIC to approve/reject: ");
+
         Applicant applicant = userService.getApplicantByNric(applicantNRIC);
         if (applicant == null) {
             System.out.println("❌ Applicant not found.");
@@ -168,6 +246,8 @@ public class OfficerService {
             System.out.println("⚠️ Applicant has already been processed (" + status + ").");
             return false;
         }
+
+        boolean approve = InputValidator.getYesNo("Approve this applicant?");
 
         if (approve) {
             applicant.setApplicationStatus(Applicant.AppStatusType.SUCCESSFUL.name());
@@ -193,22 +273,57 @@ public class OfficerService {
 
         Finally, set status to BOOKED
      */
-    public boolean bookFlat(String applicantNRIC) {
+    public boolean bookFlat(Officer officer) {
+        if (officer.getAssignedProjectName() == null || officer.getAssignedProjectName().isEmpty()) {
+            System.out.println("⚠️ You have not applied for any project.");
+            return false;
+        }
+
+        if (!officer.getRegistrationStatus().equalsIgnoreCase(Officer.RegistrationStatusType.APPROVED.name())) {
+            System.out.println("⚠️ Your registration status has not been approved for " + officer.getAssignedProjectName());
+            return false;
+        }
+
+        Project project = projectService.getProjectByName(officer.getAssignedProjectName());
+
+        if (project == null) {
+            System.out.println("❌ Project not found.");
+            return false;
+        }
+
+        List<Applicant> approvedApplicants = new ArrayList<Applicant>();
+
+        for (int i = 0; i < project.getApplicantNRICs().size(); i++) {
+            Applicant applicant = userService.getApplicantByNric(project.getApplicantNRICs().get(i));
+            if (applicant.getApplicationStatus().equalsIgnoreCase(Applicant.AppStatusType.SUCCESSFUL.name())) {
+                approvedApplicants.add(applicant);
+            }
+        }
+
+        if (approvedApplicants.isEmpty()) {
+            System.out.println("⚠️ You have no approved applicants to set as booked for " + officer.getAssignedProjectName() + ".");
+            return false;
+        }
+
+        System.out.println("Approved Applicant List:");
+        for (int i = 0; i < approvedApplicants.size(); i++) {
+            System.out.println((i+1) + ". " + approvedApplicants.get(i).getName() + " (" + approvedApplicants.get(i).getNric() + ")");
+        }
+
+        System.out.println("Applicant List:");
+        for (int i = 0; i < project.getApplicantNRICs().size(); i++) {
+            Applicant projectApplicant = userService.getApplicantByNric(project.getApplicantNRICs().get(i));
+
+            if (projectApplicant.getApplicationStatus().equalsIgnoreCase(Applicant.AppStatusType.PENDING.name())) {
+                System.out.println((i+1) + ". " + projectApplicant.getName() + " (" + projectApplicant.getNric() + ")");
+            }
+        }
+
+        String applicantNRIC = InputValidator.getNonEmptyString("Enter applicant NRIC to approve/reject: ");
+
         Applicant applicant = userService.getApplicantByNric(applicantNRIC);
         if (applicant == null) {
             System.out.println("❌ Applicant not found.");
-            return false;
-        }
-
-        if (!applicant.getApplicationStatus().equalsIgnoreCase(Applicant.AppStatusType.SUCCESSFUL.name())) {
-            System.out.println("⚠️ Only APPROVED applicants can book a flat.");
-            return false;
-        }
-
-        String projectName = applicant.getAppliedProjectName();
-        Project project = projectService.getProjectByName(projectName);
-        if (project == null) {
-            System.out.println("❌ Project not found.");
             return false;
         }
 
