@@ -1,7 +1,6 @@
 package src.model;
-/** Test */
 import java.util.Scanner;
-
+/** test **/
 import src.service.ApplicantService;
 import src.service.ProjectService;
 import src.service.UserService;
