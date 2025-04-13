@@ -1,5 +1,5 @@
 package src.model;
-
+/** Test */
 import java.util.Scanner;
 
 import src.service.ApplicantService;
