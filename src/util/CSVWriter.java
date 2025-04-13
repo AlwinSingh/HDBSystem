@@ -270,6 +270,46 @@ public class CSVWriter {
         }
     }
 
+    /* This UPDATES THE PROJECT NAME back to the CSV */
+    public static boolean saveRenameProject(String originalProjectName, String newProjectName, String filePath) {
+        List<Map<String, String>> rows = CSVReader.readCSV(filePath, List.of("Project Name"));
+        boolean found = false;
+
+        for (Map<String, String> row : rows) {
+            if (row.get("Project Name").equals(originalProjectName)) {
+                row.put("Project Name", newProjectName);
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            System.err.println("⚠️ Project not found for renaming: " + originalProjectName);
+            return false;
+        }
+
+        // Now write back all rows, preserving original headers
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
+            // Use the headers from the first row to preserve order
+            List<String> headers = new ArrayList<>(rows.get(0).keySet());
+            writer.println(String.join(",", headers));
+
+            for (Map<String, String> row : rows) {
+                List<String> values = new ArrayList<>();
+                for (String header : headers) {
+                    values.add(escapeCSV(row.getOrDefault(header, "")));
+                }
+                writer.println(String.join(",", values));
+            }
+
+            return true;
+        } catch (IOException e) {
+            System.err.println("❌ Failed to rename project in CSV.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     /* This ADDS ONE PROJECT back to the CSV */
     public static boolean appendProject(Project project, String filePath) {
         List<String> headers = List.of(
@@ -281,6 +321,8 @@ public class CSVWriter {
                 "ManagerNRIC", "OfficerNRICs", "ApplicantNRICs", "Visibility"
         );
 
+        DateTimeFormatter legacyFormat = DateTimeFormatter.ofPattern("M/d/yyyy");
+
         try (PrintWriter writer = new PrintWriter(new FileWriter(filePath, true))) {
             List<String> row = List.of(
                     project.getName(),
@@ -291,14 +333,14 @@ public class CSVWriter {
                     "3-Room",
                     String.valueOf(project.getThreeRoomUnits()),
                     String.valueOf(project.getThreeRoomPrice()),
-                    project.getOpenDate().toString(),
-                    project.getCloseDate().toString(),
+                    project.getOpenDate().format(legacyFormat),
+                    project.getCloseDate().format(legacyFormat),
                     project.getManagerName(),
                     String.valueOf(project.getOfficerSlot()),
-                    String.join(",", project.getOfficerNames()),
+                    project.getOfficerNames() != null ? String.join(",", project.getOfficerNames()) : "",
                     defaultStr(project.getManagerNRIC()),
-                    String.join(",", project.getOfficerNRICs()),
-                    String.join(",", project.getApplicantNRICs()),
+                    project.getOfficerNames() != null ? String.join(",", project.getOfficerNRICs()) : "",
+                    project.getOfficerNames() != null ? String.join(",", project.getApplicantNRICs()) : "",
                     String.valueOf(project.isVisible())
             );
 
@@ -320,15 +362,11 @@ public class CSVWriter {
 
         for (Map<String, String> row : rows) {
             if (row.get("NRIC").equals(updatedManager.getNric())) {
-                System.out.println("DEBUG CSVWRITER.JAVA >> Manager NRIC: " + updatedManager.getNric());
-                System.out.println("DEBUG CSVWRITER.JAVA >> Projects created: " + String.join(",", updatedManager.getProjectsCreated()));
-
                 row.put("Name", updatedManager.getName());
                 row.put("NRIC", updatedManager.getNric());
                 row.put("Age", String.valueOf(updatedManager.getAge()));
                 row.put("Marital Status", updatedManager.getMaritalStatus());
                 row.put("Password", updatedManager.getPassword());
-                row.put("ProjectsCreated", String.join(",", updatedManager.getProjectsCreated()));
                 break;
             }
         }
@@ -365,9 +403,6 @@ public class CSVWriter {
 
         for (Map<String, String> row : rows) {
             if (row.get("NRIC").equals(updatedOfficer.getNric())) {
-                System.out.println("DEBUG CSVWRITER.JAVA >> Officer NRIC: " + updatedOfficer.getNric());
-                System.out.println("DEBUG CSVWRITER.JAVA >> Officer assigned project name: '" + updatedOfficer.getAssignedProjectName() + "'");
-
                 row.put("Name", updatedOfficer.getName());
                 row.put("NRIC", updatedOfficer.getNric());
                 row.put("Age", String.valueOf(updatedOfficer.getAge()));
@@ -441,8 +476,7 @@ public class CSVWriter {
                 List<String> row = List.of(
                         manager.getNric(),
                         manager.getPassword(),
-                        manager.getName(),
-                        defaultStr(String.join(",", manager.getProjectsCreated()))
+                        manager.getName()
                 );
                 writer.println(row.stream().map(CSVWriter::escapeCSV).collect(Collectors.joining(",")));
             }
@@ -508,6 +542,28 @@ public class CSVWriter {
             System.err.println("❌ Failed to update " + role + " CSV.");
             e.printStackTrace();
             return false;
+        }
+    }
+
+    /* THIS UPDATES THE PROJECTLIST.CSV HEADERS */
+    public static void updateProjectHeaders(List<Map<String, String>> rows, String filePath,
+                                            List<String> baseHeaders, List<String> additionalHeaders) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
+            List<String> allHeaders = new ArrayList<>(baseHeaders);
+            allHeaders.addAll(additionalHeaders);
+
+            writer.println(String.join(",", allHeaders));
+
+            for (Map<String, String> row : rows) {
+                List<String> values = new ArrayList<>();
+                for (String header : allHeaders) {
+                    values.add(escapeCSV(row.getOrDefault(header, "")));
+                }
+                writer.println(String.join(",", values));
+            }
+        } catch (IOException e) {
+            System.err.println("❌ Failed to update project CSV with new headers.");
+            e.printStackTrace();
         }
     }
 

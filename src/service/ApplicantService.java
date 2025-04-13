@@ -32,8 +32,8 @@ public class ApplicantService {
     public List<Project> getEligibleProjects(Applicant applicant) {
         List<Project> eligible = new ArrayList<>();
         for (Project project : projectService.getAllProjects().values()) {
-            System.out.printf("Checking: %s | Visible: %b | Open: %b | 2-Room units: %d\n",
-                    project.getName(), project.isVisible(), project.isOpen(), project.getTwoRoomUnits());
+            //System.out.printf("Checking: %s | Visible: %b | Open: %b | 2-Room units: %d\n",
+            //        project.getName(), project.isVisible(), project.isOpen(), project.getTwoRoomUnits());
 
             if (!project.isVisible() || !project.isOpen()) continue;
 
@@ -49,15 +49,14 @@ public class ApplicantService {
         return eligible;
     }
 
-    public boolean apply(Applicant applicant, String projectName, String flatType) {
-        Project project = projectService.getProjectByName(projectName);
+    public boolean apply(Applicant applicant, Project project, String flatType) {
         if (project == null) {
             System.out.println("❌ Project not found.");
             return false;
         }
 
         // Check if already applied
-        if (applicant.getAppliedProjectName() != null) {
+        if (applicant.getAppliedProjectName() != null && !applicant.getAppliedProjectName().isEmpty()) {
             System.out.println("⚠️ You have already applied for a project.");
             return false;
         }
@@ -76,11 +75,12 @@ public class ApplicantService {
         }
 
         // Apply
-        applicant.applyForProject(projectName, flatType);
+        applicant.applyForProject(project.getName(), flatType);
         project.addApplicant(applicant.getNric());
 
         System.out.println("✅ Application submitted!");
         CSVWriter.saveApplicants(userService.getAllApplicants(), "data/ApplicantList.csv");
+        CSVWriter.saveProject(project, "data/ProjectList.csv");
 
         return true;
     }
@@ -101,6 +101,7 @@ public class ApplicantService {
 
         applicant.withdrawApplication();
         CSVWriter.saveApplicants(userService.getAllApplicants(), "data/ApplicantList.csv");
+        CSVWriter.saveProject(project, "data/ProjectList.csv");
     }
 
     public void viewStatus(Applicant applicant) {

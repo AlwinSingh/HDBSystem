@@ -52,7 +52,7 @@ public class Project {
     public Project(String name, String neighbourhood, int units2Room, double price2Room,
                    int units3Room, double price3Room, LocalDate openDate, LocalDate closeDate,
                    String managerName, int officerSlot, List<String> officerNames,
-                   String managerNRIC, boolean visibility) {
+                   String managerNRIC, List<String> officerNRICs, List<String> applicantNRICs, boolean visibility) {
         this.name = name;
         this.neighbourhood = neighbourhood;
         this.units2Room = units2Room;
@@ -65,8 +65,8 @@ public class Project {
         this.officerSlot = officerSlot;
         this.officerNames = officerNames;
         this.managerNRIC = managerNRIC;
-        this.officerNRICs = new ArrayList<>();
-        this.applicantNRICs = new ArrayList<>();
+        this.officerNRICs = officerNRICs;
+        this.applicantNRICs = applicantNRICs;
         this.visibility = visibility;
     }
 
@@ -163,10 +163,6 @@ public class Project {
         return false;
     }
 
-    public void decreaseOfficerSlot() {
-        officerSlot = officerSlot - 1;
-    }
-
     public void addOfficer(String officerNric) {
         if (!officerNRICs.contains(officerNric)) {
             officerNRICs.add(officerNric);
@@ -212,12 +208,13 @@ public class Project {
     }
 
     public void displaySummary() {
-        System.out.println("\n--- Project: " + name + " ---");
+        System.out.println("--- Project: " + name + " ---");
         System.out.println("Location: " + neighbourhood);
         System.out.println("Application Period: " + openDate + " to " + closeDate);
         System.out.println("2-Room Units Left: " + units2Room + " ($" + price2Room + ")");
         System.out.println("3-Room Units Left: " + units3Room + " ($" + price3Room + ")");
-        System.out.println("Visibility: " + (visibility ? "ON" : "OFF"));
+        //System.out.println("Visibility: " + (visibility ? "ON" : "OFF"));
+        System.out.println("\n");
     }
 }
 

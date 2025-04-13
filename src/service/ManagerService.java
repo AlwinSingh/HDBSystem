@@ -7,8 +7,8 @@ import src.util.CSVWriter;
 import src.util.InputValidator;
 
 import java.time.LocalDate;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ManagerService {
 
@@ -21,7 +21,7 @@ public class ManagerService {
     }
 
     // Option 1: View all projects
-    public void viewAllProjects() {
+    public void viewAllProjects(Manager manager) {
         Map<String, Project> projects = projectService.getAllProjects();
         if (projects.isEmpty()) {
             System.out.println("📭 No projects found.");
@@ -31,10 +31,10 @@ public class ManagerService {
         System.out.println("=== All Projects ===");
         for (Project p : projects.values()) {
             System.out.printf("📌 %s (%s)\n", p.getName(), p.getNeighbourhood());
-            System.out.printf("   2-Room: %d units @ $%d\n", p.getTwoRoomUnits(), p.getTwoRoomPrice());
-            System.out.printf("   3-Room: %d units @ $%d\n", p.getThreeRoomUnits(), p.getThreeRoomPrice());
+            System.out.printf("   2-Room: %d units @ $%f\n", p.getTwoRoomUnits(), p.getTwoRoomPrice());
+            System.out.printf("   3-Room: %d units @ $%f\n", p.getThreeRoomUnits(), p.getThreeRoomPrice());
             System.out.printf("   Open: %s to %s\n", p.getOpenDate(), p.getCloseDate());
-            System.out.printf("   Visibility: %s | Manager: %s\n", p.isVisible(), p.getManagerName());
+            System.out.printf("   Visibility: %s | Manager: %s\n", p.isVisible(), p.getManagerName() + (p.getManagerName().equals(manager.getName()) ? " (You)" : ""));
             System.out.println();
         }
     }
@@ -62,24 +62,19 @@ public class ManagerService {
         LocalDate openDate = InputValidator.getDate("Enter open date (YYYY-MM-DD): ");
         LocalDate closeDate = InputValidator.getDate("Enter close date (YYYY-MM-DD): ");
 
-        int officerSlots = InputValidator.getInt("Enter number of officer slots: ");
+        LocalDate today = LocalDate.now();
+        boolean isVisible = (today.isEqual(openDate) || today.isAfter(openDate)) &&
+                (today.isBefore(closeDate) || today.isEqual(closeDate));
 
-        Project project = new Project(name, neighbourhood, twoRoomUnits, twoRoomPrice, threeRoomUnits, threeRoomPrice, openDate, closeDate, manager.getName(), officerSlots, null, manager.getNric(), true);
+
+        int officerSlots = InputValidator.getIntInRange("Enter number of officer slots: ", 1, 10);
+
+        Project project = new Project(name, neighbourhood, twoRoomUnits, twoRoomPrice, threeRoomUnits, threeRoomPrice, openDate, closeDate, manager.getName(), officerSlots, null, manager.getNric(), null, null, isVisible);
 
         // Add to service and persist
         projectService.getAllProjects().put(name, project);
         boolean createdProjectSuccessfully = CSVWriter.appendProject(project, "data/ProjectList.csv");
-
-        // Update manager record
-        if (createdProjectSuccessfully) {
-            System.out.println("✅ Project created successfully!");
-            manager.addProject(name);
-            boolean updatedManagerSuccessfully = CSVWriter.updateManager(manager, "data/ManagerList.csv");
-
-            System.out.println(updatedManagerSuccessfully ? "✅ Updated manager successfully!" : "❌ Failed to update manager!");
-        } else {
-            System.out.println("❌ Failed to create project!");
-        }
+        System.out.println(createdProjectSuccessfully ? "✅ Project created successfully!" : "❌ Failed to create project!");
     }
 
     // Option 3: Edit existing project (rename, visibility, dates, units, prices)
@@ -106,8 +101,14 @@ public class ManagerService {
             System.out.println("3. Change application open/close dates");
             System.out.println("4. Toggle visibility (" + project.isVisible() + ")");
             System.out.println("0. Save and return");
-            System.out.print("Select an option: ");
-            int choice = Integer.parseInt(sc.nextLine());
+
+            int choice;
+
+            try {
+                choice = InputValidator.getInt("Enter your choice: ");
+            } catch (NumberFormatException e) {
+                choice = -1; // keep loop going safely
+            }
 
             switch (choice) {
                 case 1 -> {
@@ -116,12 +117,13 @@ public class ManagerService {
                     if (projectService.getProjectByName(newName) != null) {
                         System.out.println("⚠️ Project name already exists.");
                     } else {
+                        String oldName = project.getName();
                         projectService.getAllProjects().remove(currentProjectName);
                         project.setName(newName);
                         projectService.getAllProjects().put(newName, project);
-                        manager.replaceProjectName(currentProjectName, newName);
                         currentProjectName = newName;
-                        System.out.println("✅ Project renamed.");
+                        boolean saveSuccessful = CSVWriter.saveRenameProject(oldName, newName,"data/ProjectList.csv");
+                        System.out.println(saveSuccessful ? "✅ Project renamed.\n" : "❌ Failed to save project!");
                     }
                 }
                 case 2 -> {
@@ -137,7 +139,8 @@ public class ManagerService {
                     System.out.print("New 3-Room price: ");
                     project.setThreeRoomPrice(Integer.parseInt(sc.nextLine()));
 
-                    System.out.println("✅ Units and prices updated.");
+                    boolean saveSuccessful = CSVWriter.saveProject(project, "data/ProjectList.csv");
+                    System.out.println(saveSuccessful ? "✅ Unit and prices updated.\n" : "❌ Failed to save project!");
                 }
                 case 3 -> {
                     System.out.print("New open date (YYYY-MM-DD): ");
@@ -146,20 +149,22 @@ public class ManagerService {
                     System.out.print("New close date (YYYY-MM-DD): ");
                     project.setCloseDate(LocalDate.parse(sc.nextLine()));
 
-                    System.out.println("✅ Dates updated.");
+                    boolean saveSuccessful = CSVWriter.saveProject(project, "data/ProjectList.csv");
+                    System.out.println(saveSuccessful ? "✅ Dates updated.\n" : "❌ Failed to save project!");
                 }
                 case 4 -> {
                     project.setVisibility(!project.isVisible());
-                    System.out.println("✅ Visibility set to: " + project.isVisible());
+                    System.out.println("✅ Visibility set to: " + project.isVisible() + "\n");
+
+                    boolean saveSuccessful = CSVWriter.saveProject(project, "data/ProjectList.csv");
+                    System.out.println(saveSuccessful ? "✅ Visibility updated.\n" : "❌ Failed to save project!");
                 }
                 case 0 -> {
                     // Save and exit
                     boolean saveSuccessful = CSVWriter.saveProject(project, "data/ProjectList.csv");
-                    if (saveSuccessful) {
-                        CSVWriter.updateManager(manager, "data/ManagerList.csv");
-                        System.out.println("✅ Changes saved.");
-                    } else {
-                        System.out.println("❌ Failed to save the project, reverting project info to original");
+                    System.out.println(saveSuccessful ? "✅ Changes saved.\n" : "❌ Failed to save the project, reverting project info to original.\n");
+
+                    if (!saveSuccessful) {
                         project = projectCopyOriginal;
                     }
 
@@ -181,7 +186,7 @@ public class ManagerService {
 
         for (Officer officer : officers.values()) {
             // Skip if not pending
-            if (!"PENDING".equalsIgnoreCase(officer.getRegistrationStatus())) continue;
+            if (!Officer.RegistrationStatusType.PENDING.name().equalsIgnoreCase(officer.getRegistrationStatus())) continue;
 
             String assignedProject = officer.getAssignedProjectName();
             if (assignedProject == null || assignedProject.isBlank()) continue;
@@ -196,8 +201,7 @@ public class ManagerService {
 
             System.out.printf("👤 Name: %s | NRIC: %s\n", officer.getName(), officer.getNric());
             System.out.printf("   Assigned Project: %s\n", assignedProject);
-            System.out.printf("   Available Officer Slots: %d\n", project.getOfficerSlot());
-            System.out.println();
+            System.out.printf("   Available Officer Slots: %d\n", project.getOfficerSlot() - project.getOfficerNRICs().size());
         }
 
         if (!found) {
@@ -236,17 +240,16 @@ public class ManagerService {
         }
 
         if (approve) {
-            if (project.getOfficerSlot() <= 0) {
+            if (project.getOfficerNRICs().size() == project.getOfficerSlot()) {
                 System.out.println("❌ Cannot approve officer. No available officer slots in project.");
                 return;
             }
 
-            officer.setRegistrationStatus("APPROVED");
-            project.decreaseOfficerSlot();
+            officer.setRegistrationStatus(Officer.RegistrationStatusType.APPROVED.name());
             project.getOfficerNRICs().add(officer.getNric());
             System.out.println("✅ Officer approved and added to project.");
         } else {
-            officer.setRegistrationStatus("REJECTED");
+            officer.setRegistrationStatus(Officer.RegistrationStatusType.REJECTED.name());
             officer.setAssignedProjectName(null);
             System.out.println("❌ Officer rejected.");
         }
@@ -254,5 +257,30 @@ public class ManagerService {
         // Save updated data
         CSVWriter.updateOfficer(officer, "data/OfficerList.csv");
         CSVWriter.saveProject(project, "data/ProjectList.csv");
+    }
+
+    public Map<String,Project> getProjectsByManagerNric(String managerNric) {
+        Map<String, Project> allProjects = projectService.getAllProjects();
+
+        System.out.println("=== Your Projects ===");
+        boolean found = false;
+
+        for (Project project : allProjects.values()) {
+            if (managerNric.equals(project.getManagerNRIC())) {
+                found = true;
+                System.out.println("• " + project.getName() + " (" + project.getNeighbourhood() + ")");
+            }
+        }
+
+        if (!found) {
+            System.out.println("⚠️ You have no projects assigned to you.");
+        }
+
+        Map<String, Project> filteredProjects = allProjects.entrySet().stream()
+                .filter(entry -> managerNric.equals(entry.getValue().getManagerNRIC()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        return filteredProjects;
+
     }
 }

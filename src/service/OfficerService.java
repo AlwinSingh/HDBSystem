@@ -24,8 +24,6 @@ public class OfficerService {
     public boolean registerForProject(Officer officer, String projectName) {
         // If their registration status is not empty AND their status is NOT REJECTED then they are not allowed to apply...
         // Officers that were rejected, can try again to apply but pending/approved are NOT allowed
-        System.out.println("DEBUG >> Officer name: '" + officer.getName() + "'");
-        System.out.println("DEBUG >> Officer status: '" + officer.getRegistrationStatus() + "'");
 
         if (!officer.getRegistrationStatus().isBlank() &&
                 !officer.getRegistrationStatus().equalsIgnoreCase("REJECTED")) {
@@ -48,11 +46,9 @@ public class OfficerService {
 
         // Register the officer
         officer.setAssignedProjectName(projectName);
-        System.out.println("DEBUG >> Officer assigned project name: '" + officer.getAssignedProjectName() + "'");
         officer.setRegistrationStatus("PENDING");
 
         CSVWriter.updateOfficer(officer, "data/OfficerList.csv");
-        //project.addOfficer(officer.getNric()); // For testing only, by right, only add this on manager service when manager approves officer
 
         System.out.println("✅ Registration submitted for project: " + projectName);
         return true;
@@ -70,7 +66,7 @@ public class OfficerService {
         }
 
         if (!status.equalsIgnoreCase("APPROVED")) {
-            System.out.println("⚠️ Your registration is still " + status + ". You can only view the project after approval.");
+            System.out.println("⚠️ Your registration is still " + status + " for " + assignedProject + ". You can only view the project after approval.");
             return;
         }
 
@@ -163,7 +159,7 @@ public class OfficerService {
         Applicant must be in the assigned project
         Applicant's application status must be PENDING
      */
-    public boolean handleApplication(String applicantNRIC, boolean approve) {
+    public boolean handleApplication(Project project, String applicantNRIC, boolean approve) {
         Applicant applicant = userService.getApplicantByNric(applicantNRIC);
         if (applicant == null) {
             System.out.println("❌ Applicant not found.");
@@ -180,11 +176,13 @@ public class OfficerService {
             applicant.setApplicationStatus(Applicant.AppStatusType.SUCCESSFUL.name());
             System.out.println("✅ Applicant " + applicantNRIC + " approved.");
         } else {
+            project.getApplicantNRICs().remove(applicant.getNric());
             applicant.setApplicationStatus(Applicant.AppStatusType.UNSUCCESSFUL.name());
             System.out.println("❌ Applicant " + applicantNRIC + " rejected.");
         }
 
         CSVWriter.saveApplicants(userService.getAllApplicants(), "data/ApplicantList.csv");
+        CSVWriter.saveProject(project, "data/ProjectList.csv");
 
         return true;
     }
@@ -235,11 +233,11 @@ public class OfficerService {
             return false;
         }
 
-        applicant.setApplicationStatus("BOOKED");
+        applicant.setApplicationStatus(Applicant.AppStatusType.BOOKED.name());
         System.out.println("🏠 Flat booked successfully for " + applicantNRIC);
 
         CSVWriter.saveApplicants(userService.getAllApplicants(), "data/ApplicantList.csv");
-        CSVWriter.saveProjects(projectService.getAllProjects(), "data/ProjectList.csv");
+        //CSVWriter.saveProjects(projectService.getAllProjects(), "data/ProjectList.csv");
 
         return true;
     }

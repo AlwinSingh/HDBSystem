@@ -7,6 +7,8 @@ import src.util.CSVWriter;
 import src.util.ConsoleUtils;
 import src.util.InputValidator;
 
+import java.util.Map;
+
 /**
  * Applicant class, represents a user who applies for a BTO project.
  */
@@ -71,12 +73,26 @@ public class Applicant extends User {
     }
 
     public void viewApplicationStatus() {
-        if (appliedProjectName == null) {
+        if (appliedProjectName == null || appliedProjectName.isEmpty()) {
             System.out.println("No application found.");
         } else {
             System.out.println("Project: " + appliedProjectName);
             System.out.println("Flat Type: " + flatTypeApplied);
             System.out.println("Status: " + applicationStatus);
+        }
+    }
+
+    private void printEligibleProjects(Applicant applicant, ApplicantService applicantService) {
+        var eligible = applicantService.getEligibleProjects(applicant);
+        if (eligible.isEmpty()) {
+            System.out.println("⚠️ No eligible projects available.");
+        } else {
+            System.out.println("Eligible Projects:\n");
+            eligible.forEach(Project::displaySummary);
+        }
+
+        if (applicant.getAppliedProjectName() != null && !applicant.getAppliedProjectName().isEmpty()) {
+            System.out.println("⚠️ You have already applied for project " + applicant.getAppliedProjectName() + "\n");
         }
     }
 
@@ -106,26 +122,37 @@ public class Applicant extends User {
 
             switch (choice) {
                 case 1 -> applicantService.viewStatus(this);
-                case 2 -> {
-                    var eligible = applicantService.getEligibleProjects(this);
-                    if (eligible.isEmpty()) {
-                        System.out.println("⚠️ No eligible projects available.");
-                    } else {
-                        System.out.println("Eligible Projects:");
-                        eligible.forEach(Project::displaySummary);
-                    }
-                }
+                case 2 -> printEligibleProjects(this, applicantService);
                 case 3 -> {
-                    String projectName = InputValidator.getNonEmptyString("Enter project name to apply: ");
-                    String flatType = InputValidator.getNonEmptyString("Enter flat type (2-Room / 3-Room): ");
-                    applicantService.apply(this, projectName, flatType);
+                    if (this.getAppliedProjectName() != null && !this.getAppliedProjectName().isEmpty()) {
+                        System.out.println("⚠️ You have already applied for project " + this.getAppliedProjectName() + "\n");
+                    } else {
+                        printEligibleProjects(this, applicantService);
+                        String projectName = InputValidator.getNonEmptyString("Enter project name to apply: ");
+                        Project project = projectService.getProjectByName(projectName);
+
+                        if (project == null) {
+                            System.out.println("Project not found.");
+                        } else {
+                            String flatType = InputValidator.getNonEmptyString("Enter flat type (2-Room / 3-Room): ");
+                            applicantService.apply(this, project, flatType);
+                        }
+                    }
                 }
                 case 4 -> applicantService.withdraw(this);
                 case 5 -> {
                     String newPass = InputValidator.getNonEmptyString("Enter new password: ");
                     changePassword(newPass);
                     boolean updatedSuccessfully = CSVWriter.updateUserPassword(this);
-                    System.out.println(updatedSuccessfully ? "✅ Password updated." : "❌ Failed to update password.");
+                    System.out.println(updatedSuccessfully ? "✅ Password updated, please log out and log back in, redirecting in 3 seconds!" : "❌ Failed to update password.");
+
+                    try {
+                        Thread.sleep(3000); // Wait 3 seconds
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    choice = 0;
                 }
                 case 0 -> System.out.println("Logging out...");
                 default -> System.out.println("⚠️ Invalid input. Please enter a valid option.");

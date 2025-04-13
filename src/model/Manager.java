@@ -2,6 +2,7 @@ package src.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import src.service.ManagerService;
 import src.service.ProjectService;
@@ -14,15 +15,19 @@ import src.util.InputValidator;
  * Manager class, represents HDB staff who can create and manage BTO projects.
  */
 public class Manager extends User {
-    private List<String> projectsCreated;
+    //private List<String> projectsCreated;
 
     public Manager(String nric, String password, String name, int age, String maritalStatus) {
         super(nric, password, name, age, maritalStatus);
-        this.projectsCreated = new ArrayList<>();
+        //this.projectsCreated = new ArrayList<>();
     }
 
-    public List<String> getProjectsCreated() {
+    /*public List<String> getProjectsCreated() {
         return projectsCreated;
+    }
+
+    public void setProjectsCreated(String newProject) {
+        projectsCreated.add(newProject);
     }
 
     public void addProject(String projectName) {
@@ -38,7 +43,7 @@ public class Manager extends User {
         } else {
             System.out.println("⚠️ Project \"" + oldName + "\" not found in manager’s list.");
         }
-    }
+    }*/
 
     @Override
     public void showMenu(ProjectService ps, UserService us) {
@@ -66,14 +71,23 @@ public class Manager extends User {
             ConsoleUtils.clear();
 
             switch (choice) {
-                case 1 -> managerService.viewAllProjects();
+                case 1 -> managerService.viewAllProjects(this);
                 case 2 -> managerService.createProject(this);
                 case 3 -> {
-                    String projectName = InputValidator.getNonEmptyString("Enter project name to edit: ");
-                    managerService.editProject(this, projectName);
+                    // Struggling with this....can't seem to pull the projects by manager nric
+                    Map<String,Project> projects = managerService.getProjectsByManagerNric(this.getNric());
+
+                    if (projects.size() > 0) {
+                        String projectName = InputValidator.getNonEmptyString("\nEnter project name to edit: ");
+                        managerService.editProject(this, projectName);
+                    } else {
+                        System.out.println("⚠️ You have no projects to edit!");
+                    }
                 }
                 case 4 -> managerService.viewOfficerRegistrations(this);
                 case 5 -> {
+                    // Here u need to check if manager has an assigned project...
+                    // If he does then proceed to allow to approve/reject
                     String officerNRIC = InputValidator.getNonEmptyString("Enter officer NRIC to approve/reject: ");
                     boolean approve = InputValidator.getYesNo("Approve this officer? (Y/N): ");
                     managerService.approveOrRejectOfficer(officerNRIC, approve, this);
@@ -82,7 +96,15 @@ public class Manager extends User {
                     String newPass = InputValidator.getNonEmptyString("Enter new password: ");
                     changePassword(newPass);
                     boolean updatedSuccessfully = CSVWriter.updateUserPassword(this);
-                    System.out.println(updatedSuccessfully ? "✅ Password updated." : "❌ Failed to update password.");
+                    System.out.println(updatedSuccessfully ? "✅ Password updated, please log out and log back in, redirecting in 3 seconds!" : "❌ Failed to update password.");
+
+                    try {
+                        Thread.sleep(3000); // Wait 3 seconds
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    choice = 0;
                 }
                 case 0 -> {
                     System.out.println("👋 Logged out successfully.");

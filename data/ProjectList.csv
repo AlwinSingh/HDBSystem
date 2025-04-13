@@ -1,2 +1,4 @@
 Project Name,Neighborhood,Type 1,Number of units for Type 1,Selling price for Type 1,Type 2,Number of units for Type 2,Selling price for Type 2,Application opening date,Application closing date,Manager,Officer Slot,Officer,ManagerNRIC,OfficerNRICs,ApplicantNRICs,Visibility
-Acacia Breeze,Yishun,2-Room,1,350000.0,3-Room,3,450000.0,2/15/2025,4/20/2025,Jessica,3,,S5678901G,,"S1234567A,S2345678B",true
+Acacia Breeze,Yishun,2-Room,2,350000,3-Room,3,450000,2/15/2025,3/20/2026,Jessica,3,"Daniel,Emily",T1234567G,"T2109876H,S6543210I",S1234567A,true
+ABCD,Jurong,2-Room,2,150000,3-Room,3,250000,5/15/2025,6/10/2025,Michael,4,,T8765432F,,,false
+Alweo,Juriong,2-Room,4,20.0,3-Room,6,50.0,12/12/2022,1/10/2023,Jessica,5,,T1234567G,,,false

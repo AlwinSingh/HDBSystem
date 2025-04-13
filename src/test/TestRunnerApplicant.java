@@ -51,7 +51,7 @@ public class TestRunnerApplicant {
             System.out.println(selected.getOfficerNames().get(i));
         }
 
-        boolean success = applicantService.apply(applicant, selected.getName(), "2-Room");
+        boolean success = applicantService.apply(applicant, selected, "2-Room");
         if (success) {
             System.out.println("✅ Application successful!");
         } else {
@@ -68,7 +68,7 @@ public class TestRunnerApplicant {
         applicantService.withdraw(applicant);
 
         System.out.println("🔁 Reapplying...");
-        applicantService.apply(applicant, selected.getName(), "2-Room");
+        applicantService.apply(applicant, selected, "2-Room");
 
         for (int i = 0; i < updated.getOfficerNames().size(); i++) {
             System.out.println(" ::::::: TESTRUNNER "  + updated.getOfficerNames().get(i));

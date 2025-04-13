@@ -60,7 +60,9 @@ public class UserService {
                         row.get("Password"),
                         row.get("Name"),
                         Integer.parseInt(row.get("Age")),
-                        row.get("Marital Status")
+                        row.get("Marital Status"),
+                        row.get("AssignedProject"),
+                        row.getOrDefault("RegistrationStatus", "").toUpperCase().trim()
                 );
                 officers.put(o.getNric(), o);
             } catch (Exception e) {
@@ -70,7 +72,7 @@ public class UserService {
     }
 
     private void loadManagers() {
-        List<String> requiredHeaders = List.of("NRIC", "Password", "Name", "Age", "Marital Status", "ProjectsCreated");
+        List<String> requiredHeaders = List.of("NRIC", "Password", "Name", "Age", "Marital Status");
         Map<String, Map<String, String>> data =
                 CSVReader.readCSVByKey("data/ManagerList.csv", requiredHeaders, "NRIC");
 
@@ -148,7 +150,7 @@ public class UserService {
         return null;
     }
 
-    public Officer getOfficerBName(String name) {
+    public Officer getOfficerByName(String name) {
         for (Officer officer : officers.values()) {
             if (officer.getName().equalsIgnoreCase(name)) return officer;
         }

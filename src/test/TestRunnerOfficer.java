@@ -29,13 +29,13 @@ public class TestRunnerOfficer {
         os.viewApplicantList(officer);
 
         System.out.println("\n--- Approving Applicant S1234567A ---");
-        os.handleApplication("S1234567A", true);
+        os.handleApplication(null,"S1234567A", true);
 
         System.out.println("\n--- Rejecting Applicant S2345678B ---");
-        os.handleApplication("S2345678B", false);
+        os.handleApplication(null,"S2345678B", false);
 
         System.out.println("\n--- Re-approving Already Processed Applicant ---");
-        os.handleApplication("S2345678B", true); // Should fail
+        os.handleApplication(null, "S2345678B", true); // Should fail
 
         System.out.println("\n--- Booking Flat for Approved Applicant ---");
         os.bookFlat("S1234567A");
