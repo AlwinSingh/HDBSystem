@@ -1,63 +1,77 @@
 package src;
 
-import src.model.User;
-import src.service.ProjectService;
-import src.service.UserService;
-import src.util.ConsoleUtils;
-import src.util.InputValidator;
+import src.model.*;
+import src.service.ApplicantMenu;
+import src.service.AuthService;
+
+import java.util.Scanner;
 
 public class Main {
 
-    private static UserService userService;
-    private static ProjectService projectService;
-
     public static void main(String[] args) {
-        // Load users and projects from CSV files
-        userService = new UserService();
-        projectService = new ProjectService(userService);
+        Scanner sc = new Scanner(System.in);
 
-        // Clear the screen and show a welcome banner
-        ConsoleUtils.clear();
-        showWelcomeBanner();
-
-        // Main login loop
         while (true) {
-            String nric = InputValidator.getNonEmptyString("\nEnter NRIC (or type EXIT to quit): ");
-            if (nric.equalsIgnoreCase("EXIT")) {
-                break;
-            }
-            String password = InputValidator.getNonEmptyString("Enter Password: ");
+            System.out.println("\n===== BTO Application System =====");
+            System.out.println("1. Login");
+            System.out.println("2. Register as Applicant");
+            System.out.println("0. Exit");
+            System.out.print("Enter choice: ");
 
-            User user = userService.authenticateUser(nric, password);
-            if (user != null) {
-                ConsoleUtils.clear();
-                System.out.println("Login successful. Welcome, " 
-                        + user.getClass().getSimpleName() + " " + user.getName() + "!");
-                ConsoleUtils.lineBreak();
-                user.showMenu(projectService, userService);
-                ConsoleUtils.clear(); // Clear the screen after logout
-            } else {
-                System.out.println("❌ Invalid NRIC or Password. Please try again.");
+            String choice = sc.nextLine().trim();
+
+            switch (choice) {
+                case "1" -> handleLogin(sc);
+                case "2" -> handleApplicantRegistration(sc);
+                case "0" -> {
+                    System.out.println("👋 Goodbye!");
+                    return;
+                }
+                default -> System.out.println("❌ Invalid choice. Try again.");
             }
         }
-        
-        // Shutdown message
-        ConsoleUtils.clear();
-        ConsoleUtils.slowPrint("System shutting down. Goodbye!", 20);
     }
-    
-    /**
-     * Displays a welcome banner with a little flair.
-     */
-    private static void showWelcomeBanner() {
-        String banner =
-                "\n**************************************************\n" +
-                "*                                                *\n" +
-                "*       Welcome to the BTO Management System     *\n" +
-                "*                                                *\n" +
-                "**************************************************\n";
-        // SlowPrint prints each character with a delay (adjust delay as needed)
-        ConsoleUtils.slowPrint(banner, 5);
-        ConsoleUtils.lineBreak();
+
+    private static void handleLogin(Scanner sc) {
+        System.out.println("\n🔐 Login");
+        System.out.print("Enter NRIC: ");
+        String nric = sc.nextLine();
+        System.out.print("Enter Password: ");
+        String password = sc.nextLine();
+
+        User user = AuthService.authenticate(nric, password);
+
+        if (user == null) {
+            System.out.println("❌ Invalid credentials.");
+            return;
+        }
+
+        System.out.println("✅ Welcome, " + user.getName());
+
+        if (user instanceof Applicant applicant) {
+            System.out.println("🔓 Logged in as Applicant: " + applicant.getNric());
+            ApplicantMenu.show(applicant);
+        } else if (user instanceof HDBOfficer officer) {
+            System.out.println("🔓 Logged in as HDB Officer: " + officer.getNric());
+        } else if (user instanceof HDBManager manager) {
+            System.out.println("🔓 Logged in as HDB Manager: " + manager.getNric());
+        }
+    }
+
+    private static void handleApplicantRegistration(Scanner sc) {
+        System.out.println("\n📝 Register New Applicant");
+        System.out.print("Enter NRIC: ");
+        String nric = sc.nextLine();
+        System.out.print("Enter Name: ");
+        String name = sc.nextLine();
+        System.out.print("Enter Age: ");
+        int age = Integer.parseInt(sc.nextLine());
+        System.out.print("Enter Marital Status (Single/Married): ");
+        String maritalStatus = sc.nextLine();
+
+        Applicant newApplicant = new Applicant(nric, "password", name, age, maritalStatus);
+        System.out.println("✅ Applicant created. Default password is: password");
+
+        // TODO: Write newApplicant to ApplicantList.csv
     }
 }

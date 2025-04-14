@@ -6,51 +6,40 @@ import java.util.List;
 public class Enquiry {
     private int enquiryId;
     private String content;
-    private String createdByNric;           // used for persistence
-    private transient User createdBy;       // used at runtime
+    private User createdBy;
     private Project relatedProject;
-    private List<String> replies;
+    private List<EnquiryReply> replies;
 
     public Enquiry(int enquiryId, String content, User createdBy, Project relatedProject) {
         this.enquiryId = enquiryId;
         this.content = content;
         this.createdBy = createdBy;
-        this.createdByNric = createdBy.getNric();
         this.relatedProject = relatedProject;
         this.replies = new ArrayList<>();
     }
 
-    // For CSV loading
-    public Enquiry(int enquiryId, String content, String createdByNric, Project relatedProject, List<String> replies) {
-        this.enquiryId = enquiryId;
-        this.content = content;
-        this.createdByNric = createdByNric;
-        this.relatedProject = relatedProject;
-        this.replies = replies != null ? replies : new ArrayList<>();
+    public void addReply(String replyContent, User responder) {
+        int replyId = replies.size() + 1;
+        EnquiryReply reply = new EnquiryReply(replyId, replyContent, responder);
+        replies.add(reply);
     }
 
-    public int getEnquiryId() {
-        return enquiryId;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void editContent(String content) {
-        this.content = content;
+    public void editContent(String newContent) {
+        this.content = newContent;
     }
 
     public void deleteEnquiry() {
-        this.content = "[DELETED]";
+        this.content = "[deleted]";
+        this.replies.clear(); // optional
     }
 
-    public void addReply(String replyContent, User responder) {
-        replies.add("[" + responder.getName() + "]: " + replyContent);
-    }
-
-    public List<String> getReplies() {
+    public List<EnquiryReply> getReplies() {
         return replies;
+    }
+
+    // Getters
+    public String getContent() {
+        return content;
     }
 
     public Project getRelatedProject() {
@@ -60,16 +49,5 @@ public class Enquiry {
     public User getCreatedBy() {
         return createdBy;
     }
-
-    public void setCreatedBy(User createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public String getCreatedByNric() {
-        return createdByNric;
-    }
-
-    public void setCreatedByNric(String nric) {
-        this.createdByNric = nric;
-    }
 }
+
