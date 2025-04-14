@@ -1,4 +1,5 @@
 package src.model;
+
 // test 36
 // test 40
 import src.service.ApplicantService;
