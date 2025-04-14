@@ -10,7 +10,12 @@ import java.util.*;
  */
 public class CSVReader {
 
-    /* Reads a CSV and returns a list of maps (1 map = 1 row) */
+    /**
+     * Reads a CSV and returns a list of maps (one map per row).
+     * @param path The file path to the CSV file.
+     * @param requiredHeaders The list of headers required.
+     * @return A list of row maps.
+     */
     public static List<Map<String, String>> readCSV(String path, List<String> requiredHeaders) {
         List<Map<String, String>> records = new ArrayList<>();
 
@@ -23,17 +28,17 @@ public class CSVReader {
 
             String line;
             while ((line = reader.readLine()) != null) {
+                // Use regex to properly handle commas inside quotes
                 String[] values = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
 
                 Map<String, String> row = new LinkedHashMap<>();
                 for (int i = 0; i < headers.length; i++) {
                     row.put(headers[i], i < values.length ? values[i].replace("\"", "") : "");
                 }
-
                 records.add(row);
             }
 
-            // Check for missing columns and delegate update
+            // Check for missing required columns and update if needed.
             boolean needsUpdate = false;
             for (String required : requiredHeaders) {
                 if (!existingHeaders.contains(required)) {
@@ -55,7 +60,13 @@ public class CSVReader {
         return records;
     }
 
-    /* Reads a CSV and returns a map where key = a specific column (In this case we used NRIC and Project Name) */
+    /**
+     * Reads a CSV and returns a map indexed by the value in a specific column.
+     * @param path The file path to the CSV.
+     * @param requiredHeaders The list of required headers.
+     * @param keyColumn The header to use as the map key.
+     * @return A map with the keyColumn values as keys.
+     */
     public static Map<String, Map<String, String>> readCSVByKey(String path, List<String> requiredHeaders, String keyColumn) {
         List<Map<String, String>> rows = readCSV(path, requiredHeaders);
         Map<String, Map<String, String>> indexedMap = new LinkedHashMap<>();
@@ -66,7 +77,6 @@ public class CSVReader {
                 indexedMap.put(key, row);
             }
         }
-
         return indexedMap;
     }
 }

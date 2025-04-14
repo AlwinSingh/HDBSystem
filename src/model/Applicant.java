@@ -6,7 +6,6 @@ import src.service.UserService;
 import src.util.CSVWriter;
 import src.util.ConsoleUtils;
 import src.util.InputValidator;
-import src.model.Project;
 
 public class Applicant extends User {
     protected String appliedProjectName;

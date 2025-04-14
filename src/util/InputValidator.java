@@ -6,10 +6,18 @@ import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 public class InputValidator {
+    // Use one static scanner for the entire class to avoid resource leaks.
     private static final Scanner sc = new Scanner(System.in);
     private static final DateTimeFormatter[] dateFormats = new DateTimeFormatter[]{
             DateTimeFormatter.ofPattern("dd-MM-yyyy")
     };
+
+    /**
+     * Returns the internal Scanner instance to be reused by other utilities.
+     */
+    public static Scanner getScanner() {
+        return sc;
+    }
 
     public static int getInt(String prompt) {
         while (true) {
@@ -72,15 +80,14 @@ public class InputValidator {
 
     public static LocalDate getDate(String prompt) {
         while (true) {
-            System.out.print(prompt);
+            System.out.print(prompt + " (dd-MM-yyyy): ");
             String input = sc.nextLine().trim();
             for (DateTimeFormatter format : dateFormats) {
                 try {
                     return LocalDate.parse(input, format);
                 } catch (DateTimeParseException ignored) {}
             }
-            //System.out.println("❌ Invalid date format. Use YYYY-MM-DD or M/D/YYYY.");
-            System.out.println("❌ Invalid date format. Use DD-MM-YYYY.");
+            System.out.println("❌ Invalid date format. Use dd-MM-yyyy.");
         }
     }
 }
