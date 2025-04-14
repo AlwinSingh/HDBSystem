@@ -1,20 +1,27 @@
 package src.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import src.model.Applicant;
+import src.model.Enquiry;
 import src.model.Project;
 import src.util.CSVWriter;
 import src.util.FilePath;
-
-import java.util.ArrayList;
-import java.util.List;
+import src.util.InputValidator;
 
 public class ApplicantService {
 
     private ProjectService projectService;
+    private UserService userService;
+    private EnquiryService enquiryService;
 
-    public ApplicantService(ProjectService projectService) {
+
+    public ApplicantService(ProjectService projectService, UserService userService) {
         this.projectService = projectService;
+        this.userService = userService;
+        this.enquiryService = new EnquiryService(projectService, userService);
     }
+    
 
     public List<Project> getEligibleProjects(Applicant applicant) {
         List<Project> eligible = new ArrayList<>();
@@ -75,6 +82,36 @@ public class ApplicantService {
                            ". Please await manager approval.");
         CSVWriter.updateApplicant(applicant, FilePath.APPLICANT_LIST_FILE);
     }
+
+
+public void editEnquiry(Applicant applicant) {
+    List<Enquiry> userEnquiries = enquiryService.getEnquiriesForUser(applicant.getNric());
+
+    if (userEnquiries.isEmpty()) {
+        System.out.println("⚠️ You have not created any enquiries.");
+        return;
+    }
+
+    System.out.println("=== Your Enquiries ===");
+    for (int i = 0; i < userEnquiries.size(); i++) {
+        Enquiry e = userEnquiries.get(i);
+        System.out.println((i + 1) + ". [#" + e.getEnquiryId() + "] " + e.getContent());
+    }
+
+    int index = InputValidator.getInt("Enter enquiry number to edit: ") - 1;
+    if (index < 0 || index >= userEnquiries.size()) {
+        System.out.println("⚠️ Invalid choice.");
+        return;
+    }
+
+    String newContent = InputValidator.getNonEmptyString("Enter new enquiry content: ");
+    boolean success = enquiryService.editEnquiry(userEnquiries.get(index).getEnquiryId(), newContent);
+
+    if (success) {
+        System.out.println("✅ Enquiry updated.");
+    }
+}
+
 
     public void viewApplicationStatus(Applicant applicant) {
         applicant.viewApplicationStatus();

@@ -1,6 +1,7 @@
 package src.model;
-//test
+import java.util.List;
 import src.service.ApplicantService;
+import src.service.EnquiryService;
 import src.service.ProjectService;
 import src.service.UserService;
 import src.util.CSVWriter;
@@ -106,7 +107,9 @@ public class Applicant extends User {
 
     @Override
     public void showMenu(ProjectService projectService, UserService userService) {
-        ApplicantService applicantService = new ApplicantService(projectService);
+        ApplicantService applicantService = new ApplicantService(projectService, userService);
+        EnquiryService enquiryService = new EnquiryService(projectService, userService);
+; // Load enquiry service
         int choice;
         do {
             System.out.println("=== Applicant Menu ===");
@@ -114,24 +117,24 @@ public class Applicant extends User {
             System.out.println("2. View Eligible Projects");
             System.out.println("3. Apply for Project");
             System.out.println("4. Withdraw Application");
-            System.out.println("5. Change Password");
+            System.out.println("5. Manage My Enquiries");
+            System.out.println("6. Change Password");
             System.out.println("0. Logout");
             ConsoleUtils.lineBreak();
-
+    
             try {
                 choice = InputValidator.getInt("Enter your choice: ");
             } catch (NumberFormatException e) {
                 choice = -1;
             }
             ConsoleUtils.clear();
+    
             switch (choice) {
                 case 1 -> applicantService.viewApplicationStatus(this);
                 case 2 -> printEligibleProjects(this, applicantService);
                 case 3 -> {
-                    // Allow re-application only if there's no active application 
-                    // (i.e. if applicationStatus is null, UNSUCCESSFUL, or empty)
-                    if (this.getAppliedProjectName() != null && !this.getAppliedProjectName().isEmpty() &&
-                        !this.getApplicationStatus().equalsIgnoreCase("UNSUCCESSFUL")) {
+                    if (this.getAppliedProjectName() != null && !this.getAppliedProjectName().isEmpty()
+                        && !this.getApplicationStatus().equalsIgnoreCase("UNSUCCESSFUL")) {
                         System.out.println("⚠️ You have already applied for project " + this.getAppliedProjectName() + "\n");
                     } else {
                         var eligibleProjects = applicantService.getEligibleProjects(this);
@@ -152,6 +155,89 @@ public class Applicant extends User {
                 }
                 case 4 -> applicantService.withdrawFromProject(this);
                 case 5 -> {
+                    // === Combined Enquiry Management ===
+                    List<Enquiry> myEnquiries = enquiryService.getEnquiriesForUser(this.getNric());
+    
+                    while (true) {
+                        ConsoleUtils.clear();
+                        System.out.println("=== Enquiry Management ===");
+                        System.out.println("You have " + myEnquiries.size() + " enquiries.");
+                        ConsoleUtils.lineBreak();
+    
+                        if (!myEnquiries.isEmpty()) {
+                            for (Enquiry e : myEnquiries) {
+                                System.out.println("ID: " + e.getEnquiryId() + " | Project: " +
+                                        e.getRelatedProject().getName() + " | Content: " + e.getContent());
+                            }
+                            ConsoleUtils.lineBreak();
+                        }
+    
+                        System.out.println("1. Create New Enquiry");
+                        if (!myEnquiries.isEmpty()) {
+                            System.out.println("2. Edit Existing Enquiry");
+                            System.out.println("3. Delete Existing Enquiry");
+                        }
+                        System.out.println("0. Return to Main Menu");
+                        ConsoleUtils.lineBreak();
+    
+                        int subChoice;
+                        try {
+                            subChoice = InputValidator.getInt("Enter your choice: ");
+                        } catch (NumberFormatException e) {
+                            subChoice = -1;
+                        }
+    
+                        if (subChoice == 0) break;
+    
+                        switch (subChoice) {
+                            case 1 -> {
+                                String content = InputValidator.getNonEmptyString("Enter enquiry content: ");
+                                String projectName = InputValidator.getNonEmptyString("Enter related project name: ");
+                                Project project = projectService.getProjectByName(projectName);
+                                if (project == null) {
+                                    System.out.println("❌ Project not found.");
+                                } else {
+                                    enquiryService.createEnquiry(content, this, project);
+                                    System.out.println("✅ Enquiry created.");
+                                }
+                            }
+                            case 2 -> {
+                                if (myEnquiries.isEmpty()) {
+                                    System.out.println("⚠️ No enquiries available to edit.");
+                                    break;
+                                }
+                                int id = InputValidator.getInt("Enter Enquiry ID to edit: ");
+                                Enquiry enquiry = enquiryService.getEnquiryById(id);
+                                if (enquiry != null && enquiry.getCreatedBy().getNric().equals(this.getNric())) {
+                                    String newContent = InputValidator.getNonEmptyString("Enter new content: ");
+                                    enquiryService.editEnquiry(id, newContent);
+                                    System.out.println("✅ Enquiry updated.");
+                                } else {
+                                    System.out.println("❌ Enquiry not found or not yours.");
+                                }
+                            }
+                            case 3 -> {
+                                if (myEnquiries.isEmpty()) {
+                                    System.out.println("⚠️ No enquiries available to delete.");
+                                    break;
+                                }
+                                int id = InputValidator.getInt("Enter Enquiry ID to delete: ");
+                                Enquiry enquiry = enquiryService.getEnquiryById(id);
+                                if (enquiry != null && enquiry.getCreatedBy().getNric().equals(this.getNric())) {
+                                    enquiryService.deleteEnquiry(id);
+                                    System.out.println("✅ Enquiry deleted.");
+                                } else {
+                                    System.out.println("❌ Enquiry not found or not yours.");
+                                }
+                            }
+                            default -> System.out.println("❌ Invalid option.");
+                        }
+    
+                        ConsoleUtils.pause();
+                        myEnquiries = enquiryService.getEnquiriesForUser(this.getNric()); // Refresh after change
+                    }
+                }
+                case 6 -> {
                     String newPass = InputValidator.getNonEmptyString("Enter new password: ");
                     changePassword(newPass);
                     boolean updatedSuccessfully = CSVWriter.updateUserPassword(this);
@@ -165,10 +251,11 @@ public class Applicant extends User {
                     }
                     choice = 0;
                 }
-                case 0 -> System.out.println("Logging out...");
+                case 0 -> System.out.println("👋 Logging out...");
                 default -> System.out.println("⚠️ Invalid input. Please enter a valid option.");
             }
             if (choice != 0) ConsoleUtils.pause();
         } while (choice != 0);
     }
+    
 }

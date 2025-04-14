@@ -1,12 +1,10 @@
 package src.util;
 
-import src.model.*;
-import src.service.UserService;
-
 import java.io.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import src.model.*;
 
 /**
  * Utility class for writing and updating CSV files.
@@ -378,4 +376,26 @@ public class CSVWriter {
         }
         return value;
     }
+    public static void saveEnquiries(List<Enquiry> enquiries, String filePath) {
+        List<String> headers = List.of("EnquiryId", "Content", "CreatedBy", "Project", "Replies");
+    
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
+            writer.println(String.join(",", headers));
+            for (Enquiry e : enquiries) {
+                List<String> row = List.of(
+                        String.valueOf(e.getEnquiryId()),
+                        escapeCSV(e.getContent()),
+                        e.getCreatedByNric(),
+                        e.getRelatedProject() != null ? e.getRelatedProject().getName() : "",
+                        escapeCSV(String.join("|", e.getReplies()))
+                );
+                writer.println(String.join(",", row));
+            }
+        } catch (IOException e) {
+            System.err.println("❌ Failed to save enquiries to CSV.");
+            e.printStackTrace();
+        }
+    }
+    
+    
 }

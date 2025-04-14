@@ -3,85 +3,114 @@ package src.service;
 import src.model.Enquiry;
 import src.model.Project;
 import src.model.User;
+import src.util.CSVReader;
+import src.util.CSVWriter;
+import src.util.FilePath;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class EnquiryService {
-    private final Map<Integer, Enquiry> enquiries = new HashMap<>();
-    private int enquiryCounter = 1;
 
-    /**
-     * Create a new enquiry
-     */
-    public Enquiry createEnquiry(User user, Project project, String content) {
-        Enquiry enquiry = new Enquiry(enquiryCounter++, content, user, project);
-        enquiries.put(enquiry.getEnquiryId(), enquiry);
+    private List<Enquiry> enquiries;
+    private int nextEnquiryId;
+
+    private final ProjectService projectService;
+    private final UserService userService;
+
+    public EnquiryService(ProjectService projectService, UserService userService) {
+        this.projectService = projectService;
+        this.userService = userService;
+        this.enquiries = new ArrayList<>();
+        this.nextEnquiryId = 1;
+        loadEnquiries(); // Load from CSV on init
+    }
+
+    public Enquiry createEnquiry(String content, User createdBy, Project relatedProject) {
+        Enquiry enquiry = new Enquiry(nextEnquiryId++, content, createdBy, relatedProject);
+        enquiries.add(enquiry);
+        saveEnquiries(); // Persist after creation
         return enquiry;
     }
 
-    /**
-     * Edit an existing enquiry’s content
-     */
-    public boolean editEnquiry(int enquiryId, String newContent, User user) {
-        Enquiry e = enquiries.get(enquiryId);
-        if (e == null || !e.getCreatedBy().getNric().equals(user.getNric())) return false;
-
-        e.editContent(newContent);
-        return true;
+    public List<Enquiry> getAllEnquiries() {
+        return new ArrayList<>(enquiries);
     }
 
-    /**
-     * Delete an enquiry (only by creator)
-     */
-    public boolean deleteEnquiry(int enquiryId, User user) {
-        Enquiry e = enquiries.get(enquiryId);
-        if (e == null || !e.getCreatedBy().getNric().equals(user.getNric())) return false;
-
-        enquiries.remove(enquiryId);
-        return true;
+    public List<Enquiry> getEnquiriesForUser(String userNric) {
+        return enquiries.stream()
+                .filter(e -> e.getCreatedByNric().equals(userNric))
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Add a reply to an enquiry
-     */
-    public boolean replyToEnquiry(int enquiryId, String replyContent) {
-        Enquiry e = enquiries.get(enquiryId);
-        if (e == null) return false;
-
-        e.addReply(replyContent);
-        return true;
+    public Enquiry getEnquiryById(int id) {
+        return enquiries.stream().filter(e -> e.getEnquiryId() == id).findFirst().orElse(null);
     }
 
-    /**
-     * Get all enquiries made by a user
-     */
-    public List<Enquiry> getEnquiriesByUser(User user) {
-        List<Enquiry> result = new ArrayList<>();
-        for (Enquiry e : enquiries.values()) {
-            if (e.getCreatedBy().getNric().equals(user.getNric())) {
-                result.add(e);
+    public boolean editEnquiry(int enquiryId, String newContent) {
+        Enquiry enquiry = getEnquiryById(enquiryId);
+        if (enquiry != null) {
+            enquiry.editContent(newContent);
+            saveEnquiries();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean deleteEnquiry(int enquiryId) {
+        Enquiry enquiry = getEnquiryById(enquiryId);
+        if (enquiry != null) {
+            enquiries.remove(enquiry);
+            saveEnquiries();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean replyToEnquiry(int enquiryId, String replyContent, User responder) {
+        Enquiry enquiry = getEnquiryById(enquiryId);
+        if (enquiry != null) {
+            enquiry.addReply(replyContent, responder);
+            saveEnquiries();
+            return true;
+        }
+        return false;
+    }
+
+    private void saveEnquiries() {
+        CSVWriter.saveEnquiries(enquiries, FilePath.ENQUIRY_LIST_FILE);
+    }
+
+    private void loadEnquiries() {
+        enquiries.clear();
+        List<Map<String, String>> rows = CSVReader.readCSV(FilePath.ENQUIRY_LIST_FILE,
+                List.of("EnquiryId", "Content", "CreatedBy", "Project", "Replies"));
+
+        int maxId = 0;
+        for (Map<String, String> row : rows) {
+            try {
+                int id = Integer.parseInt(row.get("EnquiryId"));
+                String content = row.get("Content");
+                String createdByNric = row.get("CreatedBy");
+                String projectName = row.get("Project");
+                String repliesRaw = row.getOrDefault("Replies", "");
+
+                Project relatedProject = projectService.getProjectByName(projectName);
+                User createdBy = userService.getApplicantByNric(createdByNric);
+                if (createdBy == null) continue;
+
+                List<String> replies = repliesRaw.isEmpty() ? new ArrayList<>() :
+                        Arrays.asList(repliesRaw.split("\\|"));
+
+                Enquiry enquiry = new Enquiry(id, content, createdByNric, relatedProject, replies);
+                enquiry.setCreatedBy(createdBy);
+                enquiries.add(enquiry);
+                maxId = Math.max(maxId, id);
+            } catch (Exception e) {
+                System.err.println("❌ Error parsing enquiry row: " + row);
             }
         }
-        return result;
-    }
 
-    /**
-     * Get all enquiries related to a project
-     */
-    public List<Enquiry> getEnquiriesByProject(Project project) {
-        List<Enquiry> result = new ArrayList<>();
-        for (Enquiry e : enquiries.values()) {
-            if (e.getRelatedProject().getName().equals(project.getName())) {
-                result.add(e);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Retrieve enquiry by ID
-     */
-    public Enquiry getEnquiryById(int enquiryId) {
-        return enquiries.get(enquiryId);
+        this.nextEnquiryId = maxId + 1;
     }
 }

@@ -1,15 +1,13 @@
-// File: Enquiry.java
 package src.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Enquiry {
-    private static int enquiryCounter = 1;
-
     private int enquiryId;
     private String content;
-    private User createdBy;
+    private String createdByNric;           // used for persistence
+    private transient User createdBy;       // used at runtime
     private Project relatedProject;
     private List<String> replies;
 
@@ -17,10 +15,20 @@ public class Enquiry {
         this.enquiryId = enquiryId;
         this.content = content;
         this.createdBy = createdBy;
+        this.createdByNric = createdBy.getNric();
         this.relatedProject = relatedProject;
         this.replies = new ArrayList<>();
     }
-    
+
+    // For CSV loading
+    public Enquiry(int enquiryId, String content, String createdByNric, Project relatedProject, List<String> replies) {
+        this.enquiryId = enquiryId;
+        this.content = content;
+        this.createdByNric = createdByNric;
+        this.relatedProject = relatedProject;
+        this.replies = replies != null ? replies : new ArrayList<>();
+    }
+
     public int getEnquiryId() {
         return enquiryId;
     }
@@ -29,32 +37,39 @@ public class Enquiry {
         return content;
     }
 
-    public void setContent(String content) {
+    public void editContent(String content) {
         this.content = content;
     }
 
-    public User getCreatedBy() {
-        return createdBy;
+    public void deleteEnquiry() {
+        this.content = "[DELETED]";
     }
 
-    public Project getRelatedProject() {
-        return relatedProject;
+    public void addReply(String replyContent, User responder) {
+        replies.add("[" + responder.getName() + "]: " + replyContent);
     }
 
     public List<String> getReplies() {
         return replies;
     }
 
-    public void addReply(String reply) {
-        replies.add(reply);
+    public Project getRelatedProject() {
+        return relatedProject;
     }
 
-    public void editContent(String newContent) {
-        this.content = newContent;
+    public User getCreatedBy() {
+        return createdBy;
     }
 
-    public void deleteEnquiry() {
-        // Logic for removal from database/service can be implemented in the EnquiryService
-        System.out.println("Enquiry deleted: ID " + enquiryId);
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getCreatedByNric() {
+        return createdByNric;
+    }
+
+    public void setCreatedByNric(String nric) {
+        this.createdByNric = nric;
     }
 }
