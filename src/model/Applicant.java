@@ -1,5 +1,5 @@
 package src.model;
-// test 2
+
 import src.service.ApplicantService;
 import src.service.ProjectService;
 import src.service.UserService;
