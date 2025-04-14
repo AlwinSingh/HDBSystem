@@ -3,6 +3,7 @@ package src;
 import src.model.*;
 import src.service.ApplicantMenu;
 import src.service.AuthService;
+import src.service.OfficerGateway;
 
 import java.util.Scanner;
 
@@ -53,6 +54,7 @@ public class Main {
             ApplicantMenu.show(applicant);
         } else if (user instanceof HDBOfficer officer) {
             System.out.println("🔓 Logged in as HDB Officer: " + officer.getNric());
+            OfficerGateway.show(officer);
         } else if (user instanceof HDBManager manager) {
             System.out.println("🔓 Logged in as HDB Manager: " + manager.getNric());
         }

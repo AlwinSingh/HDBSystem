@@ -1,5 +1,6 @@
 package src.model;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,32 +9,71 @@ public class HDBManager extends User {
 
     public HDBManager(String nric, String password, String name, int age, String maritalStatus) {
         super(nric, password, name, age, maritalStatus);
-    }  
-
-    public Project createProject(Project project) {
-        managedProjects.add(project);
-        return project;
+        this.managedProjects = new ArrayList<>();
     }
 
-    public void editProject(Project project, String newName) {
-        project.closeProject(); // dummy edit: name + close
+    public Project createProject(String projectName, String neighborhood, int units2Room, int units3Room, int officerSlots, LocalDate openDate, LocalDate closeDate) {
+        Project newProject = new Project();
+        newProject.setProjectName(projectName);
+        newProject.setNeighborhood(neighborhood);
+        newProject.setAvailableFlats2Room(units2Room);
+        newProject.setAvailableFlats3Room(units3Room);
+        newProject.setOfficerSlots(officerSlots);
+        newProject.setOpenDate(openDate);
+        newProject.setCloseDate(closeDate);
+        managedProjects.add(newProject);
+        return newProject;
+    }
+
+    public void editProject(Project proj, String newProjectName, String newNeighborhood, int newUnits2Room, int newUnits3Room, int newOfficerSlots, LocalDate newOpenDate, LocalDate newCloseDate) {
+        proj.setProjectName(newProjectName);
+        proj.setNeighborhood(newNeighborhood);
+        proj.setAvailableFlats2Room(newUnits2Room);
+        proj.setAvailableFlats3Room(newUnits3Room);
+        proj.setOfficerSlots(newOfficerSlots);
+        proj.setOpenDate(newOpenDate);
+        proj.setCloseDate(newCloseDate);
     }
 
     public void deleteProject(Project project) {
         managedProjects.remove(project);
     }
 
-    public void toggleVisibility(Project project, boolean visible) {
-        if (visible) project.openProject();
+    public void toggleVisibility(Project project, boolean isVisible) {
+        if (isVisible) project.openProject();
         else project.closeProject();
+    }
+
+    public void approveOfficerRegistration(HDBOfficer officer) {
+        officer.setRegistrationStatus("APPROVED");
+    }
+
+    public void rejectOfficerRegistration(HDBOfficer officer) {
+        officer.setRegistrationStatus("REJECTED");
+    }
+
+    public void approveApplication(Application app) {
+        app.setStatus("SUCCESSFUL");
+        app.getProject().decrementFlatCount(app.getFlatType());
+    }
+
+    public void rejectApplication(Application app) {
+        app.setStatus("UNSUCCESSFUL");
+    }
+
+    public void approveWithdrawal(Application app) {
+        app.setStatus("WITHDRAWAL_APPROVED");
+    }
+
+    public void rejectWithdrawal(Application app) {
+        app.setStatus("WITHDRAWAL_REJECTED");
     }
 
     public List<String> generateReport(String filterType) {
         List<String> reports = new ArrayList<>();
         for (Project p : managedProjects) {
-            reports.add("Report for: " + p.toString());
+            reports.add("Report for: " + p.getProjectName() + " (" + p.getNeighborhood() + ")");
         }
         return reports;
     }
 }
-
