@@ -1,0 +1,96 @@
+package src.service;
+
+import src.model.Applicant;
+import src.model.Application;
+import src.model.Project;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class ApplicationService {
+
+    // Simulate a database of applications using applicant NRIC as key
+    private final Map<String, Application> applications = new HashMap<>();
+
+    /**
+     * Create and submit a new application.
+     */
+    public boolean createApplication(Applicant applicant, Project project, String flatType) {
+        if (applications.containsKey(applicant.getNric())) {
+            System.out.println("⚠️ You already have an active application.");
+            return false;
+        }
+
+        if (!project.hasAvailableUnits(flatType)) {
+            System.out.println("❌ Selected flat type is unavailable.");
+            return false;
+        }
+
+        Application application = new Application(applicant, project, flatType);
+        applications.put(applicant.getNric(), application);
+        project.addApplicant(applicant.getNric());
+        applicant.setApplicationStatus("PENDING");
+        applicant.applyForProject(project.getName(), flatType);
+
+        System.out.println("✅ Application submitted successfully.");
+        return true;
+    }
+
+    /**
+     * Withdraw an existing application.
+     */
+    public boolean withdrawApplication(String applicantNric) {
+        Application app = applications.get(applicantNric);
+        if (app == null) {
+            System.out.println("⚠️ No application found to withdraw.");
+            return false;
+        }
+
+        app.withdrawRequest();
+        app.getApplicant().setApplicationStatus("WITHDRAWAL_REQUESTED");
+        System.out.println("📝 Withdrawal request has been submitted.");
+        return true;
+    }
+
+    /**
+     * Update application status.
+     */
+    public boolean updateStatus(String applicantNric, String newStatus) {
+        Application app = applications.get(applicantNric);
+        if (app == null) {
+            System.out.println("❌ Application not found.");
+            return false;
+        }
+
+        app.setStatus(newStatus);
+        app.getApplicant().setApplicationStatus(newStatus);
+        System.out.println("✅ Application status updated to " + newStatus);
+        return true;
+    }
+
+    /**
+     * Retrieve an application by NRIC.
+     */
+    public Application getApplicationByNric(String nric) {
+        return applications.get(nric);
+    }
+
+    /**
+     * Display application status summary.
+     */
+    public void viewApplicationStatus(String nric) {
+        Application app = applications.get(nric);
+        if (app == null) {
+            System.out.println("⚠️ No application found.");
+        } else {
+            app.displaySummary();
+        }
+    }
+
+    /**
+     * Check if applicant has already applied.
+     */
+    public boolean hasActiveApplication(String nric) {
+        return applications.containsKey(nric);
+    }
+}
