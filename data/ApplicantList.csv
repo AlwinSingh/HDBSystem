@@ -1,6 +1,6 @@
 NRIC,Password,Name,Age,Marital Status,FlatTypeApplied,AppliedProjectName,ApplicationStatus
 S3456789E,password,Rachel,25,Single,,,
-T7654321B,password,Sarah,40,Married,,,
+T7654321B,password,Sarah,40,Married,2-Room,Acacia Breeze,WITHDRAWAL_REQUESTED
 S9876543C,password,Grace,37,Married,,,
 S1234567A,test,John,35,Single,,,
 T2345678D,password,James,30,Married,,,
