@@ -1,6 +1,5 @@
 package src.model;
-
-// test 36
+//test
 import src.service.ApplicantService;
 import src.service.ProjectService;
 import src.service.UserService;
