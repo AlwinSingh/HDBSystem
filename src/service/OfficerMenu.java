@@ -41,7 +41,7 @@ public class OfficerMenu {
     
 
     private static void viewRegistrationStatus(HDBOfficer officer) {
-        System.out.println("\n===== 📋 Registration Status Details =====");
+        System.out.println("\n===== 📋 Officer Registration Status =====");
     
         String regStatus = officer.getRegistrationStatus();
         Project assigned = officer.getAssignedProject();
@@ -52,12 +52,16 @@ public class OfficerMenu {
             return;
         }
     
-        // Project context
-        String projectName = (assigned != null) ? assigned.getProjectName() : "(Pending assignment)";
+        // Display project name or fallback
+        String projectName = (assigned != null && assigned.getProjectName() != null)
+                ? assigned.getProjectName()
+                : officer.getAssignedProject() != null
+                    ? officer.getAssignedProject().getProjectName()
+                    : "(Pending assignment)";
         System.out.println("📌 Registered Project: " + projectName);
     
-        // Status interpretation
-        switch (regStatus.toUpperCase()) {
+        // Interpret registration status
+        switch (regStatus.trim().toUpperCase()) {
             case "PENDING" -> {
                 System.out.println("📊 Status: 🕒 Pending approval");
                 System.out.println("⏳ Your request is being reviewed by an HDB Manager.");
@@ -75,10 +79,11 @@ public class OfficerMenu {
             }
             default -> {
                 System.out.println("📊 Status: " + regStatus);
-                System.out.println("⚠️ Unrecognized status. Please contact system administrator.");
+                System.out.println("⚠️ Unrecognized status. Please contact the system administrator.");
             }
         }
     }
+    
 
     private static void registerForProject(HDBOfficer officer, Scanner sc) {
         if (officer.getAssignedProject() != null || 
@@ -189,17 +194,15 @@ public class OfficerMenu {
         Project assignedProject = officer.getAssignedProject();
         String regStatus = officer.getRegistrationStatus();
     
-        // Ensure project assignment and approved status
         if (assignedProject == null || !"APPROVED".equalsIgnoreCase(regStatus)) {
             System.out.println("❌ You are not approved to handle any project yet.");
-            System.out.println("ℹ️ Only officers with approved registration can proceed with flat bookings.");
             return;
         }
     
-        List<Map<String, String>> rows = CsvUtil.read("data/ApplicantList.csv");
+        List<Map<String, String>> applicantRows = CsvUtil.read("data/ApplicantList.csv");
         List<Map<String, String>> eligibleApplicants = new ArrayList<>();
     
-        for (Map<String, String> row : rows) {
+        for (Map<String, String> row : applicantRows) {
             String status = row.get("ApplicationStatus");
             String projectName = row.get("AppliedProjectName");
     
@@ -222,13 +225,11 @@ public class OfficerMenu {
         }
     
         System.out.print("Select applicant to book flat for [number]: ");
-        String input = sc.nextLine().trim();
         int choice;
-    
         try {
-            choice = Integer.parseInt(input);
+            choice = Integer.parseInt(sc.nextLine().trim());
         } catch (NumberFormatException e) {
-            System.out.println("❌ Invalid input. Please enter a valid number.");
+            System.out.println("❌ Invalid input.");
             return;
         }
     
@@ -237,22 +238,45 @@ public class OfficerMenu {
             return;
         }
     
-        Map<String, String> selected = eligibleApplicants.get(choice - 1);
-        String flatType = selected.get("FlatTypeApplied");
+        Map<String, String> selectedApplicant = eligibleApplicants.get(choice - 1);
+        String flatType = selectedApplicant.get("FlatTypeApplied");
     
-        // Check unit availability before booking
         if (assignedProject.getRemainingFlats(flatType) <= 0) {
             System.out.println("❌ No available units for that flat type.");
             return;
         }
     
-        selected.put("ApplicationStatus", "BOOKED");
+        selectedApplicant.put("ApplicationStatus", "BOOKED");
         assignedProject.decrementFlatCount(flatType);
+        CsvUtil.write("data/ApplicantList.csv", applicantRows);
     
-        CsvUtil.write("data/ApplicantList.csv", rows);
-        System.out.println("✅ Flat booked successfully for " + selected.get("Name") +
+        // Update ProjectList.csv
+        List<Map<String, String>> projects = CsvUtil.read("data/ProjectList.csv");
+        for (Map<String, String> project : projects) {
+            if (project.get("Project Name").equalsIgnoreCase(assignedProject.getProjectName())) {
+                // Update ApplicantNRICs
+                String existingNric = project.getOrDefault("ApplicantNRICs", "").trim();
+                Set<String> nricSet = new LinkedHashSet<>(Arrays.asList(existingNric.split(" ")));
+                nricSet.add(selectedApplicant.get("NRIC"));
+                nricSet.remove(""); // Remove any blanks
+                project.put("ApplicantNRICs", String.join(" ", nricSet));
+    
+                // Update Officer field (optional, add booking officer’s name if needed)
+                String existingNames = project.getOrDefault("Officer", "").trim();
+                Set<String> nameSet = new LinkedHashSet<>(Arrays.asList(existingNames.split(" ")));
+                nameSet.add(officer.getName());
+                nameSet.remove("");
+                project.put("Officer", String.join(" ", nameSet));
+    
+                break;
+            }
+        }
+        CsvUtil.write("data/ProjectList.csv", projects);
+    
+        System.out.println("✅ Flat booked for " + selectedApplicant.get("Name") +
                 " (" + flatType + "). Status updated to BOOKED.");
     }
+    
     
     
     private static void generateReceipt(HDBOfficer officer, Scanner sc) {
