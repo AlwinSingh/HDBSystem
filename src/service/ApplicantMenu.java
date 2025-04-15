@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Scanner;
 
 public class ApplicantMenu {
-
+    
     public static void show(Applicant applicant) {
         Scanner sc = new Scanner(System.in);
-
+        boolean isOfficer = applicant instanceof HDBOfficer;
         while (true) {
             System.out.println("\n===== 🏠 Applicant Dashboard =====");
             System.out.println("Welcome, " + applicant.getName());
@@ -19,6 +19,7 @@ public class ApplicantMenu {
             System.out.println("2. Apply for a project");
             System.out.println("3. View my application");
             System.out.println("4. Request withdrawal");
+            if (isOfficer) System.out.println("9. Back to Officer Dashboard");
             System.out.println("0. Logout");
             System.out.print("Enter choice: ");
             String choice = sc.nextLine().trim();
@@ -32,7 +33,16 @@ public class ApplicantMenu {
                     System.out.println("🚪 Logged out.\n");
                     return;
                 }
-                default -> System.out.println("❌ Invalid choice. Please select a valid option.");
+                case "9" -> {
+                    if (isOfficer) {
+                        System.out.println("🔙 Returning to Officer Dashboard...");
+                        OfficerMenu.show((HDBOfficer) applicant); // Cast safely
+                        return; // Exit back to dual-role switch
+                    } else {
+                        System.out.println("❌ Invalid input.");
+                    }
+                }
+                default -> System.out.println("❌ Invalid input.");
             }
         }
     }

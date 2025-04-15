@@ -3,7 +3,7 @@ package src;
 import src.model.*;
 import src.service.ApplicantMenu;
 import src.service.AuthService;
-import src.service.OfficerGateway;
+import src.service.OfficerMenu;
 
 import java.util.Scanner;
 
@@ -49,14 +49,36 @@ public class Main {
 
         System.out.println("✅ Welcome, " + user.getName());
 
-        if (user instanceof Applicant applicant) {
+        if (user instanceof HDBManager manager) {
+            System.out.println("🔓 Logged in as HDB Manager: " + manager.getNric());
+            // TODO: HDBManagerMenu.show(manager);
+        }
+        else if (user instanceof HDBOfficer officer) {
+            // Officer dashboard logic with dual-role access
+            boolean hasProject = officer.getAssignedProject() != null;
+            boolean hasPendingStatus = officer.getRegistrationStatus() != null;
+
+            if (!hasProject && !hasPendingStatus) {
+                System.out.println("\nWelcome, Officer " + officer.getName());
+                System.out.println("You are an HDB Officer and also eligible to apply as an Applicant.");
+                System.out.println("1. Access Officer Dashboard");
+                System.out.println("2. Access Applicant Dashboard");
+                System.out.println("0. Logout");
+                System.out.print("Enter choice: ");
+                String roleChoice = sc.nextLine().trim();
+
+                switch (roleChoice) {
+                    case "1" -> OfficerMenu.show(officer);
+                    case "2" -> ApplicantMenu.show(officer);
+                    default -> System.out.println("Logging out...");
+                }
+            } else {
+                OfficerMenu.show(officer);
+            }
+        }
+        else if (user instanceof Applicant applicant) {
             System.out.println("🔓 Logged in as Applicant: " + applicant.getNric());
             ApplicantMenu.show(applicant);
-        } else if (user instanceof HDBOfficer officer) {
-            System.out.println("🔓 Logged in as HDB Officer: " + officer.getNric());
-            OfficerGateway.show(officer);
-        } else if (user instanceof HDBManager manager) {
-            System.out.println("🔓 Logged in as HDB Manager: " + manager.getNric());
         }
     }
 
@@ -74,6 +96,6 @@ public class Main {
         Applicant newApplicant = new Applicant(nric, "password", name, age, maritalStatus);
         System.out.println("✅ Applicant created. Default password is: password");
 
-        // TODO: Write newApplicant to ApplicantList.csv
+        // TODO: Save to ApplicantList.csv
     }
 }

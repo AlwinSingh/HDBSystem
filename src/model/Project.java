@@ -97,9 +97,17 @@ public class Project {
         return price3Room;
     }
 
-
-    public LocalDate getOpenDate() { return openDate; }
-    public LocalDate getCloseDate() { return closeDate; }
+    public int getOfficerSlots() {
+        return officerSlots;
+    }
+    
+    public LocalDate getOpenDate() { 
+        return openDate; 
+    }
+    public LocalDate getCloseDate() { 
+        return closeDate; 
+    }
+    
     public void setProjectName(String name) { this.projectName = name; }
     public void setNeighborhood(String n) { this.neighborhood = n; }
     public void setOpenDate(LocalDate d) { this.openDate = d; }

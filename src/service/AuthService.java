@@ -2,6 +2,7 @@ package src.service;
 
 import src.model.*;
 import src.util.CsvUtil;
+
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,7 @@ public class AuthService {
                         row.get("Marital Status")
                 );
 
+                // Load application if exists
                 String projectName = row.get("AppliedProjectName");
                 String flatType = row.get("FlatTypeApplied");
                 String status = row.get("ApplicationStatus");
@@ -40,17 +42,31 @@ public class AuthService {
                 return applicant;
             }
         }
+
         // 2. Try OfficerList
         List<Map<String, String>> officers = CsvUtil.read("data/OfficerList.csv");
         for (Map<String, String> row : officers) {
             if (row.get("NRIC").equalsIgnoreCase(nric) && row.get("Password").equals(password)) {
-                return new HDBOfficer(
+                HDBOfficer officer = new HDBOfficer(
                         row.get("NRIC"),
                         row.get("Password"),
                         row.get("Name"),
                         Integer.parseInt(row.get("Age")),
                         row.get("Marital Status")
                 );
+
+                // Load registration details
+                String regStatus = row.get("RegistrationStatus");
+                String assignedProject = row.get("AssignedProject");
+
+                officer.setRegistrationStatus((regStatus != null && !regStatus.isBlank()) ? regStatus : null);
+
+                if (assignedProject != null && !assignedProject.isBlank()) {
+                    List<Project> allProjects = ProjectLoader.loadProjects();
+                    officer.setAssignedProjectByName(assignedProject, allProjects);
+                }
+
+                return officer;
             }
         }
 
@@ -68,6 +84,6 @@ public class AuthService {
             }
         }
 
-        return null; // login failed
+        return null;
     }
 }
