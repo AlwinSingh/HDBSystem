@@ -1,4 +1,4 @@
 Project Name,Neighborhood,Type 1,Number of units for Type 1,Selling price for Type 1,Type 2,Number of units for Type 2,Selling price for Type 2,Application opening date,Application closing date,Manager,Officer Slot,Officer,ManagerNRIC,OfficerNRICs,ApplicantNRICs,Visibility
-Acacia Breeze,Yishun,2-Room,199999,350000.0,3-Room,100000,450000,2/15/2025,3/20/2026,Jessica,3,Daniel Emily,T1234567G,T2109876H S6543210I,T7654321B S9876543C,true
+Acacia Breeze,Yishun,2-Room,199999,350000.0,3-Room,100000,450000,2/15/2025,3/20/2026,Jessica,3,,T1234567G,,,true
 ABCD,Jurong,2-Room,2,150000,3-Room,3,250000,5/15/2025,6/10/2025,Michael,4,,T8765432F,,,true
 Alweo,Jurong,2-Room,4,200000,3-Room,6,500000,12/12/2022,1/10/2023,Jessica,5,,T1234567G,,,true
