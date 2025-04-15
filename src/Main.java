@@ -4,7 +4,7 @@ import src.model.*;
 import src.service.ApplicantMenu;
 import src.service.AuthService;
 import src.service.OfficerMenu;
-
+import src.service.ManagerMenu;
 import java.util.Scanner;
 
 public class Main {
@@ -51,7 +51,7 @@ public class Main {
 
         if (user instanceof HDBManager manager) {
             System.out.println("🔓 Logged in as HDB Manager: " + manager.getNric());
-            // TODO: HDBManagerMenu.show(manager);
+            ManagerMenu.show(manager);
         }
         else if (user instanceof HDBOfficer officer) {
             // Officer dashboard logic with dual-role access
