@@ -66,9 +66,14 @@ public class ProjectCsvMapper {
 
         // Load Manager object
         String managerNric = safeTrim(row.getOrDefault("ManagerNRIC", ""));
+        String managerName = safeTrim(row.getOrDefault("ManagerName", ""));
+
         if (!managerNric.isEmpty()) {
             HDBManager manager = ManagerCsvMapper.findByNric(managerNric);
-            if (manager != null) p.setManager(manager);
+            if (manager == null) {
+                manager = new HDBManager(managerNric, "", managerName, 0, "");
+            }
+            p.setManager(manager);
         }
 
         // Officer NRICs
@@ -110,9 +115,13 @@ public class ProjectCsvMapper {
         row.put("Latitude", String.valueOf(loc.getLat()));
         row.put("Longitude", String.valueOf(loc.getLng()));
 
-        // Store manager NRIC for mapping
+        // Store manager NRIC and name
         if (p.getManager() != null) {
             row.put("ManagerNRIC", p.getManager().getNric());
+            row.put("ManagerName", p.getManager().getName());
+        } else {
+            row.put("ManagerNRIC", "");
+            row.put("ManagerName", "");
         }
 
         row.put("OfficerNRICs", String.join(" ", p.getOfficerNRICs()));

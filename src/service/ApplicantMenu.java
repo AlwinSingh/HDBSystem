@@ -55,7 +55,7 @@ public class ApplicantMenu {
         Applicant applicant = ctx.applicant;
         System.out.println("\n📋 Eligible Open Projects:");
         boolean anyShown = false;
-
+    
         for (Project p : projects) {
             if (p != null && p.getProjectName() != null && isEligible(applicant, p) && p.isVisible()) {
                 anyShown = true;
@@ -75,13 +75,15 @@ public class ApplicantMenu {
                         System.out.println("   - " + a.getAmenityDetails());
                     }
                 }
+                System.out.println(); // extra line break between entries
             }
         }
-
+    
         if (!anyShown) {
             System.out.println("❌ No eligible open projects available at the moment.");
         }
     }
+    
 
     private static boolean isEligible(Applicant applicant, Project project) {
         String status = applicant.getMaritalStatus();
