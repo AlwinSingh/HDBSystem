@@ -503,6 +503,12 @@ public class ManagerMenu {
         String decision = sc.nextLine().trim().toUpperCase();
     
         if (decision.equals("A")) {
+            System.out.print("Confirm approval for Officer " + officerName + " (Y/N): ");
+            if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
+                System.out.println("❌ Approval cancelled.");
+                return;
+            }
+    
             int slots = Integer.parseInt(projectToUpdate.getOrDefault("Officer Slot", "0"));
             if (slots <= 0) {
                 System.out.println("❌ No officer slots remaining.");
@@ -512,14 +518,14 @@ public class ManagerMenu {
             // Update slots
             projectToUpdate.put("Officer Slot", String.valueOf(slots - 1));
     
-            // Append NRIC to OfficerNRICs (space-separated)
+            // Update OfficerNRICs (space-separated, no duplicates)
             String nricField = projectToUpdate.getOrDefault("OfficerNRICs", "").trim();
             Set<String> nricSet = new LinkedHashSet<>(Arrays.asList(nricField.split("\\s+")));
             nricSet.add(officerNRIC);
             nricSet.remove("");
             projectToUpdate.put("OfficerNRICs", String.join(" ", nricSet));
     
-            // Append Name to Officer field (space-separated)
+            // Update Officer names
             String nameField = projectToUpdate.getOrDefault("Officer", "").trim();
             Set<String> nameSet = new LinkedHashSet<>(Arrays.asList(nameField.split("\\s+")));
             nameSet.add(officerName);
@@ -530,6 +536,12 @@ public class ManagerMenu {
             System.out.println("✅ Officer approved and added to project.");
     
         } else if (decision.equals("R")) {
+            System.out.print("Confirm rejection for Officer " + officerName + " (Y/N): ");
+            if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
+                System.out.println("❌ Rejection cancelled.");
+                return;
+            }
+    
             selectedOfficer.put("RegistrationStatus", "REJECTED");
             selectedOfficer.put("AssignedProject", "");
             System.out.println("❌ Officer registration rejected.");
@@ -541,8 +553,6 @@ public class ManagerMenu {
         CsvUtil.write("data/ProjectList.csv", projectList);
         CsvUtil.write("data/OfficerList.csv", officerList);
     }
-    
-    
     
     private static void viewApplicantApplications(HDBManager manager) {
         List<Map<String, String>> applicants = CsvUtil.read("data/ApplicantList.csv");
@@ -641,7 +651,6 @@ public class ManagerMenu {
         }
     
         Map<String, String> selectedApp = pendingApps.get(choice - 1);
-        String applicantNRIC = selectedApp.get("NRIC");
         String projectName = selectedApp.get("AppliedProjectName");
         String flatType = selectedApp.get("FlatTypeApplied");
     
@@ -661,8 +670,16 @@ public class ManagerMenu {
     
         System.out.print("Approve or Reject this application? (A/R): ");
         String decision = sc.nextLine().trim().toUpperCase();
+       
     
         if (decision.equals("A")) {
+
+            System.out.print("Confirm approval for " + selectedApp.get("Name") + " (Y/N): ");
+            if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
+                System.out.println("❌ Action cancelled.");
+                return;
+            }
+
             // Check flat availability
             String unitKey = flatType.equalsIgnoreCase("2-Room")
                     ? "Number of units for Type 1"
@@ -680,6 +697,11 @@ public class ManagerMenu {
             System.out.println("✅ Application approved and flat reserved.");
     
         } else if (decision.equals("R")) {
+            System.out.print("Confirm rejection for " + selectedApp.get("Name") + " (Y/N): ");
+            if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
+                System.out.println("❌ Rejection cancelled.");
+                return;
+            }
             selectedApp.put("ApplicationStatus", "UNSUCCESSFUL");
             System.out.println("❌ Application rejected.");
         } else {

@@ -134,7 +134,14 @@ public class ApplicantMenu {
             System.out.println("❌ No available units for " + flatType + " in this project.");
             return;
         }
+        
+        System.out.print("Submit application for " + selected.getProjectName() + " (" + flatType + ")? (Y/N): ");
+        if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
+            System.out.println("❌ Application cancelled.");
+            return;
+        }
 
+        
         boolean success = applicant.applyForProject(selected, flatType);
         if (success) {
             System.out.println("✅ Application submitted for " + selected.getProjectName() +
@@ -143,6 +150,7 @@ public class ApplicantMenu {
         } else {
             System.out.println("❌ Application failed.");
         }
+        
     }
 
     private static void viewApplication(Applicant applicant) {

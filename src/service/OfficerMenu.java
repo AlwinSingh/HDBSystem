@@ -129,7 +129,12 @@ public class OfficerMenu {
         }
     
         Project selected = availableForRegistration.get(choice - 1);
-    
+        
+        System.out.print("Confirm registration for " + selected.getProjectName() + "? (Y/N): ");
+        if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
+            System.out.println("❌ Registration cancelled.");
+            return;
+        }
         // Proceed with registration
         officer.setRegistrationStatus("PENDING");
         officer.setAssignedProjectByName(selected.getProjectName(), allProjects);
@@ -228,13 +233,12 @@ public class OfficerMenu {
         int choice;
         try {
             choice = Integer.parseInt(sc.nextLine().trim());
+            if (choice < 1 || choice > eligibleApplicants.size()) {
+                System.out.println("❌ Choice out of range.");
+                return;
+            }
         } catch (NumberFormatException e) {
             System.out.println("❌ Invalid input.");
-            return;
-        }
-    
-        if (choice < 1 || choice > eligibleApplicants.size()) {
-            System.out.println("❌ Choice out of range.");
             return;
         }
     
@@ -246,11 +250,19 @@ public class OfficerMenu {
             return;
         }
     
+        // ✅ Confirm before booking
+        System.out.print("Confirm flat booking for " + selectedApplicant.get("Name") + "? (Y/N): ");
+        if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
+            System.out.println("❌ Booking cancelled.");
+            return;
+        }
+    
+        // ✅ Update applicant status and CSV
         selectedApplicant.put("ApplicationStatus", "BOOKED");
         assignedProject.decrementFlatCount(flatType);
         CsvUtil.write("data/ApplicantList.csv", applicantRows);
     
-        // Update ProjectList.csv
+        // ✅ Update ProjectList.csv to include booked applicant NRIC and Officer name
         List<Map<String, String>> projects = CsvUtil.read("data/ProjectList.csv");
         for (Map<String, String> project : projects) {
             if (project.get("Project Name").equalsIgnoreCase(assignedProject.getProjectName())) {
@@ -258,16 +270,15 @@ public class OfficerMenu {
                 String existingNric = project.getOrDefault("ApplicantNRICs", "").trim();
                 Set<String> nricSet = new LinkedHashSet<>(Arrays.asList(existingNric.split(" ")));
                 nricSet.add(selectedApplicant.get("NRIC"));
-                nricSet.remove(""); // Remove any blanks
+                nricSet.remove(""); // clean blank
                 project.put("ApplicantNRICs", String.join(" ", nricSet));
     
-                // Update Officer field (optional, add booking officer’s name if needed)
+                // Update Officer field with the officer performing the booking
                 String existingNames = project.getOrDefault("Officer", "").trim();
                 Set<String> nameSet = new LinkedHashSet<>(Arrays.asList(existingNames.split(" ")));
                 nameSet.add(officer.getName());
                 nameSet.remove("");
                 project.put("Officer", String.join(" ", nameSet));
-    
                 break;
             }
         }
@@ -276,8 +287,6 @@ public class OfficerMenu {
         System.out.println("✅ Flat booked for " + selectedApplicant.get("Name") +
                 " (" + flatType + "). Status updated to BOOKED.");
     }
-    
-    
     
     private static void generateReceipt(HDBOfficer officer, Scanner sc) {
         Project assignedProject = officer.getAssignedProject();
