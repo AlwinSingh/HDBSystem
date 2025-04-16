@@ -42,7 +42,7 @@ public class ManagerMenu {
             System.out.println(" [12] 📊 Generate Booking Reports");
 
             System.out.println("\n🗃 Enquiries");
-            System.out.println("13. View & reply to enquiries for my projects");
+            System.out.println(" [13]. View & reply to enquiries for my projects");
 
             System.out.println("\n [0] 🚪 Logout");
             System.out.print("Enter your choice: ");
@@ -503,7 +503,7 @@ public class ManagerMenu {
         nameSet.remove("");
         project.put("Officer", String.join(" ", nameSet));
     
-        officer.put("RegistrationStatus", "APPROVED");
+        officer.put("RegistrationStatus", "SUCESSFUL");
         System.out.println("✅ Officer approved and added to project.");
     }
     
@@ -718,7 +718,6 @@ public class ManagerMenu {
 
         List<Enquiry> myEnquiries = all.stream()
             .filter(e -> managedProjects.contains(e.getProjectName()))
-            .filter(e -> !e.isClosed())
             .toList();
 
         if (myEnquiries.isEmpty()) {

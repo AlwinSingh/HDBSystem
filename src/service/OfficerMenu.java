@@ -98,14 +98,17 @@ public class OfficerMenu {
             System.out.println("❌ No assigned project.");
             return;
         }
-
+    
         System.out.println("\n📌 Assigned Project Details:");
-        System.out.println("🏢 Name: " + assigned.getProjectName());
-        System.out.println("📍 Location: " + assigned.getNeighborhood());
-        System.out.println("🏠 2-Room Available: " + assigned.getRemainingFlats("2-Room"));
-        System.out.println("🏠 3-Room Available: " + assigned.getRemainingFlats("3-Room"));
-        System.out.println("📅 Period: " + assigned.getOpenDate() + " to " + assigned.getCloseDate());
-    }
+        System.out.println("🏢 Project Name      : " + assigned.getProjectName());
+        System.out.println("📍 Neighborhood      : " + assigned.getNeighborhood());
+        System.out.println("🧍 Officer Slots     : " + assigned.getOfficerSlots());
+        System.out.println("🏠 2-Room Units      : " + assigned.getRemainingFlats("2-Room"));
+        System.out.println("🏠 3-Room Units      : " + assigned.getRemainingFlats("3-Room"));
+        System.out.println("📅 Application Period: " + assigned.getOpenDate() + " to " + assigned.getCloseDate());
+        System.out.println("👀 Visible to Public : " + (assigned.isVisible() ? "Yes ✅" : "No ❌"));
+        System.out.println("📊 Your Registration : " + officer.getRegistrationStatus());
+    } 
 
     private static void bookFlat(HDBOfficer officer, Scanner sc) {
         Project assigned = officer.getAssignedProject();
@@ -113,56 +116,71 @@ public class OfficerMenu {
             System.out.println("❌ No assigned project.");
             return;
         }
-
+    
+        if ("PENDING".equalsIgnoreCase(officer.getRegistrationStatus())) {
+            System.out.println("⚠️ You cannot perform bookings as your registration to this project is still pending approval.");
+            return;
+        }
+    
         List<Applicant> applicants = ApplicantCsvMapper.loadAll(APPLICANT_PATH);
         List<Applicant> pending = applicants.stream()
             .filter(a -> a.getApplication() != null)
-            .filter(a -> a.getApplication().getProject().equals(assigned))
+            .filter(a -> a.getApplication().getProject().getProjectName().equalsIgnoreCase(assigned.getProjectName()))
             .filter(a -> "SUCCESSFUL".equalsIgnoreCase(a.getApplication().getStatus()))
             .collect(Collectors.toList());
-
+    
         if (pending.isEmpty()) {
             System.out.println("❌ No applicants ready for booking.");
             return;
         }
-
+    
         System.out.println("\n📋 Eligible Applicants:");
         for (int i = 0; i < pending.size(); i++) {
             Applicant a = pending.get(i);
             System.out.printf("[%d] %s (NRIC: %s)\n", i + 1, a.getName(), a.getNric());
         }
-
+    
         System.out.print("Select applicant to book: ");
         try {
             int idx = Integer.parseInt(sc.nextLine().trim()) - 1;
+            if (idx < 0 || idx >= pending.size()) throw new IndexOutOfBoundsException();
+    
             Applicant selected = pending.get(idx);
             String flatType = selected.getApplication().getFlatType();
+    
             officer.bookFlat(selected.getApplication(), flatType);
+            selected.getApplication().setStatus("BOOKED"); // ✅ Update status here
             ApplicantCsvMapper.updateApplicant(APPLICANT_PATH, selected);
             ProjectCsvMapper.saveAll(PROJECT_PATH, ProjectCsvMapper.loadAll(PROJECT_PATH));
+    
             System.out.println("✅ Booking successful.");
         } catch (Exception e) {
             System.out.println("❌ Invalid booking.");
         }
     }
-
+    
     private static void handleEnquiries(HDBOfficer officer, Scanner sc) {
         Project assignedProject = officer.getAssignedProject();
         if (assignedProject == null) {
             System.out.println("❌ No assigned project.");
             return;
         }
-
+    
+        if (!"SUCCESSFUL".equalsIgnoreCase(officer.getRegistrationStatus())) {
+            System.out.println("⚠️ You are not authorized to view or reply to enquiries until your registration is approved.");
+            return;
+        }
+    
         List<Enquiry> allEnquiries = EnquiryCsvMapper.loadAll(ENQUIRY_PATH);
         List<Enquiry> projectEnquiries = allEnquiries.stream()
             .filter(e -> e.getProject().getProjectName().equalsIgnoreCase(assignedProject.getProjectName()))
             .collect(Collectors.toList());
-
+    
         if (projectEnquiries.isEmpty()) {
             System.out.println("📭 No enquiries found for your project.");
             return;
         }
-
+    
         System.out.println("\n📬 Enquiries for Project: " + assignedProject.getProjectName());
         for (int i = 0; i < projectEnquiries.size(); i++) {
             Enquiry e = projectEnquiries.get(i);
@@ -171,25 +189,32 @@ public class OfficerMenu {
                 System.out.println("    💬 Latest Reply: " + e.getReplies().get(e.getReplies().size() - 1));
             }
         }
-
+    
         System.out.print("Select an enquiry to reply (or 0 to cancel): ");
         try {
             int idx = Integer.parseInt(sc.nextLine().trim());
             if (idx == 0) return;
             if (idx < 1 || idx > projectEnquiries.size()) throw new IndexOutOfBoundsException();
-
+    
             Enquiry selected = projectEnquiries.get(idx - 1);
+            if (selected.isClosed()) {
+                System.out.println("⚠️ This enquiry is already closed. You cannot reply.");
+                return;
+            }
+            
             System.out.print("Enter your reply: ");
             String reply = sc.nextLine().trim();
-
-            selected.replyFromOfficer(reply);  // ✅ Abstracted into Enquiry
+            
+            selected.replyFromOfficer(reply);
             EnquiryCsvMapper.saveAll(ENQUIRY_PATH, allEnquiries);
-            System.out.println("✅ Reply sent and enquiry marked as closed.");
-
+            System.out.println("✅ Reply sent and enquiry marked as CLOSED.");
+            
+    
         } catch (Exception e) {
             System.out.println("❌ Invalid selection.");
         }
     }
+    
 
     private static void generateReceipt(HDBOfficer officer) {
         System.out.println("\n🧾 Generate Receipt: Work in Progress...");

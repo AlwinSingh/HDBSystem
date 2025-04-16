@@ -71,26 +71,32 @@ public class EnquireService {
         List<Enquiry> own = all.stream()
                 .filter(e -> e.getApplicantNric().equalsIgnoreCase(applicant.getNric()))
                 .toList();
-
+    
         if (own.isEmpty()) {
             System.out.println("❌ No enquiries found.");
             return;
         }
-
+    
         for (Enquiry e : own) {
             System.out.println("──────────────────────────");
             System.out.println("🆔 ID: " + e.getEnquiryId());
             System.out.println("🏠 Project: " + e.getProjectName());
             System.out.println("📝 Content: " + e.getContent());
             System.out.println("📌 Status: " + e.getStatus());
+    
             if (e.getReplies().isEmpty()) {
                 System.out.println("💬 Replies: No replies yet.");
             } else {
                 System.out.println("💬 Replies:");
                 for (String r : e.getReplies()) System.out.println("  - " + r);
+    
+                if (e.isClosed()) {
+                    System.out.println("🔒 This enquiry has been CLOSED after a reply from the HDB Personel \n Please submit another Enquiry.");
+                }
             }
         }
     }
+    
 
     public static void editOwnEnquiry(Applicant applicant, Scanner sc) {
         List<Enquiry> all = loadFromCSV();

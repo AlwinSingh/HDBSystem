@@ -1,4 +1,4 @@
 Project Name,Neighborhood,Number of units for Type 1,Number of units for Type 2,Officer Slot,Price2Room,Price3Room,Visible,OpenDate,CloseDate,LocationId,District,Town,Address,Latitude,Longitude,ManagerNRIC,ManagerName,OfficerNRICs,ApplicantNRICs
-Acacia Breeze,Yishun,199999,100000,1,350000.0,450000.0,true,2025-02-15,2026-03-20,101,North,Yishun,123 Acacia St,1.4267,103.8351,T8765432F,Michael,,
+Acacia Breeze,Yishun,199998,100000,0,350000.0,450000.0,true,2025-02-15,2026-03-20,101,North,Yishun,123 Acacia St,1.4267,103.8351,T8765432F,Michael,T2109876H,
 ABCD,Jurong,2,3,4,150000.0,250000.0,true,2025-05-15,2025-06-10,102,West,Jurong,88 ABCD Rd,1.3325,103.7437,T1234567G,Jessica,,
 Alweo,Jurong,4,6,5,200000.0,500000.0,true,2022-12-12,2023-01-10,103,West,Jurong,78 Alweo Rd,1.3301,103.75,T1234567G,Jessica,,
