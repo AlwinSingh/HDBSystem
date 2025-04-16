@@ -25,6 +25,14 @@ public abstract class User {
         System.out.println(name + " has logged out.");
     }
 
+    public String getPassword() {
+        return this.password;
+    }
+    
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    
     public void changePassword(String newPassword) {
         this.password = newPassword;
     }

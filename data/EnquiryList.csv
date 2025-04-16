@@ -1,1 +1,2 @@
-EnquiryId,Content,CreatedBy,Project,Replies
+EnquiryId,Content,Status,ApplicantNric,ApplicantName,ProjectName,Replies
+1,Is it long?,CLOSED,S1234567A,John,Acacia Breeze,Officer: Very Long indeed

@@ -8,12 +8,16 @@ public class ProjectLocation {
     private String district;
     private String town;
     private String address;
+    private double lat;
+    private double lng;
 
-    public ProjectLocation(int locationId, String district, String town, String address) {
+    public ProjectLocation(int locationId, String district, String town, String address, double lat, double lng) {
         this.locationId = locationId;
         this.district = district;
         this.town = town;
         this.address = address;
+        this.lat = lat;
+        this.lng = lng;
     }
 
     public String getFullAddress() {
@@ -21,9 +25,57 @@ public class ProjectLocation {
     }
 
     public List<String> getNearbyTransport() {
-        // TODO: Stub - return list of nearby transport options
+        // Stub - future implementation
         return new ArrayList<>();
     }
 
-    // Getters and Setters
+    // Getters
+    public int getLocationId() {
+        return locationId;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public String getTown() {
+        return town;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public double getLat() {
+        return lat;
+    }
+
+    public double getLng() {
+        return lng;
+    }
+
+    // Setters
+    public void setLocationId(int locationId) {
+        this.locationId = locationId;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
+    }
+
+    public void setTown(String town) {
+        this.town = town;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public void setLat(double lat) {
+        this.lat = lat;
+    }
+
+    public void setLng(double lng) {
+        this.lng = lng;
+    }
 }

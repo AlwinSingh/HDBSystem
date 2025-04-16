@@ -1,7 +1,7 @@
 package src.service;
 
-import src.model.HDBManager;
-import src.util.CsvUtil;
+import src.model.*;
+import src.util.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -13,28 +13,28 @@ public class ManagerMenu {
         Scanner sc = new Scanner(System.in);
 
         while (true) {
-            System.out.println("\n===== 🧱 HDB Manager Dashboard =====");
+            System.out.println("\n===== \uD83E\uDEA1 HDB Manager Dashboard =====");
             System.out.println("Welcome, Manager " + manager.getName());
-            System.out.println("\n🏗 Project Management");
+            System.out.println("\n\uD83C\uDFD7 Project Management");
             System.out.println("1. Create a new project");
             System.out.println("2. Edit a project");
             System.out.println("3. Delete a project");
             System.out.println("4. Toggle project visibility");
 
-            System.out.println("\n📋 Project Viewing");
+            System.out.println("\n\uD83D\uDCCB Project Viewing");
             System.out.println("5. View all projects");
             System.out.println("6. View my projects");
 
-            System.out.println("\n🧑‍💼 Officer Registration");
+            System.out.println("\n\uD83E\uDDD1‍\uD83D\uDCBC Officer Registration");
             System.out.println("7. View officer registrations");
             System.out.println("8. Approve/reject officer registration");
 
-            System.out.println("\n🧑‍💻 Applicant Applications");
+            System.out.println("\n\uD83E\uDDD1‍\uD83D\uDCBB Applicant Applications");
             System.out.println("9. View applicant applications");
             System.out.println("10. Approve/reject applicant applications");
             System.out.println("11. Approve/reject withdrawal requests");
 
-            System.out.println("\n📈 Reporting");
+            System.out.println("\n\uD83D\uDCC8 Reporting");
             System.out.println("12. Generate applicant booking reports");
 
             System.out.println("\n0. Logout");
@@ -56,7 +56,7 @@ public class ManagerMenu {
                 case "11" -> handleWithdrawalRequests(manager, sc);
                 case "12" -> generateReports(manager, sc);
                 case "0" -> {
-                    System.out.println("👋 Logging out...");
+                    System.out.println("\uD83D\uDC4B Logging out...");
                     return;
                 }
                 default -> System.out.println("❌ Invalid input. Try again.");
@@ -65,56 +65,56 @@ public class ManagerMenu {
     }
 
     private static void createProject(HDBManager manager, Scanner sc) {
-        System.out.println("\n📌 Create New Project");
-    
+        System.out.println("\n\uD83D\uDCCC Create New Project");
+
         System.out.print("Enter project name: ");
         String name = sc.nextLine().trim();
         if (name.isBlank()) {
             System.out.println("❌ Project name cannot be empty.");
             return;
         }
-    
+
         System.out.print("Enter neighborhood: ");
         String neighborhood = sc.nextLine().trim();
         if (neighborhood.isBlank()) {
             System.out.println("❌ Neighborhood cannot be empty.");
             return;
         }
-    
+
         int units2, units3, officerSlots;
         double price2, price3;
         try {
             System.out.print("Enter number of 2-Room units: ");
             units2 = Integer.parseInt(sc.nextLine());
             if (units2 <= 0) throw new IllegalArgumentException();
-    
+
             System.out.print("Enter number of 3-Room units: ");
             units3 = Integer.parseInt(sc.nextLine());
             if (units3 <= 0) throw new IllegalArgumentException();
-    
+
             System.out.print("Enter selling price for 2-Room: ");
             price2 = Double.parseDouble(sc.nextLine());
-    
+
             System.out.print("Enter selling price for 3-Room: ");
             price3 = Double.parseDouble(sc.nextLine());
-    
+
             System.out.print("Enter number of officer slots (max 10): ");
             officerSlots = Integer.parseInt(sc.nextLine());
             if (officerSlots <= 0 || officerSlots > 10) {
                 System.out.println("❌ Officer slots must be between 1 and 10.");
                 return;
             }
-    
+
         } catch (Exception e) {
             System.out.println("❌ Invalid numeric input.");
             return;
         }
-    
+
         System.out.print("Enter application opening date (M/d/yyyy): ");
         String openDateStr = sc.nextLine();
         System.out.print("Enter application closing date (M/d/yyyy): ");
         String closeDateStr = sc.nextLine();
-    
+
         LocalDate openDate, closeDate;
         try {
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("M/d/yyyy");
@@ -128,53 +128,43 @@ public class ManagerMenu {
             System.out.println("❌ Invalid date format. Use M/d/yyyy.");
             return;
         }
-    
-        List<Map<String, String>> all = CsvUtil.read("data/ProjectList.csv");
-    
-        Map<String, String> row = new LinkedHashMap<>();
-        row.put("Project Name", name);
-        row.put("Neighborhood", neighborhood);
-        row.put("Number of units for Type 1", String.valueOf(units2));
-        row.put("Number of units for Type 2", String.valueOf(units3));
-        row.put("Selling price for Type 1", String.valueOf(price2));
-        row.put("Selling price for Type 2", String.valueOf(price3));
-        row.put("Application opening date", openDateStr);
-        row.put("Application closing date", closeDateStr);
-        row.put("Officer Slot", String.valueOf(officerSlots));
-        row.put("Visibility", "true");
-        row.put("Manager", manager.getName());
-        row.put("ManagerNRIC", manager.getNric());
 
-    
-        all.add(row);
-        CsvUtil.write("data/ProjectList.csv", all);
-    
+        ProjectLocation location = new ProjectLocation(0, "", neighborhood, "", 0, 0);
+        Project newProject = new Project(name, neighborhood, openDate, closeDate, officerSlots, units2, units3, location);
+        newProject.setPrice2Room(price2);
+        newProject.setPrice3Room(price3);
+        newProject.openProject();
+        newProject.setManager(manager);
+
+        List<Project> allProjects = ProjectCsvMapper.loadAll("data/ProjectList.csv");
+        allProjects.add(newProject);
+        ProjectCsvMapper.saveAll("data/ProjectList.csv", allProjects);
+
         System.out.println("✅ Project created and saved successfully!");
     }
     
 
     private static void editProject(HDBManager manager, Scanner sc) {
-        List<Map<String, String>> projects = CsvUtil.read("data/ProjectList.csv");
-        List<Map<String, String>> myProjects = new ArrayList<>();
-    
-        for (Map<String, String> row : projects) {
-            if (manager.getNric().equalsIgnoreCase(row.get("ManagerNRIC"))) {
-                myProjects.add(row);
+        List<Project> allProjects = ProjectCsvMapper.loadAll("data/ProjectList.csv");
+        List<Project> myProjects = new ArrayList<>();
+        for (Project p : allProjects) {
+            if (p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric())) {
+                myProjects.add(p);
             }
         }
-    
+
         if (myProjects.isEmpty()) {
             System.out.println("❌ You have no projects to edit.");
             return;
         }
-    
+
         System.out.println("\n🛠 Your Projects:");
         for (int i = 0; i < myProjects.size(); i++) {
             System.out.printf("[%d] %s (%s)\n", i + 1,
-                    myProjects.get(i).get("Project Name"),
-                    myProjects.get(i).get("Neighborhood"));
+                    myProjects.get(i).getProjectName(),
+                    myProjects.get(i).getNeighborhood());
         }
-    
+
         System.out.print("Select a project to edit: ");
         int index;
         try {
@@ -184,63 +174,63 @@ public class ManagerMenu {
             System.out.println("❌ Invalid selection.");
             return;
         }
-    
-        Map<String, String> project = myProjects.get(index);
-    
+
+        Project project = myProjects.get(index);
+
         System.out.println("Leave field blank to keep current value.");
-    
-        System.out.print("New neighborhood [" + project.get("Neighborhood") + "]: ");
+
+        System.out.print("New neighborhood [" + project.getNeighborhood() + "]: ");
         String input = sc.nextLine();
-        if (!input.isBlank()) project.put("Neighborhood", input);
-    
+        if (!input.isBlank()) project.setNeighborhood(input);
+
         try {
-            System.out.print("New 2-Room units [" + project.get("Number of units for Type 1") + "]: ");
+            System.out.print("New 2-Room units [" + project.getRemainingFlats("2-Room") + "]: ");
             input = sc.nextLine();
             if (!input.isBlank() && Integer.parseInt(input) > 0)
-                project.put("Number of units for Type 1", input);
-    
-            System.out.print("New 3-Room units [" + project.get("Number of units for Type 2") + "]: ");
+                project.setAvailableFlats2Room(Integer.parseInt(input));
+
+            System.out.print("New 3-Room units [" + project.getRemainingFlats("3-Room") + "]: ");
             input = sc.nextLine();
             if (!input.isBlank() && Integer.parseInt(input) > 0)
-                project.put("Number of units for Type 2", input);
-    
-            System.out.print("New price for 2-Room [" + project.get("Selling price for Type 1") + "]: ");
+                project.setAvailableFlats3Room(Integer.parseInt(input));
+
+            System.out.print("New price for 2-Room [" + project.getPrice2Room() + "]: ");
             input = sc.nextLine();
             if (!input.isBlank() && Double.parseDouble(input) >= 0)
-                project.put("Selling price for Type 1", input);
-    
-            System.out.print("New price for 3-Room [" + project.get("Selling price for Type 2") + "]: ");
+                project.setPrice2Room(Double.parseDouble(input));
+
+            System.out.print("New price for 3-Room [" + project.getPrice3Room() + "]: ");
             input = sc.nextLine();
             if (!input.isBlank() && Double.parseDouble(input) >= 0)
-                project.put("Selling price for Type 2", input);
-    
-            System.out.print("New opening date [" + project.get("Application opening date") + "]: ");
+                project.setPrice3Room(Double.parseDouble(input));
+
+            System.out.print("New opening date [" + project.getOpenDate() + "]: ");
             String openDate = sc.nextLine();
-            System.out.print("New closing date [" + project.get("Application closing date") + "]: ");
+            System.out.print("New closing date [" + project.getCloseDate() + "]: ");
             String closeDate = sc.nextLine();
             if (!openDate.isBlank() && !closeDate.isBlank()) {
                 DateTimeFormatter fmt = DateTimeFormatter.ofPattern("M/d/yyyy");
                 LocalDate o = LocalDate.parse(openDate, fmt);
                 LocalDate c = LocalDate.parse(closeDate, fmt);
                 if (o.isBefore(c)) {
-                    project.put("Application opening date", openDate);
-                    project.put("Application closing date", closeDate);
+                    project.setOpenDate(o);
+                    project.setCloseDate(c);
                 } else {
                     System.out.println("⚠️ Opening date must be before closing date. Keeping existing values.");
                 }
             }
-    
-            System.out.print("New officer slots [" + project.get("Officer Slot") + "]: ");
+
+            System.out.print("New officer slots [" + project.getOfficerSlots() + "]: ");
             input = sc.nextLine();
             if (!input.isBlank()) {
                 int slots = Integer.parseInt(input);
                 if (slots > 0 && slots <= 10)
-                    project.put("Officer Slot", input);
+                    project.setOfficerSlots(slots);
                 else
                     System.out.println("⚠️ Officer slots must be between 1 and 10. Keeping existing value.");
             }
-    
-            CsvUtil.write("data/ProjectList.csv", projects);
+
+            ProjectCsvMapper.saveAll("data/ProjectList.csv", allProjects);
             System.out.println("✅ Project updated successfully.");
         } catch (Exception e) {
             System.out.println("❌ Invalid input. Edit aborted.");
@@ -248,27 +238,21 @@ public class ManagerMenu {
     }
 
     private static void deleteProject(HDBManager manager, Scanner sc) {
-        List<Map<String, String>> allProjects = CsvUtil.read("data/ProjectList.csv");
-        List<Map<String, String>> myProjects = new ArrayList<>();
-
-        for (Map<String, String> row : allProjects) {
-            if (manager.getNric().equalsIgnoreCase(row.getOrDefault("ManagerNRIC", ""))) {
-                myProjects.add(row);
-            }
-        }
-
+        List<Project> allProjects = ProjectCsvMapper.loadAll("data/ProjectList.csv");
+        List<Project> myProjects = allProjects.stream()
+            .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
+            .toList();
+    
         if (myProjects.isEmpty()) {
             System.out.println("❌ You have no projects to delete.");
             return;
         }
-
+    
         System.out.println("\n🗑 Your Projects:");
         for (int i = 0; i < myProjects.size(); i++) {
-            System.out.printf("[%d] %s (%s)\n", i + 1,
-                    myProjects.get(i).get("Project Name"),
-                    myProjects.get(i).get("Neighborhood"));
+            System.out.printf("[%d] %s (%s)\n", i + 1, myProjects.get(i).getProjectName(), myProjects.get(i).getNeighborhood());
         }
-
+    
         System.out.print("Select a project to delete: ");
         int index;
         try {
@@ -278,40 +262,31 @@ public class ManagerMenu {
             System.out.println("❌ Invalid selection.");
             return;
         }
-
-        Map<String, String> projectToDelete = myProjects.get(index);
-
-        // Check for assigned officers or applicants
-        String officers = projectToDelete.getOrDefault("OfficerNRICs", "").trim();
-        String applicants = projectToDelete.getOrDefault("ApplicantNRICs", "").trim();
-        if (!officers.isEmpty() || !applicants.isEmpty()) {
+    
+        Project projectToDelete = myProjects.get(index);
+    
+        if (!projectToDelete.getOfficerNRICs().isEmpty() || !projectToDelete.getApplicantNRICs().isEmpty()) {
             System.out.println("⚠️ Project cannot be deleted because it has assigned officers or applicants.");
             System.out.println("🛑 Please remove those associations before deletion.");
             return;
         }
-
+    
         System.out.print("Are you sure you want to delete this project? (Y/N): ");
-        String confirm = sc.nextLine().trim();
-        if (!confirm.equalsIgnoreCase("Y")) {
+        if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
             System.out.println("🔙 Deletion cancelled.");
             return;
         }
-
-        // Remove the project from the full list
+    
         allProjects.remove(projectToDelete);
-        CsvUtil.write("data/ProjectList.csv", allProjects);
+        ProjectCsvMapper.saveAll("data/ProjectList.csv", allProjects);
         System.out.println("✅ Project deleted successfully.");
     }
-
-    private static void toggleVisibility(HDBManager manager, Scanner sc) {
-        List<Map<String, String>> allProjects = CsvUtil.read("data/ProjectList.csv");
-        List<Map<String, String>> myProjects = new ArrayList<>();
     
-        for (Map<String, String> row : allProjects) {
-            if (manager.getNric().equalsIgnoreCase(row.getOrDefault("ManagerNRIC", ""))) {
-                myProjects.add(row);
-            }
-        }
+    private static void toggleVisibility(HDBManager manager, Scanner sc) {
+        List<Project> allProjects = ProjectCsvMapper.loadAll("data/ProjectList.csv");
+        List<Project> myProjects = allProjects.stream()
+            .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
+            .toList();
     
         if (myProjects.isEmpty()) {
             System.out.println("❌ You have no projects to toggle visibility.");
@@ -320,9 +295,7 @@ public class ManagerMenu {
     
         System.out.println("\n🔁 Your Projects:");
         for (int i = 0; i < myProjects.size(); i++) {
-            String projectName = myProjects.get(i).get("Project Name");
-            String vis = myProjects.get(i).get("Visibility");
-            System.out.printf("[%d] %s - Visibility: %s\n", i + 1, projectName, vis);
+            System.out.printf("[%d] %s - Visibility: %s\n", i + 1, myProjects.get(i).getProjectName(), myProjects.get(i).isVisible());
         }
     
         System.out.print("Select a project to toggle visibility: ");
@@ -335,73 +308,74 @@ public class ManagerMenu {
             return;
         }
     
-        Map<String, String> selectedProject = myProjects.get(index);
-        String currentVis = selectedProject.getOrDefault("Visibility", "true").trim().toLowerCase();
-        String newVis = currentVis.equals("true") ? "false" : "true";
+        Project selectedProject = myProjects.get(index);
+        boolean currentVis = selectedProject.isVisible();
+        boolean newVis = !currentVis;
     
         System.out.printf("Are you sure you want to change visibility from %s to %s? (Y/N): ",
                 currentVis, newVis);
-        String confirm = sc.nextLine().trim();
-        if (!confirm.equalsIgnoreCase("Y")) {
+        if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
             System.out.println("🔙 Toggle cancelled.");
             return;
         }
     
-        selectedProject.put("Visibility", newVis);
-        CsvUtil.write("data/ProjectList.csv", allProjects);
-        System.out.println("✅ Visibility updated. New visibility: " + newVis);
+        if (newVis) selectedProject.openProject();
+        else selectedProject.closeProject();
+    
+        ProjectCsvMapper.saveAll("data/ProjectList.csv", allProjects);
+        System.out.println("✅ Visibility updated. New visibility: " + selectedProject.isVisible());
     }
     
-    private static void viewAllProjects() {
-        List<Map<String, String>> projects = CsvUtil.read("data/ProjectList.csv");
     
+    private static void viewAllProjects() {
+        List<Project> projects = ProjectCsvMapper.loadAll("data/ProjectList.csv");
+
         if (projects.isEmpty()) {
             System.out.println("❌ No projects found.");
             return;
         }
-    
+
         System.out.println("\n📋 All Projects in the System:");
         int count = 1;
-        for (Map<String, String> row : projects) {
-            System.out.printf("\n[%d] 📌 %s (%s)\n", count++, row.get("Project Name"), row.get("Neighborhood"));
-            System.out.println("   🛏️ 2-Room Units: " + row.get("Number of units for Type 1"));
-            System.out.println("   🛏️ 3-Room Units: " + row.get("Number of units for Type 2"));
-            System.out.println("   💰 Price 2-Room: $" + row.get("Selling price for Type 1"));
-            System.out.println("   💰 Price 3-Room: $" + row.get("Selling price for Type 2"));
-            System.out.println("   📅 Application Period: " + row.get("Application opening date") + " to " + row.get("Application closing date"));
-            System.out.println("   👨‍💼 Manager: " + row.get("Manager"));
-            System.out.println("   🧍 Officer Slots: " + row.get("Officer Slot"));
-            System.out.println("   👀 Visible to public: " + row.get("Visibility"));
+        for (Project p : projects) {
+            System.out.printf("\n[%d] 📌 %s (%s)\n", count++, p.getProjectName(), p.getNeighborhood());
+            System.out.println("   🛏️ 2-Room Units: " + p.getRemainingFlats("2-Room"));
+            System.out.println("   🛏️ 3-Room Units: " + p.getRemainingFlats("3-Room"));
+            System.out.println("   💰 Price 2-Room: $" + p.getPrice2Room());
+            System.out.println("   💰 Price 3-Room: $" + p.getPrice3Room());
+            System.out.println("   📅 Application Period: " + p.getOpenDate() + " to " + p.getCloseDate());
+            System.out.println("   👨‍💼 Manager: " + (p.getManager() != null ? p.getManager().getName() : "N/A"));
+            System.out.println("   🧍 Officer Slots: " + p.getOfficerSlots());
+            System.out.println("   👀 Visible to public: " + p.isVisible());
         }
     }
-    
+
     private static void viewMyProjects(HDBManager manager) {
-        List<Map<String, String>> projects = CsvUtil.read("data/ProjectList.csv");
-        String managerNRIC = manager.getNric();
-    
-        List<Map<String, String>> myProjects = new ArrayList<>();
-        for (Map<String, String> row : projects) {
-            if (managerNRIC.equalsIgnoreCase(row.get("ManagerNRIC"))) {
-                myProjects.add(row);
+        List<Project> projects = ProjectCsvMapper.loadAll("data/ProjectList.csv");
+        List<Project> myProjects = new ArrayList<>();
+
+        for (Project p : projects) {
+            if (p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric())) {
+                myProjects.add(p);
             }
         }
-    
+
         if (myProjects.isEmpty()) {
-            System.out.println("❌ You haven't created any projects yet.");
+            System.out.println("❌ You haven’t created any projects yet.");
             return;
         }
-    
+
         System.out.println("\n📋 Your Projects:");
         int count = 1;
-        for (Map<String, String> row : myProjects) {
-            System.out.printf("\n[%d] 📌 %s (%s)\n", count++, row.get("Project Name"), row.get("Neighborhood"));
-            System.out.println("   🛏️ 2-Room Units: " + row.get("Number of units for Type 1"));
-            System.out.println("   🛏️ 3-Room Units: " + row.get("Number of units for Type 2"));
-            System.out.println("   💰 Price 2-Room: $" + row.get("Selling price for Type 1"));
-            System.out.println("   💰 Price 3-Room: $" + row.get("Selling price for Type 2"));
-            System.out.println("   📅 Application Period: " + row.get("Application opening date") + " to " + row.get("Application closing date"));
-            System.out.println("   👀 Visibility: " + row.get("Visibility"));
-            System.out.println("   🧍 Officer Slots: " + row.get("Officer Slot"));
+        for (Project p : myProjects) {
+            System.out.printf("\n[%d] 📌 %s (%s)\n", count++, p.getProjectName(), p.getNeighborhood());
+            System.out.println("   🛏️ 2-Room Units: " + p.getRemainingFlats("2-Room"));
+            System.out.println("   🛏️ 3-Room Units: " + p.getRemainingFlats("3-Room"));
+            System.out.println("   💰 Price 2-Room: $" + p.getPrice2Room());
+            System.out.println("   💰 Price 3-Room: $" + p.getPrice3Room());
+            System.out.println("   📅 Application Period: " + p.getOpenDate() + " to " + p.getCloseDate());
+            System.out.println("   👀 Visibility: " + p.isVisible());
+            System.out.println("   🧍 Officer Slots: " + p.getOfficerSlots());
         }
     }
     

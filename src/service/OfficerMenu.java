@@ -1,307 +1,198 @@
 package src.service;
+
 import src.model.*;
-import src.util.CsvUtil;
+import src.util.ApplicantCsvMapper;
+import src.util.EnquiryCsvMapper;
+import src.util.OfficerCsvMapper;
+import src.util.ProjectCsvMapper;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class OfficerMenu {
 
+    private static final String APPLICANT_PATH = "data/ApplicantList.csv";
+    private static final String OFFICER_PATH = "data/OfficerList.csv";
+    private static final String PROJECT_PATH = "data/ProjectList.csv";
+    private static final String ENQUIRY_PATH = "data/EnquiryList.csv";
+
     public static void show(HDBOfficer officer) {
         Scanner sc = new Scanner(System.in);
-    
         while (true) {
-            System.out.println("\n===== 🛠️ Officer Dashboard =====");
-            System.out.println("Hello, Officer " + officer.getName());    
-            System.out.println("\n1. View registration status");
-            System.out.println("2. Register for a project");
+            System.out.println("\n===== 🧑‍💼 HDB Officer Dashboard =====");
+            System.out.println("Welcome, Officer " + officer.getName());
+            System.out.println("1. View registration status");
+            System.out.println("2. Register for project");
             System.out.println("3. View assigned project details");
-            System.out.println("4. View & reply to enquiries");
-            System.out.println("5. Book flat for applicant");
-            System.out.println("6. Generate receipt for applicant");
-            System.out.println("0. Back");
+            System.out.println("4. Book flat for applicant");
+            System.out.println("5. Generate receipt for applicant");
+            System.out.println("6. View & reply to enquiries");
+            System.out.println("0. Logout");
             System.out.print("Enter choice: ");
-    
-            String choice = sc.nextLine().trim();
-    
-            switch (choice) {
+
+            switch (sc.nextLine().trim()) {
                 case "1" -> viewRegistrationStatus(officer);
                 case "2" -> registerForProject(officer, sc);
                 case "3" -> viewAssignedProjectDetails(officer);
-                case "4" -> replyToEnquiries(officer, sc);
-                case "5" -> bookFlat(officer, sc);
-                case "6" -> generateReceipt(officer, sc);
+                case "4" -> bookFlat(officer, sc);
+                case "5" -> generateReceipt(officer);
+                case "6" -> handleEnquiries(officer, sc);
                 case "0" -> {
-                    System.out.println("🔙 Returning to role selection...");
+                    System.out.println("👋 Logging out...");
                     return;
                 }
-                default -> System.out.println("❌ Invalid input. Try again.");
+                default -> System.out.println("❌ Invalid input.");
             }
         }
     }
-    
 
     private static void viewRegistrationStatus(HDBOfficer officer) {
-        System.out.println("\n===== 📋 Officer Registration Status =====");
-    
-        String regStatus = officer.getRegistrationStatus();
-        Project assigned = officer.getAssignedProject();
-    
-        if (regStatus == null || regStatus.isBlank()) {
-            System.out.println("🔍 You have not registered for any project.");
-            System.out.println("💡 You may register for an open project from the Officer Dashboard.");
-            return;
-        }
-    
-        // Display project name or fallback
-        String projectName = (assigned != null && assigned.getProjectName() != null)
-                ? assigned.getProjectName()
-                : officer.getAssignedProject() != null
-                    ? officer.getAssignedProject().getProjectName()
-                    : "(Pending assignment)";
-        System.out.println("📌 Registered Project: " + projectName);
-    
-        // Interpret registration status
-        switch (regStatus.trim().toUpperCase()) {
-            case "PENDING" -> {
-                System.out.println("📊 Status: 🕒 Pending approval");
-                System.out.println("⏳ Your request is being reviewed by an HDB Manager.");
-                System.out.println("⛔ You may not register for another project until a decision is made.");
-            }
-            case "APPROVED" -> {
-                System.out.println("📊 Status: ✅ Approved");
-                System.out.println("🎯 You are officially assigned to this project.");
-                System.out.println("🚀 You may now handle flat bookings and enquiries.");
-            }
-            case "REJECTED" -> {
-                System.out.println("📊 Status: ❌ Rejected");
-                System.out.println("⚠️ Your previous registration was rejected by a manager.");
-                System.out.println("💡 You may register again for a different project.");
-            }
-            default -> {
-                System.out.println("📊 Status: " + regStatus);
-                System.out.println("⚠️ Unrecognized status. Please contact the system administrator.");
-            }
-        }
+        officer.viewOfficerRegistrationStatus();
     }
-    
 
     private static void registerForProject(HDBOfficer officer, Scanner sc) {
-        if (officer.getAssignedProject() != null || 
-            (officer.getRegistrationStatus() != null && officer.getRegistrationStatus().equalsIgnoreCase("PENDING"))) {
-            System.out.println("⚠️ You already have a pending or approved registration.");
-            System.out.println("❌ Cannot register for another project at this time.");
+        if (officer.getAssignedProject() != null) {
+            System.out.println("✅ You are already registered to project: " +
+                officer.getAssignedProject().getProjectName());
             return;
         }
     
-        List<Project> allProjects = ProjectLoader.loadProjects();
-    
-        List<Project> availableForRegistration = new ArrayList<>();
-        for (Project p : allProjects) {
-            if (p.isVisible()) {
-                availableForRegistration.add(p);
-            }
-        }
-    
-        if (availableForRegistration.isEmpty()) {
-            System.out.println("❌ No visible projects available for registration.");
-            return;
-        }
+        List<Project> projects = ProjectCsvMapper.loadAll(PROJECT_PATH);
     
         System.out.println("\n📋 Available Projects:");
-        for (int i = 0; i < availableForRegistration.size(); i++) {
-            Project p = availableForRegistration.get(i);
-            System.out.printf("[%d] %s (%s)\n", i + 1, p.getProjectName(), p.getNeighborhood());
+        List<Project> available = projects.stream()
+            .filter(p -> p.isVisible() && !p.getOfficerNRICs().contains(officer.getNric()))
+            .collect(Collectors.toList());
+    
+        if (available.isEmpty()) {
+            System.out.println("❌ No visible projects available.");
+            return;
         }
     
-        System.out.print("Enter project number to register: ");
-        String input = sc.nextLine();
-        int choice;
+        for (int i = 0; i < available.size(); i++) {
+            System.out.printf("[%d] %s (%s)\n", i + 1, available.get(i).getProjectName(), available.get(i).getNeighborhood());
+        }
     
+        System.out.print("Choose project number to register: ");
         try {
-            choice = Integer.parseInt(input);
-            if (choice < 1 || choice > availableForRegistration.size()) {
-                System.out.println("❌ Invalid choice.");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("❌ Invalid input. Please enter a number.");
-            return;
-        }
+            int idx = Integer.parseInt(sc.nextLine().trim()) - 1;
+            if (idx < 0 || idx >= available.size()) throw new IndexOutOfBoundsException();
     
-        Project selected = availableForRegistration.get(choice - 1);
-        
-        System.out.print("Confirm registration for " + selected.getProjectName() + "? (Y/N): ");
-        if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
-            System.out.println("❌ Registration cancelled.");
-            return;
+            Project selected = available.get(idx);
+            boolean registered = officer.registerToHandleProject(selected);
+            if (registered) {
+                OfficerCsvMapper.updateOfficer(OFFICER_PATH, officer);
+                System.out.println("✅ Registration submitted.");
+            } else {
+                System.out.println("❌ Could not register. Check your current assignment or application status.");
+            }
+    
+        } catch (Exception e) {
+            System.out.println("❌ Invalid selection.");
         }
-        // Proceed with registration
-        officer.setRegistrationStatus("PENDING");
-        officer.setAssignedProjectByName(selected.getProjectName(), allProjects);
-        CsvUtil.updateOfficerRegistration("data/OfficerList.csv", officer);
-        System.out.println("✅ Registration submitted for project: " + selected.getProjectName());
     }
     
-    
-
     private static void viewAssignedProjectDetails(HDBOfficer officer) {
         Project assigned = officer.getAssignedProject();
-        String regStatus = officer.getRegistrationStatus();
-    
         if (assigned == null) {
-            if ("PENDING".equalsIgnoreCase(regStatus)) {
-                System.out.println("\n🕒 Your registration is currently pending approval.");
-                System.out.println("⛔ You cannot register for another project until the current request is processed.");
-            } else {
-                System.out.println("❌ You are not assigned to any project.");
-            }
+            System.out.println("❌ No assigned project.");
             return;
         }
-    
-        System.out.println("\n===== 📊 Assigned Project Details =====");
-        System.out.println("🏠 Project Name: " + assigned.getProjectName());
-        System.out.println("📍 Neighborhood: " + assigned.getNeighborhood());
-        System.out.println("📅 Application Period: " + assigned.getOpenDate() + " to " + assigned.getCloseDate());
-        System.out.println("🔒 Visibility: " + (assigned.isVisible() ? "Visible to public" : "Hidden (Officer-only)"));
-        System.out.println("🛏️ 2-Room Units Available: " + assigned.getRemainingFlats("2-Room"));
-        System.out.println("🛏️ 3-Room Units Available: " + assigned.getRemainingFlats("3-Room"));
-        System.out.println("👨‍💼 Officer Slots: " + assigned.getOfficerSlots());
-    
-        // Clarify their current registration status
-        if ("PENDING".equalsIgnoreCase(regStatus)) {
-            System.out.println("📌 Status: 🕒 Registration pending approval");
-        } else if ("APPROVED".equalsIgnoreCase(regStatus)) {
-            System.out.println("📌 Status: ✅ Approved and actively assigned");
-        } else if ("REJECTED".equalsIgnoreCase(regStatus)) {
-            System.out.println("📌 Status: ❌ Registration rejected");
-        }
-    }
-    
-    
 
-    private static void replyToEnquiries(HDBOfficer officer, Scanner sc) {
-        Project assignedProject = officer.getAssignedProject();
-        String regStatus = officer.getRegistrationStatus();
-    
-        if (assignedProject == null || !"APPROVED".equalsIgnoreCase(regStatus)) {
-            System.out.println("❌ You must be approved and assigned to a project to reply to enquiries.");
-            return;
-        }
-    
-        // Placeholder for future implementation
-        System.out.println("💬 This feature will allow officers to view and respond to enquiries related to the project.");
-        System.out.println("🔧 (Coming Soon)");
+        System.out.println("\n📌 Assigned Project Details:");
+        System.out.println("🏢 Name: " + assigned.getProjectName());
+        System.out.println("📍 Location: " + assigned.getNeighborhood());
+        System.out.println("🏠 2-Room Available: " + assigned.getRemainingFlats("2-Room"));
+        System.out.println("🏠 3-Room Available: " + assigned.getRemainingFlats("3-Room"));
+        System.out.println("📅 Period: " + assigned.getOpenDate() + " to " + assigned.getCloseDate());
     }
-    
-    
 
     private static void bookFlat(HDBOfficer officer, Scanner sc) {
-        Project assignedProject = officer.getAssignedProject();
-        String regStatus = officer.getRegistrationStatus();
-    
-        if (assignedProject == null || !"APPROVED".equalsIgnoreCase(regStatus)) {
-            System.out.println("❌ You are not approved to handle any project yet.");
+        Project assigned = officer.getAssignedProject();
+        if (assigned == null) {
+            System.out.println("❌ No assigned project.");
             return;
         }
-    
-        List<Map<String, String>> applicantRows = CsvUtil.read("data/ApplicantList.csv");
-        List<Map<String, String>> eligibleApplicants = new ArrayList<>();
-    
-        for (Map<String, String> row : applicantRows) {
-            String status = row.get("ApplicationStatus");
-            String projectName = row.get("AppliedProjectName");
-    
-            if ("SUCCESSFUL".equalsIgnoreCase(status)
-                    && assignedProject.getProjectName().equalsIgnoreCase(projectName)) {
-                eligibleApplicants.add(row);
-            }
-        }
-    
-        if (eligibleApplicants.isEmpty()) {
-            System.out.println("❌ No applicants with SUCCESSFUL application for this project.");
+
+        List<Applicant> applicants = ApplicantCsvMapper.loadAll(APPLICANT_PATH);
+        List<Applicant> pending = applicants.stream()
+            .filter(a -> a.getApplication() != null)
+            .filter(a -> a.getApplication().getProject().equals(assigned))
+            .filter(a -> "SUCCESSFUL".equalsIgnoreCase(a.getApplication().getStatus()))
+            .collect(Collectors.toList());
+
+        if (pending.isEmpty()) {
+            System.out.println("❌ No applicants ready for booking.");
             return;
         }
-    
-        System.out.println("\n📋 Applicants ready for booking:");
-        for (int i = 0; i < eligibleApplicants.size(); i++) {
-            Map<String, String> row = eligibleApplicants.get(i);
-            System.out.printf("[%d] %s (NRIC: %s, Flat: %s)\n", i + 1,
-                    row.get("Name"), row.get("NRIC"), row.get("FlatTypeApplied"));
+
+        System.out.println("\n📋 Eligible Applicants:");
+        for (int i = 0; i < pending.size(); i++) {
+            Applicant a = pending.get(i);
+            System.out.printf("[%d] %s (NRIC: %s)\n", i + 1, a.getName(), a.getNric());
         }
-    
-        System.out.print("Select applicant to book flat for [number]: ");
-        int choice;
+
+        System.out.print("Select applicant to book: ");
         try {
-            choice = Integer.parseInt(sc.nextLine().trim());
-            if (choice < 1 || choice > eligibleApplicants.size()) {
-                System.out.println("❌ Choice out of range.");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("❌ Invalid input.");
-            return;
+            int idx = Integer.parseInt(sc.nextLine().trim()) - 1;
+            Applicant selected = pending.get(idx);
+            String flatType = selected.getApplication().getFlatType();
+            officer.bookFlat(selected.getApplication(), flatType);
+            ApplicantCsvMapper.updateApplicant(APPLICANT_PATH, selected);
+            ProjectCsvMapper.saveAll(PROJECT_PATH, ProjectCsvMapper.loadAll(PROJECT_PATH));
+            System.out.println("✅ Booking successful.");
+        } catch (Exception e) {
+            System.out.println("❌ Invalid booking.");
         }
-    
-        Map<String, String> selectedApplicant = eligibleApplicants.get(choice - 1);
-        String flatType = selectedApplicant.get("FlatTypeApplied");
-    
-        if (assignedProject.getRemainingFlats(flatType) <= 0) {
-            System.out.println("❌ No available units for that flat type.");
-            return;
-        }
-    
-        // ✅ Confirm before booking
-        System.out.print("Confirm flat booking for " + selectedApplicant.get("Name") + "? (Y/N): ");
-        if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
-            System.out.println("❌ Booking cancelled.");
-            return;
-        }
-    
-        // ✅ Update applicant status and CSV
-        selectedApplicant.put("ApplicationStatus", "BOOKED");
-        assignedProject.decrementFlatCount(flatType);
-        CsvUtil.write("data/ApplicantList.csv", applicantRows);
-    
-        // ✅ Update ProjectList.csv to include booked applicant NRIC and Officer name
-        List<Map<String, String>> projects = CsvUtil.read("data/ProjectList.csv");
-        for (Map<String, String> project : projects) {
-            if (project.get("Project Name").equalsIgnoreCase(assignedProject.getProjectName())) {
-                // Update ApplicantNRICs
-                String existingNric = project.getOrDefault("ApplicantNRICs", "").trim();
-                Set<String> nricSet = new LinkedHashSet<>(Arrays.asList(existingNric.split(" ")));
-                nricSet.add(selectedApplicant.get("NRIC"));
-                nricSet.remove(""); // clean blank
-                project.put("ApplicantNRICs", String.join(" ", nricSet));
-    
-                // Update Officer field with the officer performing the booking
-                String existingNames = project.getOrDefault("Officer", "").trim();
-                Set<String> nameSet = new LinkedHashSet<>(Arrays.asList(existingNames.split(" ")));
-                nameSet.add(officer.getName());
-                nameSet.remove("");
-                project.put("Officer", String.join(" ", nameSet));
-                break;
-            }
-        }
-        CsvUtil.write("data/ProjectList.csv", projects);
-    
-        System.out.println("✅ Flat booked for " + selectedApplicant.get("Name") +
-                " (" + flatType + "). Status updated to BOOKED.");
     }
-    
-    private static void generateReceipt(HDBOfficer officer, Scanner sc) {
+
+    private static void handleEnquiries(HDBOfficer officer, Scanner sc) {
         Project assignedProject = officer.getAssignedProject();
-        String regStatus = officer.getRegistrationStatus();
-    
-        if (assignedProject == null || !"APPROVED".equalsIgnoreCase(regStatus)) {
-            System.out.println("❌ You must be approved and assigned to a project to generate receipts.");
+        if (assignedProject == null) {
+            System.out.println("❌ No assigned project.");
             return;
         }
-    
-        System.out.println("\n🧾 Receipt generation is under development.");
-        System.out.println("🔧 In the final version, you will be able to:");
-        System.out.println(" - Retrieve a booked applicant's information");
-        System.out.println(" - Generate a receipt with their project and flat details");
+
+        List<Enquiry> allEnquiries = EnquiryCsvMapper.loadAll(ENQUIRY_PATH);
+        List<Enquiry> projectEnquiries = allEnquiries.stream()
+            .filter(e -> e.getProject().getProjectName().equalsIgnoreCase(assignedProject.getProjectName()))
+            .collect(Collectors.toList());
+
+        if (projectEnquiries.isEmpty()) {
+            System.out.println("📭 No enquiries found for your project.");
+            return;
+        }
+
+        System.out.println("\n📬 Enquiries for Project: " + assignedProject.getProjectName());
+        for (int i = 0; i < projectEnquiries.size(); i++) {
+            Enquiry e = projectEnquiries.get(i);
+            System.out.printf("[%d] %s: %s\n", i + 1, e.getApplicant().getName(), e.getContent());
+            if (!e.getReplies().isEmpty()) {
+                System.out.println("    💬 Latest Reply: " + e.getReplies().get(e.getReplies().size() - 1));
+            }
+        }
+
+        System.out.print("Select an enquiry to reply (or 0 to cancel): ");
+        try {
+            int idx = Integer.parseInt(sc.nextLine().trim());
+            if (idx == 0) return;
+            if (idx < 1 || idx > projectEnquiries.size()) throw new IndexOutOfBoundsException();
+
+            Enquiry selected = projectEnquiries.get(idx - 1);
+            System.out.print("Enter your reply: ");
+            String reply = sc.nextLine().trim();
+
+            selected.replyFromOfficer(reply);  // ✅ Abstracted into Enquiry
+            EnquiryCsvMapper.saveAll(ENQUIRY_PATH, allEnquiries);
+            System.out.println("✅ Reply sent and enquiry marked as closed.");
+
+        } catch (Exception e) {
+            System.out.println("❌ Invalid selection.");
+        }
     }
-    
-    
+
+    private static void generateReceipt(HDBOfficer officer) {
+        System.out.println("\n🧾 Generate Receipt: Work in Progress...");
+        System.out.println("This feature is currently under development and will be available soon.");
+    }
 }

@@ -1,7 +1,5 @@
 package src.model;
 
-import java.util.List;
-
 public class Applicant extends User {
     protected Application application;
 
@@ -15,12 +13,6 @@ public class Applicant extends User {
     
     public Application getApplication() {
         return this.application;
-    }
-       
-
-    public List<Project> viewOpenProjects(List<Project> allProjects) {
-        // TODO: filter by visibility and eligibility
-        return null;
     }
 
     public boolean applyForProject(Project proj, String flatType) {

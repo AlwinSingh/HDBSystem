@@ -1,4 +1,5 @@
 package src.model;
+
 public class Amenities {
     private int amenityId;
     private String type;
@@ -12,9 +13,25 @@ public class Amenities {
         this.distance = distance;
     }
 
+    // Getter methods
+    public int getAmenityId() {
+        return amenityId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    // Optional: helpful for displaying amenity information
     public String getAmenityDetails() {
         return type + ": " + name + " (" + distance + " km away)";
     }
-
-    // Getters and Setters
 }

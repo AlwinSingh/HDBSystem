@@ -67,4 +67,9 @@ public class HDBOfficer extends Applicant {
     public Project getAssignedProject() {
         return assignedProject;
     }
+
+    public void setAssignedProject(Project project) {
+        this.assignedProject = project;
+    }
+    
 }

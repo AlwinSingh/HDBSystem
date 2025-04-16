@@ -4,50 +4,118 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Enquiry {
+    public static final String STATUS_OPEN = "OPEN";
+    public static final String STATUS_CLOSED = "CLOSED";
+    public static final String STATUS_DELETED = "DELETED";
+
     private int enquiryId;
     private String content;
-    private User createdBy;
-    private Project relatedProject;
-    private List<EnquiryReply> replies;
+    private String status;
+    private String applicantNric;
+    private String applicantName;
+    private String projectName;
+    private final List<String> replies;
 
-    public Enquiry(int enquiryId, String content, User createdBy, Project relatedProject) {
+    public Enquiry(int enquiryId, String content, String status, String applicantNric, String applicantName, String projectName) {
         this.enquiryId = enquiryId;
         this.content = content;
-        this.createdBy = createdBy;
-        this.relatedProject = relatedProject;
+        this.status = status != null ? status : STATUS_OPEN;
+        this.applicantNric = applicantNric;
+        this.applicantName = applicantName;
+        this.projectName = projectName;
         this.replies = new ArrayList<>();
     }
 
-    public void addReply(String replyContent, User responder) {
-        int replyId = replies.size() + 1;
-        EnquiryReply reply = new EnquiryReply(replyId, replyContent, responder);
-        replies.add(reply);
+    // === Business Logic ===
+
+    public void addReply(String replyContent) {
+        replies.add(replyContent);
     }
 
     public void editContent(String newContent) {
         this.content = newContent;
     }
 
-    public void deleteEnquiry() {
+    public void delete() {
         this.content = "[deleted]";
-        this.replies.clear(); // optional
+        this.status = STATUS_DELETED;
+        this.replies.clear();
     }
 
-    public List<EnquiryReply> getReplies() {
-        return replies;
+    public void close() {
+        this.status = STATUS_CLOSED;
     }
 
-    // Getters
+    public void reopen() {
+        this.status = STATUS_OPEN;
+    }
+
+    public void replyFromOfficer(String reply) {
+        replies.add("Officer: " + reply);
+        close();
+    }
+
+    public boolean isClosed() {
+        return STATUS_CLOSED.equalsIgnoreCase(status);
+    }
+
+    public boolean isOpen() {
+        return STATUS_OPEN.equalsIgnoreCase(status);
+    }
+
+    // === Getters ===
+
+    public int getEnquiryId() {
+        return enquiryId;
+    }
+
     public String getContent() {
         return content;
     }
 
-    public Project getRelatedProject() {
-        return relatedProject;
+    public String getStatus() {
+        return status;
     }
 
-    public User getCreatedBy() {
-        return createdBy;
+    public String getApplicantNric() {
+        return applicantNric;
+    }
+
+    public String getApplicantName() {
+        return applicantName;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public List<String> getReplies() {
+        return replies;
+    }
+
+    // === Setters ===
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setClosed(boolean closed) {
+        this.status = closed ? STATUS_CLOSED : STATUS_OPEN;
+    }
+
+    // === Compatibility Methods ===
+
+    public Project getProject() {
+        return new Project(projectName, "", null, null, 0, 0, 0, null);
+    }
+
+    public Applicant getApplicant() {
+        return new Applicant(applicantNric, "", applicantName, 0, "");
+    }
+
+    // === Optional: for CSV export/debugging ===
+
+    public String getFormattedReplies() {
+        return String.join(" | ", replies);
     }
 }
-
