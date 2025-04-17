@@ -5,9 +5,18 @@ import src.model.Enquiry;
 import java.util.*;
 
 public class EnquiryCsvMapper {
+    // 1. Safe parser for integer IDs
+    private static int safeParseInt(String s, int defaultValue) {
+        if (s == null || s.trim().isEmpty()) return defaultValue;
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
 
     public static Enquiry fromCsvRow(Map<String, String> row) {
-        int id = Integer.parseInt(row.getOrDefault("EnquiryId", "0").trim());
+        int id = safeParseInt(row.get("EnquiryId"), 0);
         String content = row.getOrDefault("Content", "").trim();
         String status = row.getOrDefault("Status", Enquiry.STATUS_OPEN).trim();
         String applicantNric = row.getOrDefault("ApplicantNric", "").trim();
@@ -18,7 +27,7 @@ public class EnquiryCsvMapper {
         Enquiry enquiry = new Enquiry(id, content, status, applicantNric, applicantName, projectName);
 
         if (!repliesRaw.isEmpty()) {
-            String[] replies = repliesRaw.split("\\|\\|"); // use double pipe as a safe delimiter
+            String[] replies = repliesRaw.split("\\|\\|"); // double‑pipe delimiter
             for (String reply : replies) {
                 enquiry.addReply(reply.trim());
             }
@@ -46,7 +55,13 @@ public class EnquiryCsvMapper {
     public static List<Enquiry> loadAll(String path) {
         List<Map<String, String>> rawRows = CsvUtil.read(path);
         List<Enquiry> enquiries = new ArrayList<>();
+
         for (Map<String, String> row : rawRows) {
+            // 2. Skip rows that have neither an ID nor Content
+            boolean noId     = row.getOrDefault("EnquiryId", "").trim().isEmpty();
+            boolean noContent= row.getOrDefault("Content", "").trim().isEmpty();
+            if (noId && noContent) continue;
+
             try {
                 enquiries.add(fromCsvRow(row));
             } catch (Exception e) {
@@ -54,6 +69,7 @@ public class EnquiryCsvMapper {
                 e.printStackTrace();
             }
         }
+
         return enquiries;
     }
 
