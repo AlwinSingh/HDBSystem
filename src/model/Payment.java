@@ -6,8 +6,8 @@ public class Payment {
     protected int paymentId;
     protected double amount;
     protected LocalDate date;
-    protected String method;
-    protected String status;
+    protected String method; // e.g., PayNow, Credit Card
+    protected String status; // e.g., "Processed", "Refunded", "Pending"
 
     public Payment(int paymentId, double amount, LocalDate date, String method, String status) {
         this.paymentId = paymentId;
@@ -18,20 +18,33 @@ public class Payment {
     }
 
     public boolean processPayment() {
+        if (!"Pending".equalsIgnoreCase(status)) return false;
         this.status = "Processed";
-        System.out.println("Processing payment of $" + amount + " via " + method);
         return true;
     }
 
     public boolean refundPayment() {
+        if (!"Processed".equalsIgnoreCase(status)) return false;
         this.status = "Refunded";
-        System.out.println("Refunded payment of $" + amount);
         return true;
     }
 
-    public String generateInvoice() {
-        return "Invoice ID: " + paymentId + " | Amount: $" + amount + " | Date: " + date;
+    // === Getters and Setters ===
+    public int getPaymentId() { return paymentId; }
+    public double getAmount() { return amount; }
+    public LocalDate getDate() { return date; }
+    public String getMethod() { return method; }
+    public String getStatus() { return status; }
+
+    public void setMethod(String method) {
+        this.method = method;
     }
 
-    // Getters
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String toSummary() {
+        return "Payment #" + paymentId + " | $" + amount + " | " + date + " | " + method + " | Status: " + status;
+    }
 }

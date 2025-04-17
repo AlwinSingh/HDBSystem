@@ -1,5 +1,6 @@
 package src.model;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class HDBOfficer extends Applicant {
@@ -35,7 +36,27 @@ public class HDBOfficer extends Applicant {
         }
     }
 
-    public Receipt generateReceipt(Application app) {
+    public Receipt generateReceipt(Application app, int nextPaymentId, String selectedMethod) {
+        // Validate payment method
+        if (!PaymentMethod.isValid(selectedMethod)) {
+            throw new IllegalArgumentException("❌ Invalid payment method: " + selectedMethod);
+        }
+    
+        double price = app.getFlatPrice();
+    
+        // Generate invoice
+        Invoice invoice = new Invoice(
+            nextPaymentId,
+            price,
+            LocalDate.now(),
+            selectedMethod,
+            "Processed",
+            app.getApplicant().getNric(),
+            app.getProject().getProjectName(),
+            app.getFlatType()
+        );
+    
+        // Generate receipt
         return new Receipt(
             app.getApplicant().getName(),
             app.getApplicant().getNric(),
@@ -43,9 +64,12 @@ public class HDBOfficer extends Applicant {
             app.getApplicant().getMaritalStatus(),
             app.getProject().getProjectName(),
             app.getProject().getNeighborhood(),
-            app.getFlatType()
+            app.getFlatType(),
+            invoice
         );
     }
+    
+
 
     public void setAssignedProjectByName(String projectName, List<Project> allProjects) {
         for (Project p : allProjects) {

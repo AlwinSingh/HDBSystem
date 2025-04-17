@@ -113,7 +113,7 @@ public class Project {
     public Set<String> getApplicantNRICs() {
         return applicantNRICs;
     }
-
+    
     // Setters
     public void setProjectName(String name) {
         this.projectName = name;

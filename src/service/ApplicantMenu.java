@@ -20,9 +20,10 @@ public class ApplicantMenu {
         put("3", ApplicantMenu::viewApplication);
         put("4", ApplicantMenu::requestWithdrawal);
         put("5", ApplicantMenu::handleEnquiries);
-        put("6", ApplicantMenu::changePassword);
-
+        put("6", ctx -> viewAndPayInvoices(ctx.applicant, ctx.scanner)); // ✅ Connect menu 6 properly
+        put("7", ApplicantMenu::changePassword);
     }};
+    
 
     public static void show(Applicant applicant) {
         Scanner sc = new Scanner(System.in);
@@ -36,7 +37,8 @@ public class ApplicantMenu {
             System.out.println("3. View my application");
             System.out.println("4. Request withdrawal");
             System.out.println("5. Enquiry Services");
-            System.out.println("6. Change Password");
+            System.out.println("6. View and Pay Invoice");
+            System.out.println("7. Change Password");
             if (isOfficer) System.out.println("9. Back to Officer Dashboard");
             System.out.println("0. Logout");
             System.out.print("Enter choice: ");
@@ -242,6 +244,64 @@ public class ApplicantMenu {
         }
     }
 
+    private static void viewAndPayInvoices(Applicant applicant, Scanner sc) {
+        List<Invoice> allInvoices = InvoiceService.loadAll();
+        List<Invoice> myInvoices = allInvoices.stream()
+            .filter(inv -> inv.getApplicantNRIC().equalsIgnoreCase(applicant.getNric()))
+            .toList();
+    
+        if (myInvoices.isEmpty()) {
+            System.out.println("📭 No invoices found for your account.");
+            return;
+        }
+    
+        System.out.println("\n📄 Your Invoices:");
+        for (int i = 0; i < myInvoices.size(); i++) {
+            Invoice inv = myInvoices.get(i);
+            System.out.printf("[%d] Invoice #%d | Flat: %s | Amount: $%.2f | Status: %s\n",
+                i + 1, inv.getPaymentId(), inv.getFlatType(), inv.getAmount(), inv.getStatus());
+        }
+    
+        System.out.print("Enter invoice number to pay (or 0 to cancel): ");
+        try {
+            int idx = Integer.parseInt(sc.nextLine().trim());
+            if (idx == 0) return;
+            if (idx < 1 || idx > myInvoices.size()) throw new Exception();
+    
+            Invoice selected = myInvoices.get(idx - 1);
+            if ("Processed".equalsIgnoreCase(selected.getStatus())) {
+                System.out.println("✅ This invoice has already been paid.");
+                return;
+            }
+    
+            // Payment method selection
+            System.out.println("Choose payment method:");
+            System.out.println("1. PayNow");
+            System.out.println("2. Bank Transfer");
+            System.out.println("3. Credit Card");
+            System.out.print("Enter choice: ");
+            int methodChoice = Integer.parseInt(sc.nextLine().trim());
+            String method;
+            switch (methodChoice) {
+                case 1 -> method = "PayNow";
+                case 2 -> method = "Bank Transfer";
+                case 3 -> method = "Credit Card";
+                default -> {
+                    System.out.println("❌ Invalid payment method.");
+                    return;
+                }
+            } 
+            selected.setMethod(method);
+            selected.setStatus("Processed");
+            InvoiceService.updateInvoice(selected); // Save changes
+    
+            System.out.println("💸 Payment successful via " + method + "!");
+        } catch (Exception e) {
+            System.out.println("❌ Invalid input.");
+        }
+    }
+    
+
     private static void saveApplicantUpdate(Applicant updatedApplicant) {
         List<Applicant> all = ApplicantCsvMapper.loadAll("data/ApplicantList.csv");
         for (int i = 0; i < all.size(); i++) {
@@ -265,5 +325,7 @@ public class ApplicantMenu {
     private static void changePassword(ApplicantContext ctx) {
         AuthService.changePassword(ctx.applicant, ctx.scanner);
     }
+
+    
     
 }

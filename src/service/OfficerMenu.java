@@ -38,7 +38,7 @@ public class OfficerMenu {
                 case "2" -> registerForProject(officer, sc);
                 case "3" -> viewAssignedProjectDetails(officer);
                 case "4" -> bookFlat(officer, sc);
-                case "5" -> generateReceipt(officer);
+                case "5" -> generateReceipt(officer, sc);
                 case "6" -> handleEnquiries(officer, sc);
                 case "7" -> AuthService.changePassword(officer, sc);
                 case "8" -> updateLocation(officer, sc);         // ← new
@@ -173,6 +173,10 @@ public class OfficerMenu {
             officer.bookFlat(selected.getApplication(), flatType);
             selected.getApplication().setStatus("BOOKED"); // ✅ Update status here
             ApplicantCsvMapper.updateApplicant(APPLICANT_PATH, selected);
+            int nextInvoiceId = InvoiceService.getNextInvoiceId();
+            Invoice invoice = InvoiceService.generateInvoiceForBooking(selected.getApplication(), nextInvoiceId);
+            InvoiceService.addInvoice(invoice);  // Save to InvoiceList.csv
+            System.out.println("🧾 Invoice generated and saved (Invoice ID: " + invoice.getPaymentId() + ")");
             ProjectCsvMapper.saveAll(PROJECT_PATH, ProjectCsvMapper.loadAll(PROJECT_PATH));
     
             System.out.println("✅ Booking successful.");
@@ -193,7 +197,7 @@ public class OfficerMenu {
             return;
         }
     
-        List<Enquiry> allEnquiries = EnquiryCsvMapper.loadAll("data/EnquiryList.csv");
+        List<Enquiry> allEnquiries = EnquiryCsvMapper.loadAll(ENQUIRY_PATH);
         List<Enquiry> projectEnquiries = allEnquiries.stream()
             .filter(e -> e.getProject().getProjectName().equalsIgnoreCase(assignedProject.getProjectName()))
             .filter(e -> Enquiry.STATUS_PENDING.equalsIgnoreCase(e.getStatus()))
@@ -221,7 +225,7 @@ public class OfficerMenu {
             String reply = sc.nextLine().trim();
     
             selected.addReply(reply, officer); // NEW REPLY HANDLING
-            EnquiryCsvMapper.saveAll("data/EnquiryList.csv", allEnquiries);
+            EnquiryCsvMapper.saveAll(ENQUIRY_PATH, allEnquiries);
             System.out.println("✅ Reply sent and enquiry marked as CLOSED.");
     
         } catch (Exception e) {
@@ -229,9 +233,50 @@ public class OfficerMenu {
         }
     }
     
-    private static void generateReceipt(HDBOfficer officer) {
-        System.out.println("\n🧾 Generate Receipt: Work in Progress...");
-        System.out.println("This feature is currently under development and will be available soon.");
+    private static void generateReceipt(HDBOfficer officer, Scanner sc) {
+        List<Invoice> invoices = InvoiceService.loadAll();
+        List<Applicant> applicants = ApplicantCsvMapper.loadAll(APPLICANT_PATH);
+
+        List<Invoice> unpaid = invoices.stream()
+            .filter(i -> "Processed".equalsIgnoreCase(i.getStatus()))
+            .filter(i -> ReceiptService.findByInvoiceId(i.getPaymentId()) == null)
+            .collect(Collectors.toList());
+
+        if (unpaid.isEmpty()) {
+            System.out.println("📭 No processed payments without receipts.");
+            return;
+        }
+
+        System.out.println("\n📋 Processed Invoices (no receipt):");
+        for (int i = 0; i < unpaid.size(); i++) {
+            Invoice inv = unpaid.get(i);
+            System.out.printf("[%d] Invoice #%d | %s | %s | $%.2f\n", i + 1, inv.getPaymentId(), inv.getApplicantNRIC(), inv.getFlatType(), inv.getAmount());
+        }
+
+        System.out.print("Select invoice to issue receipt for (0 to cancel): ");
+        try {
+            int idx = Integer.parseInt(sc.nextLine().trim()) - 1;
+            if (idx < 0 || idx >= unpaid.size()) return;
+
+            Invoice selectedInvoice = unpaid.get(idx);
+            Applicant applicant = applicants.stream()
+                .filter(a -> a.getNric().equalsIgnoreCase(selectedInvoice.getApplicantNRIC()))
+                .findFirst()
+                .orElse(null);
+
+            if (applicant == null) {
+                System.out.println("❌ Applicant not found.");
+                return;
+            }
+
+            Receipt receipt = officer.generateReceipt(applicant.getApplication(),selectedInvoice.getPaymentId(),selectedInvoice.getMethod());
+            ReceiptService.addReceipt(receipt);
+
+            System.out.println("✅ Receipt generated:\n" + receipt);
+        } catch (Exception e) {
+            System.out.println("❌ Invalid input.");
+        }
+
     }
 
     private static void updateLocation(HDBOfficer officer, Scanner sc) {
