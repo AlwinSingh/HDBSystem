@@ -1,18 +1,14 @@
 package src.util;
 
-import src.model.Enquiry;
+import src.model.*;
 
 import java.util.*;
 
 public class EnquiryCsvMapper {
-    // 1. Safe parser for integer IDs
-    private static int safeParseInt(String s, int defaultValue) {
-        if (s == null || s.trim().isEmpty()) return defaultValue;
-        try {
-            return Integer.parseInt(s.trim());
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
+    private static int safeParseInt(String s, int def) {
+        if (s == null || s.trim().isEmpty()) return def;
+        try { return Integer.parseInt(s.trim()); }
+        catch (NumberFormatException e) { return def; }
     }
 
     public static Enquiry fromCsvRow(Map<String, String> row) {
@@ -27,27 +23,38 @@ public class EnquiryCsvMapper {
         Enquiry enquiry = new Enquiry(id, content, status, applicantNric, applicantName, projectName);
 
         if (!repliesRaw.isEmpty()) {
-            String[] replies = repliesRaw.split("\\|\\|"); // double‑pipe delimiter
-            for (String reply : replies) {
-                enquiry.addReply(reply.trim());
+            String[] replyParts = repliesRaw.split("\\|\\|");
+            for (int i = 0; i < replyParts.length; i++) {
+                String part = replyParts[i].trim();
+                String[] pieces = part.split(":", 2); // Format: ResponderName:ReplyContent
+                if (pieces.length == 2) {
+                    String responderName = pieces[0].trim();
+                    String replyContent = pieces[1].trim();
+                    User responder = new User("unknown", "", responderName, 0, "") {
+                        // Anonymous User subclass as fallback
+                    };
+                    enquiry.addReply(new EnquiryReply(i + 1, replyContent, responder));
+                }
             }
         }
 
         return enquiry;
     }
 
-    public static Map<String, String> toCsvRow(Enquiry enquiry) {
+    public static Map<String, String> toCsvRow(Enquiry e) {
         Map<String, String> row = new LinkedHashMap<>();
-        row.put("EnquiryId", String.valueOf(enquiry.getEnquiryId()));
-        row.put("Content", enquiry.getContent());
-        row.put("Status", enquiry.getStatus());
-        row.put("ApplicantNric", enquiry.getApplicantNric());
-        row.put("ApplicantName", enquiry.getApplicantName());
-        row.put("ProjectName", enquiry.getProjectName());
+        row.put("EnquiryId", String.valueOf(e.getEnquiryId()));
+        row.put("Content", e.getContent());
+        row.put("Status", e.getStatus());
+        row.put("ApplicantNric", e.getApplicantNric());
+        row.put("ApplicantName", e.getApplicantName());
+        row.put("ProjectName", e.getProjectName());
 
-        // Join replies using ||
-        String repliesJoined = String.join("||", enquiry.getReplies());
-        row.put("Replies", repliesJoined);
+        String repliesRaw = e.getReplies().stream()
+            .map(r -> r.getResponder().getName() + ":" + r.getContent())
+            .reduce((a, b) -> a + "||" + b)
+            .orElse("");
+        row.put("Replies", repliesRaw);
 
         return row;
     }
@@ -57,9 +64,8 @@ public class EnquiryCsvMapper {
         List<Enquiry> enquiries = new ArrayList<>();
 
         for (Map<String, String> row : rawRows) {
-            // 2. Skip rows that have neither an ID nor Content
-            boolean noId     = row.getOrDefault("EnquiryId", "").trim().isEmpty();
-            boolean noContent= row.getOrDefault("Content", "").trim().isEmpty();
+            boolean noId = row.getOrDefault("EnquiryId", "").trim().isEmpty();
+            boolean noContent = row.getOrDefault("Content", "").trim().isEmpty();
             if (noId && noContent) continue;
 
             try {

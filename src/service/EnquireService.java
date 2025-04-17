@@ -1,11 +1,10 @@
+
 package src.service;
 
 import src.model.*;
 import src.util.CsvUtil;
 import src.util.EnquiryCsvMapper;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class EnquireService {
 
@@ -30,8 +29,8 @@ public class EnquireService {
 
         System.out.println("\n📋 Available Projects:");
         for (int i = 0; i < projects.size(); i++) {
-            System.out.printf("[%d] %s (%s)\n", i + 1,
-                    projects.get(i).getProjectName(), projects.get(i).getNeighborhood());
+            System.out.printf("[%d] %s (%s)\n",
+                    i + 1, projects.get(i).getProjectName(), projects.get(i).getNeighborhood());
         }
 
         System.out.print("Select project (0 to cancel): ");
@@ -57,8 +56,8 @@ public class EnquireService {
         List<Enquiry> all = loadFromCSV();
         int newId = all.size() + 1;
 
-        Enquiry newEntry = new Enquiry(newId, content, "PENDING", applicant.getNric(),
-                applicant.getName(), selected.getProjectName());
+        Enquiry newEntry = new Enquiry(newId, content, Enquiry.STATUS_PENDING,
+                applicant.getNric(), applicant.getName(), selected.getProjectName());
 
         all.add(newEntry);
         saveAllToCSV(all);
@@ -71,38 +70,40 @@ public class EnquireService {
         List<Enquiry> own = all.stream()
                 .filter(e -> e.getApplicantNric().equalsIgnoreCase(applicant.getNric()))
                 .toList();
-    
+
         if (own.isEmpty()) {
             System.out.println("❌ No enquiries found.");
             return;
         }
-    
+
         for (Enquiry e : own) {
             System.out.println("──────────────────────────");
             System.out.println("🆔 ID: " + e.getEnquiryId());
             System.out.println("🏠 Project: " + e.getProjectName());
             System.out.println("📝 Content: " + e.getContent());
             System.out.println("📌 Status: " + e.getStatus());
-    
+
             if (e.getReplies().isEmpty()) {
                 System.out.println("💬 Replies: No replies yet.");
             } else {
                 System.out.println("💬 Replies:");
-                for (String r : e.getReplies()) System.out.println("  - " + r);
-    
+                for (EnquiryReply r : e.getReplies()) {
+                    String role = (r.getResponder() instanceof HDBManager) ? "Manager" : "Officer";
+                    System.out.printf("  - %s replied with: %s [%s]\n", role, r.getContent(), r.getTimestamp());
+                }
+
                 if (e.isClosed()) {
-                    System.out.println("🔒 This enquiry has been CLOSED after a reply from the HDB Personel \n Please submit another Enquiry.");
+                    System.out.println("🔒 This enquiry has been CLOSED after a reply from HDB Personnel. Please submit another enquiry.");
                 }
             }
         }
     }
-    
 
     public static void editOwnEnquiry(Applicant applicant, Scanner sc) {
         List<Enquiry> all = loadFromCSV();
         List<Enquiry> editable = all.stream()
                 .filter(e -> e.getApplicantNric().equalsIgnoreCase(applicant.getNric()))
-                .filter(e -> "PENDING".equalsIgnoreCase(e.getStatus()))
+                .filter(e -> Enquiry.STATUS_PENDING.equalsIgnoreCase(e.getStatus()))
                 .toList();
 
         if (editable.isEmpty()) {
@@ -136,7 +137,7 @@ public class EnquireService {
         List<Enquiry> all = loadFromCSV();
         List<Enquiry> deletable = all.stream()
                 .filter(e -> e.getApplicantNric().equalsIgnoreCase(applicant.getNric()))
-                .filter(e -> "PENDING".equalsIgnoreCase(e.getStatus()))
+                .filter(e -> Enquiry.STATUS_PENDING.equalsIgnoreCase(e.getStatus()))
                 .toList();
 
         if (deletable.isEmpty()) {
@@ -167,41 +168,49 @@ public class EnquireService {
     public static void replyToEnquiry(User user, Scanner sc) {
         List<Enquiry> all = loadFromCSV();
         List<String> projectNames = getHandledProjects(user);
-
+    
         List<Enquiry> relevant = all.stream()
                 .filter(e -> projectNames.contains(e.getProjectName()))
-                .filter(e -> !"DELETED".equalsIgnoreCase(e.getStatus()))
+                .filter(e -> Enquiry.STATUS_PENDING.equalsIgnoreCase(e.getStatus()))
                 .toList();
-
+    
         if (relevant.isEmpty()) {
-            System.out.println("📭 No enquiries available.");
+            System.out.println("📭 No pending enquiries available for reply.");
             return;
         }
-
+    
+        System.out.println("\n📬 Pending Enquiries:");
         for (int i = 0; i < relevant.size(); i++) {
             Enquiry e = relevant.get(i);
             System.out.printf("[%d] 🆔 %d — %s (%s)\n", i + 1, e.getEnquiryId(), e.getApplicantName(), e.getProjectName());
             System.out.println("   " + e.getContent());
         }
-
+    
         System.out.print("Select enquiry to reply (0 to cancel): ");
         int choice = getValidChoice(sc, relevant.size());
         if (choice == 0) return;
-
+    
         Enquiry selected = relevant.get(choice - 1);
+    
+        // Final double-check if it's already closed (edge case)
+        if (selected.isClosed()) {
+            System.out.println("⚠️ This enquiry has already been closed.");
+            return;
+        }
+    
         System.out.print("Enter reply: ");
         String reply = sc.nextLine().trim();
         if (reply.isBlank() || !reply.matches(".*[a-zA-Z].*")) {
-            System.out.println("❌ Invalid reply.");
+            System.out.println("❌ Invalid reply. Must contain letters.");
             return;
         }
-
-        String role = (user instanceof HDBManager) ? "Manager" : "Officer";
-        selected.addReply(role + " " + user.getName() + ": " + reply);
-        selected.setStatus("REPLIED");
+    
+        selected.addReply(reply, user);  // Stores reply content cleanly
         saveAllToCSV(all);
-        System.out.println("✅ Reply submitted.");
+    
+        System.out.println("✅ Reply submitted and enquiry marked as CLOSED.");
     }
+    
 
     public static void viewAllEnquiriesForManager(HDBManager manager) {
         List<Enquiry> all = loadFromCSV();
@@ -249,13 +258,22 @@ public class EnquireService {
         System.out.println("🏠 Project    : " + e.getProjectName());
         System.out.println("📝 Content    : " + e.getContent());
         System.out.println("📌 Status     : " + e.getStatus());
+    
         if (e.getReplies().isEmpty()) {
             System.out.println("💬 Replies    : No replies yet.");
         } else {
             System.out.println("💬 Replies    :");
-            for (String reply : e.getReplies()) System.out.println("  - " + reply);
+            for (EnquiryReply reply : e.getReplies()) {
+                String role = reply.getResponderRole();  // ✅ fixed
+                System.out.printf("  - %s replied with: %s [%s]\n",
+                    role,
+                    reply.getContent(),
+                    reply.getTimestamp()
+                );
+            }
         }
     }
+    
 
     private static List<String> getHandledProjects(User user) {
         List<String> projects = new ArrayList<>();

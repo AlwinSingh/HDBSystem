@@ -2,8 +2,10 @@ package src.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Enquiry {
+    public static final String STATUS_PENDING = "PENDING";
     public static final String STATUS_OPEN = "OPEN";
     public static final String STATUS_CLOSED = "CLOSED";
     public static final String STATUS_DELETED = "DELETED";
@@ -14,12 +16,12 @@ public class Enquiry {
     private String applicantNric;
     private String applicantName;
     private String projectName;
-    private final List<String> replies;
+    private final List<EnquiryReply> replies;
 
     public Enquiry(int enquiryId, String content, String status, String applicantNric, String applicantName, String projectName) {
         this.enquiryId = enquiryId;
         this.content = content;
-        this.status = status != null ? status : STATUS_OPEN;
+        this.status = (status != null) ? status : STATUS_OPEN;
         this.applicantNric = applicantNric;
         this.applicantName = applicantName;
         this.projectName = projectName;
@@ -28,8 +30,15 @@ public class Enquiry {
 
     // === Business Logic ===
 
-    public void addReply(String replyContent) {
-        replies.add(replyContent);
+    public void addReply(String content, User responder) {
+        int nextId = replies.size() + 1;
+        replies.add(new EnquiryReply(nextId, content, responder)); 
+        close();
+    }
+    
+    public void addReply(EnquiryReply reply) {
+        replies.add(reply);
+        close(); // Auto-close on reply
     }
 
     public void editContent(String newContent) {
@@ -48,11 +57,6 @@ public class Enquiry {
 
     public void reopen() {
         this.status = STATUS_OPEN;
-    }
-
-    public void replyFromOfficer(String reply) {
-        replies.add("Officer: " + reply);
-        close();
     }
 
     public boolean isClosed() {
@@ -89,7 +93,7 @@ public class Enquiry {
         return projectName;
     }
 
-    public List<String> getReplies() {
+    public List<EnquiryReply> getReplies() {
         return replies;
     }
 
@@ -113,9 +117,11 @@ public class Enquiry {
         return new Applicant(applicantNric, "", applicantName, 0, "");
     }
 
-    // === Optional: for CSV export/debugging ===
+    // === CSV / Debug Formatting ===
 
     public String getFormattedReplies() {
-        return String.join(" | ", replies);
+        return replies.stream()
+            .map(r -> r.getResponder().getName() + ": " + r.getContent())
+            .collect(Collectors.joining(" | "));
     }
 }

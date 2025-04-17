@@ -505,7 +505,7 @@ public class ManagerMenu {
         nameSet.remove("");
         project.put("Officer", String.join(" ", nameSet));
     
-        officer.put("RegistrationStatus", "SUCESSFUL");
+        officer.put("RegistrationStatus", "SUCCESSFUL");
         System.out.println("✅ Officer approved and added to project.");
     }
     
@@ -712,43 +712,46 @@ public class ManagerMenu {
     
     private static void handleManagerEnquiries(HDBManager manager, Scanner sc) {
         List<Enquiry> all = EnquiryCsvMapper.loadAll("data/EnquiryList.csv");
-
+    
         Set<String> managedProjects = ProjectCsvMapper.loadAll("data/ProjectList.csv").stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
             .map(Project::getProjectName)
             .collect(Collectors.toSet());
-
+    
         List<Enquiry> myEnquiries = all.stream()
             .filter(e -> managedProjects.contains(e.getProjectName()))
+            .filter(e -> Enquiry.STATUS_PENDING.equalsIgnoreCase(e.getStatus()))
             .toList();
-
+    
         if (myEnquiries.isEmpty()) {
             System.out.println("📭 No open enquiries for your projects.");
             return;
         }
-
+    
         System.out.println("\n📬 Enquiries:");
         for (int i = 0; i < myEnquiries.size(); i++) {
             Enquiry e = myEnquiries.get(i);
             System.out.printf("[%d] %s (%s): %s\n", i + 1, e.getApplicantName(), e.getApplicantNric(), e.getContent());
         }
-
+    
         System.out.print("Choose enquiry to reply (0 to cancel): ");
         try {
             int choice = Integer.parseInt(sc.nextLine());
             if (choice == 0) return;
             if (choice < 1 || choice > myEnquiries.size()) throw new IndexOutOfBoundsException();
-
+    
             Enquiry selected = myEnquiries.get(choice - 1);
             System.out.print("Enter reply: ");
             String reply = sc.nextLine().trim();
-            selected.replyFromOfficer(reply);
-
+    
+            selected.addReply(reply, manager); // NEW REPLY HANDLING
             EnquiryCsvMapper.saveAll("data/EnquiryList.csv", all);
             System.out.println("✅ Reply sent and enquiry marked as CLOSED.");
-
+    
         } catch (Exception e) {
             System.out.println("❌ Invalid selection.");
         }
     }
+    
+    
 }

@@ -193,13 +193,14 @@ public class OfficerMenu {
             return;
         }
     
-        List<Enquiry> allEnquiries = EnquiryCsvMapper.loadAll(ENQUIRY_PATH);
+        List<Enquiry> allEnquiries = EnquiryCsvMapper.loadAll("data/EnquiryList.csv");
         List<Enquiry> projectEnquiries = allEnquiries.stream()
             .filter(e -> e.getProject().getProjectName().equalsIgnoreCase(assignedProject.getProjectName()))
-            .collect(Collectors.toList());
+            .filter(e -> Enquiry.STATUS_PENDING.equalsIgnoreCase(e.getStatus()))
+            .toList();
     
         if (projectEnquiries.isEmpty()) {
-            System.out.println("📭 No enquiries found for your project.");
+            System.out.println("📭 No open enquiries found for your project.");
             return;
         }
     
@@ -207,9 +208,6 @@ public class OfficerMenu {
         for (int i = 0; i < projectEnquiries.size(); i++) {
             Enquiry e = projectEnquiries.get(i);
             System.out.printf("[%d] %s: %s\n", i + 1, e.getApplicant().getName(), e.getContent());
-            if (!e.getReplies().isEmpty()) {
-                System.out.println("    💬 Latest Reply: " + e.getReplies().get(e.getReplies().size() - 1));
-            }
         }
     
         System.out.print("Select an enquiry to reply (or 0 to cancel): ");
@@ -219,25 +217,18 @@ public class OfficerMenu {
             if (idx < 1 || idx > projectEnquiries.size()) throw new IndexOutOfBoundsException();
     
             Enquiry selected = projectEnquiries.get(idx - 1);
-            if (selected.isClosed()) {
-                System.out.println("⚠️ This enquiry is already closed. You cannot reply.");
-                return;
-            }
-            
             System.out.print("Enter your reply: ");
             String reply = sc.nextLine().trim();
-            
-            selected.replyFromOfficer(reply);
-            EnquiryCsvMapper.saveAll(ENQUIRY_PATH, allEnquiries);
+    
+            selected.addReply(reply, officer); // NEW REPLY HANDLING
+            EnquiryCsvMapper.saveAll("data/EnquiryList.csv", allEnquiries);
             System.out.println("✅ Reply sent and enquiry marked as CLOSED.");
-            
     
         } catch (Exception e) {
             System.out.println("❌ Invalid selection.");
         }
     }
     
-
     private static void generateReceipt(HDBOfficer officer) {
         System.out.println("\n🧾 Generate Receipt: Work in Progress...");
         System.out.println("This feature is currently under development and will be available soon.");
