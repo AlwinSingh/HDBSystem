@@ -1,13 +1,12 @@
 package src.service;
 
+import java.util.*;
+import java.util.stream.Collectors;
 import src.model.*;
 import src.util.ApplicantCsvMapper;
 import src.util.EnquiryCsvMapper;
 import src.util.OfficerCsvMapper;
 import src.util.ProjectCsvMapper;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class OfficerMenu {
 
@@ -27,6 +26,7 @@ public class OfficerMenu {
             System.out.println("4. Book flat for applicant");
             System.out.println("5. Generate receipt for applicant");
             System.out.println("6. View & reply to enquiries");
+            System.out.println("7. Change Password");
             System.out.println("0. Logout");
             System.out.print("Enter choice: ");
 
@@ -37,6 +37,7 @@ public class OfficerMenu {
                 case "4" -> bookFlat(officer, sc);
                 case "5" -> generateReceipt(officer);
                 case "6" -> handleEnquiries(officer, sc);
+                case "7" -> AuthService.changePassword(officer, sc);
                 case "0" -> {
                     System.out.println("👋 Logging out...");
                     return;

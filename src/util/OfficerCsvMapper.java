@@ -1,10 +1,8 @@
 package src.util;
 
-import src.model.Applicant;
+import java.util.*;
 import src.model.HDBOfficer;
 import src.model.Project;
-
-import java.util.*;
 
 public class OfficerCsvMapper {
 
@@ -56,15 +54,19 @@ public class OfficerCsvMapper {
     }
     
     public static void updateOfficer(String csvPath, HDBOfficer updatedOfficer) {
-        List<HDBOfficer> all = loadAll(csvPath, ProjectCsvMapper.loadAll("data/ProjectList.csv"));
-        for (int i = 0; i < all.size(); i++) {
-            if (all.get(i).getNric().equalsIgnoreCase(updatedOfficer.getNric())) {
-                all.set(i, updatedOfficer);
+        List<Map<String, String>> rows = CsvUtil.read(csvPath);
+    
+        for (Map<String, String> row : rows) {
+            if (row.getOrDefault("NRIC", "").equalsIgnoreCase(updatedOfficer.getNric())) {
+                row.put("Password", updatedOfficer.getPassword());  // Only update password
                 break;
             }
         }
-        saveAll(csvPath, all);
+    
+        CsvUtil.write(csvPath, rows);
     }
+    
+    
     
 
     public static void saveAll(String csvPath, List<HDBOfficer> officers) {

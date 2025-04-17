@@ -1,10 +1,13 @@
 package src.service;
 
-import src.model.*;
-import src.util.CsvUtil;
-
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
+import src.model.*;
+import src.util.ApplicantCsvMapper;
+import src.util.CsvUtil;
+import src.util.ManagerCsvMapper;
+import src.util.OfficerCsvMapper;
 
 public class AuthService {
 
@@ -86,4 +89,34 @@ public class AuthService {
 
         return null;
     }
+    public static boolean changePassword(User user, Scanner sc) {
+        System.out.print("Enter current password: ");
+        String current = sc.nextLine().trim();
+        if (!user.getPassword().equals(current)) {
+            System.out.println("❌ Incorrect current password.");
+            return false;
+        }
+    
+        System.out.print("Enter new password: ");
+        String newPass = sc.nextLine().trim();
+        if (newPass.isEmpty()) {
+            System.out.println("❌ Password cannot be empty.");
+            return false;
+        }
+    
+        user.setPassword(newPass);
+    
+        if (user instanceof HDBManager) {
+            ManagerCsvMapper.updateManager("data/ManagerList.csv", (HDBManager) user);
+        } else if (user instanceof HDBOfficer) {
+            OfficerCsvMapper.updateOfficer("data/OfficerList.csv", (HDBOfficer) user);
+        } else if (user instanceof Applicant) {
+            ApplicantCsvMapper.updateApplicant("data/ApplicantList.csv", (Applicant) user);
+        }
+    
+        System.out.println("✅ Password changed successfully.");
+        return true;
+    }
+    
+
 }

@@ -1,14 +1,13 @@
 package src.service;
 
-import src.model.*;
-import src.util.CsvUtil;
-import src.util.EnquiryCsvMapper;
-import src.util.ProjectCsvMapper;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import src.model.*;
+import src.util.CsvUtil;
+import src.util.EnquiryCsvMapper;
+import src.util.ProjectCsvMapper;
 
 public class ManagerMenu {
 
@@ -43,6 +42,8 @@ public class ManagerMenu {
 
             System.out.println("\n🗃 Enquiries");
             System.out.println(" [13]. View & reply to enquiries for my projects");
+            System.out.println("\n");
+            System.out.println(" [14] 🔒 Change Password");
 
             System.out.println("\n [0] 🚪 Logout");
             System.out.print("Enter your choice: ");
@@ -67,6 +68,7 @@ public class ManagerMenu {
             
                 case "12" -> generateReports(manager, sc); // Now a placeholder
                 case "13" -> handleManagerEnquiries(manager, sc); // Newly added option
+                case "14" -> AuthService.changePassword(manager, sc);
             
                 case "0" -> {
                     System.out.println("👋 Logging out...");

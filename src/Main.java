@@ -1,11 +1,11 @@
 package src;
 
+import java.util.Scanner;
 import src.model.*;
 import src.service.ApplicantMenu;
 import src.service.AuthService;
-import src.service.OfficerMenu;
 import src.service.ManagerMenu;
-import java.util.Scanner;
+import src.service.OfficerMenu;
 
 public class Main {
 

@@ -1,11 +1,10 @@
 package src.service;
 
-import src.model.*;
-import src.util.ApplicantCsvMapper;
-
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
+import src.model.*;
+import src.util.ApplicantCsvMapper;
 
 public class ApplicantMenu {
 
@@ -15,6 +14,8 @@ public class ApplicantMenu {
         put("3", ApplicantMenu::viewApplication);
         put("4", ApplicantMenu::requestWithdrawal);
         put("5", ApplicantMenu::handleEnquiries);
+        put("6", ApplicantMenu::changePassword);
+
     }};
 
     public static void show(Applicant applicant) {
@@ -29,6 +30,7 @@ public class ApplicantMenu {
             System.out.println("3. View my application");
             System.out.println("4. Request withdrawal");
             System.out.println("5. Enquiry Services");
+            System.out.println("6. Change Password");
             if (isOfficer) System.out.println("9. Back to Officer Dashboard");
             System.out.println("0. Logout");
             System.out.print("Enter choice: ");
@@ -259,4 +261,8 @@ public class ApplicantMenu {
             this.scanner = scanner;
         }
     }
+    private static void changePassword(ApplicantContext ctx) {
+        AuthService.changePassword(ctx.applicant, ctx.scanner);
+    }
+    
 }

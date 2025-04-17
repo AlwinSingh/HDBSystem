@@ -1,8 +1,7 @@
 package src.util;
 
-import src.model.HDBManager;
-
 import java.util.*;
+import src.model.HDBManager;
 
 public class ManagerCsvMapper {
 
@@ -51,5 +50,16 @@ public class ManagerCsvMapper {
         }
         return null;
     }
+    public static void updateManager(String csvPath, HDBManager updatedManager) {
+        List<HDBManager> all = loadAll(csvPath);
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i).getNric().equalsIgnoreCase(updatedManager.getNric())) {
+                all.set(i, updatedManager);
+                break;
+            }
+        }
+        saveAll(csvPath, all);
+    }
+    
     
 }

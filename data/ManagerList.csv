@@ -1,3 +1,3 @@
-Name,NRIC,Age,Marital Status,Password
-Michael,T8765432F,36,Single,password
-Jessica,T1234567G,26,Married,password
+NRIC,Password,Name,Age,Marital Status
+T8765432F,tessst,Michael,36,Single
+T1234567G,password,Jessica,26,Married
