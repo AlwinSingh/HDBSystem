@@ -31,9 +31,7 @@ public class InvoiceCsvMapper {
 
     public static void saveAll(List<Invoice> invoices) {
         List<Map<String, String>> rows = new ArrayList<>();
-
-        rows.add(createHeaderRow()); // manually add header row first
-
+    
         for (Invoice i : invoices) {
             Map<String, String> row = new LinkedHashMap<>();
             row.put("InvoiceID", String.valueOf(i.getPaymentId()));
@@ -47,21 +45,7 @@ public class InvoiceCsvMapper {
             row.put("GeneratedDate", i.getDate().toString());
             rows.add(row);
         }
-
+    
         write(CSV_PATH, rows);
-    }
-
-    private static Map<String, String> createHeaderRow() {
-        Map<String, String> header = new LinkedHashMap<>();
-        header.put("InvoiceID", "InvoiceID");
-        header.put("PaymentID", "PaymentID");
-        header.put("ApplicantNRIC", "ApplicantNRIC");
-        header.put("ProjectName", "ProjectName");
-        header.put("FlatType", "FlatType");
-        header.put("Amount", "Amount");
-        header.put("Method", "Method");
-        header.put("Status", "Status");
-        header.put("GeneratedDate", "GeneratedDate");
-        return header;
     }
 }

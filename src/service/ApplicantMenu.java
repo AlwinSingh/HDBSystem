@@ -20,8 +20,9 @@ public class ApplicantMenu {
         put("3", ApplicantMenu::viewApplication);
         put("4", ApplicantMenu::requestWithdrawal);
         put("5", ApplicantMenu::handleEnquiries);
-        put("6", ctx -> viewAndPayInvoices(ctx.applicant, ctx.scanner)); // ✅ Connect menu 6 properly
-        put("7", ApplicantMenu::changePassword);
+        put("6", ctx -> viewAndPayInvoices(ctx.applicant, ctx.scanner));
+        put("7", ctx -> viewReceipts(ctx.applicant)); // ✅ Add this line
+        put("8", ApplicantMenu::changePassword);
     }};
     
 
@@ -38,7 +39,9 @@ public class ApplicantMenu {
             System.out.println("4. Request withdrawal");
             System.out.println("5. Enquiry Services");
             System.out.println("6. View and Pay Invoice");
-            System.out.println("7. Change Password");
+            System.out.println("7. View Receipts");
+            System.out.println("8. Change Password");
+            
             if (isOfficer) System.out.println("9. Back to Officer Dashboard");
             System.out.println("0. Logout");
             System.out.print("Enter choice: ");
@@ -177,14 +180,35 @@ public class ApplicantMenu {
             System.out.println("❌ No application submitted.");
             return;
         }
-
+    
         Project p = app.getProject();
-        System.out.println("\n📄 Application Details");
-        System.out.println("🏠 Project   : " + p.getProjectName() + " (" + p.getNeighborhood() + ")");
-        System.out.println("🏢 Flat Type : " + app.getFlatType());
-        System.out.println("📌 Status    : " + ("WITHDRAWAL_REQUESTED".equalsIgnoreCase(app.getStatus()) ?
-                           "WITHDRAWAL REQUESTED (Pending review)" : app.getStatus()));
+    
+        System.out.println("\n📄 ===== Application Details =====");
+        System.out.println("🏠 Project Name      : " + p.getProjectName());
+        System.out.println("📍 Neighborhood      : " + p.getNeighborhood());
+        System.out.println("📍 Address           : " + p.getLocation().getAddress());
+        System.out.println("🌆 District & Town   : " + p.getLocation().getDistrict() + ", " + p.getLocation().getTown());
+        System.out.printf ("🗺️  Coordinates       : %.6f, %.6f\n", p.getLocation().getLat(), p.getLocation().getLng());
+        System.out.println("📅 Application Period: " + p.getOpenDate() + " to " + p.getCloseDate());
+    
+        System.out.println("\n🏢 Flat Type Chosen  : " + app.getFlatType());
+        System.out.println("💰 Price (2-Room)    : $" + String.format("%.2f", p.getPrice2Room()));
+        System.out.println("💰 Price (3-Room)    : $" + String.format("%.2f", p.getPrice3Room()));
+        System.out.println("📌 Application Status: " + (
+            "WITHDRAWAL_REQUESTED".equalsIgnoreCase(app.getStatus()) 
+                ? "WITHDRAWAL REQUESTED (Pending review)" 
+                : app.getStatus()));
+    
+        if (!p.getAmenities().isEmpty()) {
+            System.out.println("\n🏞️ Nearby Amenities:");
+            for (Amenities a : p.getAmenities()) {
+                System.out.println("   - " + a.getAmenityDetails());
+            }
+        }
+    
+        System.out.println("==================================");
     }
+    
 
     private static void requestWithdrawal(ApplicantContext ctx) {
         Scanner sc = ctx.scanner;
@@ -294,10 +318,39 @@ public class ApplicantMenu {
             selected.setMethod(method);
             selected.setStatus("Processed");
             InvoiceService.updateInvoice(selected); // Save changes
-    
+            Payment newPayment = new Payment(
+                selected.getPaymentId(),
+                selected.getAmount(),
+                LocalDate.now(),
+                selected.getMethod(),
+                selected.getStatus()
+            );
+            PaymentService.addPayment(newPayment);
             System.out.println("💸 Payment successful via " + method + "!");
         } catch (Exception e) {
             System.out.println("❌ Invalid input.");
+        }
+    }
+    
+    private static void viewReceipts(Applicant applicant) {
+        List<Receipt> allReceipts = ReceiptService.getAllReceipts();
+        List<Receipt> myReceipts = allReceipts.stream()
+            .filter(r -> r.getApplicantNRIC().equalsIgnoreCase(applicant.getNric()))
+            .toList();
+    
+        if (myReceipts.isEmpty()) {
+            System.out.println("📭 No receipts found for your account.");
+            return;
+        }
+    
+        System.out.println("\n📑 Your Receipts:");
+        for (Receipt r : myReceipts) {
+            System.out.println("────────────────────────────");
+            System.out.println("📄 Receipt for Project: " + r.getProjectName());
+            System.out.println("🏠 Flat Type          : " + r.getInvoice().getFlatType());
+            System.out.println("💵 Amount Paid        : $" + String.format("%.2f", r.getInvoice().getAmount()));
+            System.out.println("💳 Payment Method     : " + r.getInvoice().getMethod());
+            System.out.println("📅 Date               : " + r.getInvoice().getDate());
         }
     }
     

@@ -1,1 +1,2 @@
-InvoiceId,PaymentId,ApplicantNRIC,ProjectName,FlatType
+InvoiceID,PaymentID,ApplicantNRIC,ProjectName,FlatType,Amount,Method,Status,GeneratedDate
+1,1,T7654321B,ClementiLake,2-Room,10000.0,Credit Card,Processed,2025-04-18

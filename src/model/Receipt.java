@@ -12,8 +12,9 @@ public class Receipt {
     private final String neighborhood;
     private final String flatTypeBooked;
     private final Invoice invoice;
-    private final String receiptId;
-    private final LocalDate issuedDate;
+
+    private String receiptId; // 🔄 Removed final
+    private LocalDate issuedDate;
 
     public Receipt(String applicantName, String applicantNRIC, int age, String maritalStatus,
                    String projectName, String neighborhood, String flatTypeBooked, Invoice invoice) {
@@ -82,5 +83,14 @@ public class Receipt {
 
     public Invoice getInvoice() {
         return invoice;
+    }
+
+    // === Setters for deserialization ===
+    public void setIssuedDate(LocalDate issuedDate) {
+        this.issuedDate = issuedDate;
+    }
+
+    public void setReceiptId(String receiptId) {
+        this.receiptId = receiptId;
     }
 }

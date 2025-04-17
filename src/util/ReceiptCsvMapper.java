@@ -1,6 +1,9 @@
 package src.util;
 
+import src.model.Invoice;
 import src.model.Receipt;
+
+import java.time.LocalDate;
 import java.util.*;
 import static src.util.CsvUtil.*;
 
@@ -8,19 +11,40 @@ public class ReceiptCsvMapper {
     private static final String CSV_PATH = "data/ReceiptList.csv";
 
     public static List<Receipt> loadAll() {
-        List<Map<String, String>> rows = read(CSV_PATH);
-        List<Receipt> list = new ArrayList<>();
-        for (Map<String, String> row : rows) {
-            try {
-                // Load manually if needed, skip here
-            } catch (Exception ignored) {}
-        }
-        return list;
+    List<Map<String, String>> rows = read(CSV_PATH);
+    List<Receipt> list = new ArrayList<>();
+
+    for (Map<String, String> row : rows) {
+        try {
+            String applicantName = row.get("ApplicantName");
+            String applicantNRIC = row.get("ApplicantNRIC");
+            String projectName = row.get("ProjectName");
+            String flatType = row.get("FlatTypeBooked");
+            String receiptId = row.get("ReceiptID");
+
+            double amountPaid = Double.parseDouble(row.get("AmountPaid"));
+            String method = row.get("Method");
+            String status = row.get("Status");
+            int invoiceId = Integer.parseInt(row.get("InvoiceID"));
+            LocalDate issuedDate = LocalDate.parse(row.get("IssuedDate"));
+
+            // You must reconstruct the Invoice manually
+            Invoice invoice = new Invoice(invoiceId, amountPaid, issuedDate, method, status, applicantNRIC, projectName, flatType);
+
+            // Construct the Receipt
+            Receipt receipt = new Receipt(applicantName, applicantNRIC, 0, "", projectName, "", flatType, invoice);
+            receipt.setIssuedDate(issuedDate);  // optional if constructor already sets it
+            receipt.setReceiptId(receiptId);    // optional if constructor already sets it
+
+            list.add(receipt);
+        } catch (Exception ignored) {}
     }
+    return list;
+}
+
 
     public static void saveAll(List<Receipt> receipts) {
         List<Map<String, String>> rows = new ArrayList<>();
-        rows.add(createHeaderRow());
 
         for (Receipt r : receipts) {
             Map<String, String> row = new LinkedHashMap<>();
@@ -38,20 +62,5 @@ public class ReceiptCsvMapper {
         }
 
         write(CSV_PATH, rows);
-    }
-
-    private static Map<String, String> createHeaderRow() {
-        Map<String, String> header = new LinkedHashMap<>();
-        header.put("ReceiptID", "ReceiptID");
-        header.put("ApplicantName", "ApplicantName");
-        header.put("ApplicantNRIC", "ApplicantNRIC");
-        header.put("ProjectName", "ProjectName");
-        header.put("FlatTypeBooked", "FlatTypeBooked");
-        header.put("IssuedDate", "IssuedDate");
-        header.put("InvoiceID", "InvoiceID");
-        header.put("AmountPaid", "AmountPaid");
-        header.put("Method", "Method");
-        header.put("Status", "Status");
-        return header;
     }
 }

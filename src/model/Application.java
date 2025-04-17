@@ -13,7 +13,6 @@ public class Application {
         this.status = status;
         this.chosenFlatType = chosenFlatType;
     }
-    
 
     public void setStatus(String status) {
         this.status = status;
@@ -24,19 +23,37 @@ public class Application {
     }
 
     public double getFlatPrice() {
-        if (chosenFlatType.equalsIgnoreCase("2-Room")) {
-            return project.getPrice2Room();
-        } else if (chosenFlatType.equalsIgnoreCase("3-Room")) {
-            return project.getPrice3Room();
-        } else {
-            throw new IllegalArgumentException("❌ Unknown flat type: " + chosenFlatType);
-        }
+        System.out.println("🛠️ Project: " + project.getProjectName());
+        System.out.println("2-Room Price: " + project.getPrice2Room());
+        System.out.println("3-Room Price: " + project.getPrice3Room());
+    
+        return chosenFlatType.equalsIgnoreCase("2-Room")
+               ? project.getPrice2Room()
+               : project.getPrice3Room();
+    }
+    
+
+    public String getStatus() {
+        return status;
     }
 
-    public String getStatus() { return status; }
-    public Project getProject() { return project; }
-    public String getFlatType() { return chosenFlatType; }
-    public Applicant getApplicant() { return applicant; }
-    public int getApplicationId() {return applicationId;}
-}
+    public Project getProject() {
+        return project;
+    }
 
+    public String getFlatType() {
+        return chosenFlatType;
+    }
+
+    public Applicant getApplicant() {
+        return applicant;
+    }
+
+    public int getApplicationId() {
+        return applicationId;
+    }
+    public void setProject(Project project) {
+        this.project = project;
+    }
+    
+}

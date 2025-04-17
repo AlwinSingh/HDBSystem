@@ -22,8 +22,9 @@ public class ReceiptService {
 
     // Get all receipts
     public static List<Receipt> getAllReceipts() {
-        return receipts;
+        return ReceiptCsvMapper.loadAll(); // or your in-memory list
     }
+    
 
     // Get receipts by applicant NRIC
     public static List<Receipt> getReceiptsByNRIC(String nric) {

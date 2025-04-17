@@ -27,9 +27,9 @@ public class OfficerMenu {
             System.out.println("4. Book flat for applicant");
             System.out.println("5. Generate receipt for applicant");
             System.out.println("6. View & reply to enquiries");
-            System.out.println("7. Change Password");
-            System.out.println("8. Update project location");     // ← new
-            System.out.println("9. Add an amenity");               // ← new
+            System.out.println("7. Update project location");     
+            System.out.println("8. Add an amenity"); 
+            System.out.println("9. Change Password");              
             System.out.println("0. Logout");
             System.out.print("Enter choice: ");
 
@@ -40,9 +40,9 @@ public class OfficerMenu {
                 case "4" -> bookFlat(officer, sc);
                 case "5" -> generateReceipt(officer, sc);
                 case "6" -> handleEnquiries(officer, sc);
-                case "7" -> AuthService.changePassword(officer, sc);
-                case "8" -> updateLocation(officer, sc);         // ← new
-                case "9" -> addAmenity(officer, sc);             // ← new
+                case "7" -> updateLocation(officer, sc);         
+                case "8" -> addAmenity(officer, sc);
+                case "9" -> AuthService.changePassword(officer, sc);             
                 case "0" -> {
                     System.out.println("👋 Logging out...");
                     return;
@@ -173,12 +173,28 @@ public class OfficerMenu {
             Applicant selected = pending.get(idx);
             String flatType = selected.getApplication().getFlatType();
     
+            // ✅ FIX: Rebind full project with correct pricing
+            Project fullProject = ProjectCsvMapper.loadAll(PROJECT_PATH).stream()
+                .filter(p -> p.getProjectName().equalsIgnoreCase(assigned.getProjectName()))
+                .findFirst()
+                .orElse(null);
+    
+            if (fullProject == null) {
+                System.out.println("❌ Failed to find full project details.");
+                return;
+            }
+    
+            // Ensure application points to full project so prices are correct
+            selected.getApplication().setProject(fullProject);
+    
             officer.bookFlat(selected.getApplication(), flatType);
-            selected.getApplication().setStatus("BOOKED"); // ✅ Update status here
+            selected.getApplication().setStatus("BOOKED");
             ApplicantCsvMapper.updateApplicant(APPLICANT_PATH, selected);
+    
             int nextInvoiceId = InvoiceService.getNextInvoiceId();
             Invoice invoice = InvoiceService.generateInvoiceForBooking(selected.getApplication(), nextInvoiceId);
-            InvoiceService.addInvoice(invoice);  // Save to InvoiceList.csv
+            InvoiceService.addInvoice(invoice);
+    
             System.out.println("🧾 Invoice generated and saved (Invoice ID: " + invoice.getPaymentId() + ")");
             ProjectCsvMapper.saveAll(PROJECT_PATH, ProjectCsvMapper.loadAll(PROJECT_PATH));
     
@@ -187,6 +203,7 @@ public class OfficerMenu {
             System.out.println("❌ Invalid booking.");
         }
     }
+    
     
     private static void handleEnquiries(HDBOfficer officer, Scanner sc) {
         Project assignedProject = officer.getAssignedProject();
@@ -239,6 +256,7 @@ public class OfficerMenu {
     private static void generateReceipt(HDBOfficer officer, Scanner sc) {
         List<Invoice> invoices = InvoiceService.loadAll();
         List<Applicant> applicants = ApplicantCsvMapper.loadAll(APPLICANT_PATH);
+        List<Project> allProjects = ProjectCsvMapper.loadAll(PROJECT_PATH);
     
         List<Invoice> unpaid = invoices.stream()
             .filter(i -> "Processed".equalsIgnoreCase(i.getStatus()))
@@ -280,6 +298,16 @@ public class OfficerMenu {
                 return;
             }
     
+            // ✅ Attach full project data to avoid 0.0 price issue
+            Project fullProject = allProjects.stream()
+                .filter(p -> p.getProjectName().equalsIgnoreCase(selectedInvoice.getProjectName()))
+                .findFirst()
+                .orElse(null);
+    
+            if (fullProject != null && applicant.getApplication() != null) {
+                applicant.getApplication().setProject(fullProject);
+            }
+    
             Receipt receipt = officer.generateReceipt(
                 applicant.getApplication(),
                 selectedInvoice.getPaymentId(),
@@ -292,6 +320,7 @@ public class OfficerMenu {
             System.out.println("❌ Invalid input.");
         }
     }
+    
     
 
     private static void updateLocation(HDBOfficer officer, Scanner sc) {

@@ -18,17 +18,17 @@ public class InvoiceService {
 
         // Generate a new Invoice and store it
         public static Invoice generateInvoiceForBooking(Application app, int paymentId) {
-        return new Invoice(
-            paymentId,
-            app.getFlatPrice(),
-            LocalDate.now(),
-            "PayNow",
-            "Processed",
-            app.getApplicant().getNric(),
-            app.getProject().getProjectName(),
-            app.getFlatType()
-        );
-    }
+            return new Invoice(
+                paymentId,
+                app.getFlatPrice(),
+                LocalDate.now(),
+                "Unspecified",              // Placeholder until applicant chooses
+                "Awaiting Payment",         // Default status before actual payment
+                app.getApplicant().getNric(),
+                app.getProject().getProjectName(),
+                app.getFlatType()
+            );
+        }
 
     public static void addInvoice(Invoice invoice) {
         List<Invoice> all = loadAll();
@@ -65,7 +65,7 @@ public class InvoiceService {
     public static void persist() {
         InvoiceCsvMapper.saveAll(invoices);
     }
-    
+
     public static void saveAll(List<Invoice> invoices) {
         InvoiceCsvMapper.saveAll(invoices);
     }

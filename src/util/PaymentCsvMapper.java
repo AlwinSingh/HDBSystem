@@ -26,8 +26,7 @@ public class PaymentCsvMapper {
 
     public static void saveAll(List<Payment> payments) {
         List<Map<String, String>> rows = new ArrayList<>();
-        rows.add(createHeaderRow());
-
+    
         for (Payment p : payments) {
             Map<String, String> row = new LinkedHashMap<>();
             row.put("PaymentID", String.valueOf(p.getPaymentId()));
@@ -37,17 +36,7 @@ public class PaymentCsvMapper {
             row.put("Status", p.getStatus());
             rows.add(row);
         }
-
+    
         write(CSV_PATH, rows);
-    }
-
-    private static Map<String, String> createHeaderRow() {
-        Map<String, String> header = new LinkedHashMap<>();
-        header.put("PaymentID", "PaymentID");
-        header.put("Amount", "Amount");
-        header.put("Date", "Date");
-        header.put("Method", "Method");
-        header.put("Status", "Status");
-        return header;
     }
 }
