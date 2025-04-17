@@ -1,11 +1,13 @@
 package src;
 
+import java.util.List;
 import java.util.Scanner;
 import src.model.*;
 import src.service.ApplicantMenu;
 import src.service.AuthService;
 import src.service.ManagerMenu;
 import src.service.OfficerMenu;
+import src.util.ApplicantCsvMapper;
 
 public class Main {
 
@@ -81,21 +83,42 @@ public class Main {
             ApplicantMenu.show(applicant);
         }
     }
-
-    private static void handleApplicantRegistration(Scanner sc) {
-        System.out.println("\n📝 Register New Applicant");
-        System.out.print("Enter NRIC: ");
-        String nric = sc.nextLine();
-        System.out.print("Enter Name: ");
-        String name = sc.nextLine();
-        System.out.print("Enter Age: ");
-        int age = Integer.parseInt(sc.nextLine());
-        System.out.print("Enter Marital Status (Single/Married): ");
-        String maritalStatus = sc.nextLine();
-
-        Applicant newApplicant = new Applicant(nric, "password", name, age, maritalStatus);
-        System.out.println("✅ Applicant created. Default password is: password");
-
-        // TODO: Save to ApplicantList.csv
+    private static boolean isValidNric(String nric) {
+        return nric.matches("^[ST]\\d{7}[A-Z]$");
     }
+    
+
+   private static void handleApplicantRegistration(Scanner sc) {
+    System.out.println("\n📝 Register New Applicant");
+    System.out.print("Enter NRIC: ");
+    String nric = sc.nextLine().trim().toUpperCase();
+
+    if (!isValidNric(nric)) {
+        System.out.println("❌ Invalid NRIC format. It must start with S or T, followed by 7 digits, and end with a letter.");
+        return;
+    }
+
+    System.out.print("Enter Name: ");
+    String name = sc.nextLine().trim();
+    System.out.print("Enter Age: ");
+    int age = Integer.parseInt(sc.nextLine().trim());
+    System.out.print("Enter Marital Status (Single/Married): ");
+    String maritalStatus = sc.nextLine().trim();
+
+    // Check if already exists
+    List<Applicant> existing = ApplicantCsvMapper.loadAll("data/ApplicantList.csv");
+    boolean exists = existing.stream().anyMatch(a -> a.getNric().equalsIgnoreCase(nric));
+    if (exists) {
+        System.out.println("❌ An account with this NRIC already exists.");
+        return;
+    }
+
+    // Create new applicant with default password
+    Applicant newApplicant = new Applicant(nric, "password", name, age, maritalStatus);
+    existing.add(newApplicant);
+    ApplicantCsvMapper.saveAll("data/ApplicantList.csv", existing);
+
+    System.out.println("✅ Applicant created. Default password is: password");
+}
+
 }
