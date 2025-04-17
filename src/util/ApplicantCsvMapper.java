@@ -1,10 +1,9 @@
 package src.util;
 
+import java.util.*;
 import src.model.Applicant;
 import src.model.Application;
 import src.model.Project;
-
-import java.util.*;
 
 public class ApplicantCsvMapper {
 
@@ -80,4 +79,15 @@ public class ApplicantCsvMapper {
         }
         CsvUtil.write(csvPath, rows);
     }
+    public static boolean exists(String nric) {
+        return loadAll("data/ApplicantList.csv").stream()
+            .anyMatch(a -> a.getNric().equalsIgnoreCase(nric));
+    }
+    
+    public static void save(Applicant applicant) {
+        List<Applicant> all = loadAll("data/ApplicantList.csv");
+        all.add(applicant);
+        saveAll("data/ApplicantList.csv", all);
+    }
+    
 }
