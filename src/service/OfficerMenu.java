@@ -99,22 +99,38 @@ public class OfficerMenu {
     }
     
     private static void viewAssignedProjectDetails(HDBOfficer officer) {
-        Project assigned = officer.getAssignedProject();
-        if (assigned == null) {
+        Project p = officer.getAssignedProject();
+        if (p == null) {
             System.out.println("❌ No assigned project.");
             return;
         }
     
         System.out.println("\n📌 Assigned Project Details:");
-        System.out.println("🏢 Project Name      : " + assigned.getProjectName());
-        System.out.println("📍 Neighborhood      : " + assigned.getNeighborhood());
-        System.out.println("🧍 Officer Slots     : " + assigned.getOfficerSlots());
-        System.out.println("🏠 2-Room Units      : " + assigned.getRemainingFlats("2-Room"));
-        System.out.println("🏠 3-Room Units      : " + assigned.getRemainingFlats("3-Room"));
-        System.out.println("📅 Application Period: " + assigned.getOpenDate() + " to " + assigned.getCloseDate());
-        System.out.println("👀 Visible to Public : " + (assigned.isVisible() ? "Yes ✅" : "No ❌"));
-        System.out.println("📊 Your Registration : " + officer.getRegistrationStatus());
-    } 
+        System.out.println("🏢 Project Name       : " + p.getProjectName());
+        System.out.println("📍 Neighborhood       : " + p.getNeighborhood());
+    
+        // ### New: location fields ###
+        ProjectLocation loc = p.getLocation();
+        System.out.println("🌆 District & Town     : " + loc.getDistrict() + ", " + loc.getTown());
+        System.out.println("📫 Address             : " + loc.getAddress());
+        System.out.printf("🗺️ Coordinates         : %.6f, %.6f%n", loc.getLat(), loc.getLng());
+    
+        System.out.println("🧍 Officer Slots      : " + p.getOfficerSlots());
+        System.out.println("🏠 2‑Room Units       : " + p.getRemainingFlats("2‑Room"));
+        System.out.println("🏠 3‑Room Units       : " + p.getRemainingFlats("3‑Room"));
+        System.out.println("📅 Application Period : " + p.getOpenDate() + " to " + p.getCloseDate());
+        System.out.println("👀 Visible to Public  : " + (p.isVisible() ? "Yes ✅" : "No ❌"));
+        System.out.println("📊 Your Registration  : " + officer.getRegistrationStatus());
+    
+        // ### New: amenities ###
+        if (!p.getAmenities().isEmpty()) {
+            System.out.println("\n🏞️ Nearby Amenities:");
+            for (Amenities a : p.getAmenities()) {
+                System.out.println("   - " + a.getAmenityDetails());
+            }
+        }
+    }
+    
 
     private static void bookFlat(HDBOfficer officer, Scanner sc) {
         Project assigned = officer.getAssignedProject();
