@@ -5,12 +5,14 @@ public class Amenities {
     private String type;
     private String name;
     private double distance; // in km
+    private String projectName;
 
-    public Amenities(int amenityId, String type, String name, double distance) {
-        this.amenityId = amenityId;
-        this.type = type;
-        this.name = name;
-        this.distance = distance;
+    public Amenities(int amenityId,String type,String name,double distance,String projectName) {
+        this.amenityId   = amenityId;
+        this.type        = type;
+        this.name        = name;
+        this.distance    = distance;
+        this.projectName = projectName;
     }
 
     // Getter methods
@@ -33,5 +35,12 @@ public class Amenities {
     // Optional: helpful for displaying amenity information
     public String getAmenityDetails() {
         return type + ": " + name + " (" + distance + " km away)";
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 }

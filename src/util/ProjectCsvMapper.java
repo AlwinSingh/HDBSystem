@@ -151,4 +151,16 @@ public class ProjectCsvMapper {
         }
         CsvUtil.write(csvPath, rows);
     }
+    
+    public static void updateProject(String csvPath, Project updated) {
+        List<Project> all = loadAll(csvPath);
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i).getProjectName().equalsIgnoreCase(updated.getProjectName())) {
+                all.set(i, updated);
+                break;
+            }
+        }
+        saveAll(csvPath, all);
+    }
+
 }

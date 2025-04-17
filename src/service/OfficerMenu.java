@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import src.model.*;
 import src.util.ApplicantCsvMapper;
+import src.util.AmenitiesCsvMapper;
 import src.util.EnquiryCsvMapper;
 import src.util.OfficerCsvMapper;
 import src.util.ProjectCsvMapper;
@@ -11,9 +12,9 @@ import src.util.ProjectCsvMapper;
 public class OfficerMenu {
 
     private static final String APPLICANT_PATH = "data/ApplicantList.csv";
-    private static final String OFFICER_PATH = "data/OfficerList.csv";
-    private static final String PROJECT_PATH = "data/ProjectList.csv";
-    private static final String ENQUIRY_PATH = "data/EnquiryList.csv";
+    private static final String OFFICER_PATH   = "data/OfficerList.csv";
+    private static final String PROJECT_PATH   = "data/ProjectList.csv";
+    private static final String ENQUIRY_PATH   = "data/EnquiryList.csv";
 
     public static void show(HDBOfficer officer) {
         Scanner sc = new Scanner(System.in);
@@ -27,6 +28,8 @@ public class OfficerMenu {
             System.out.println("5. Generate receipt for applicant");
             System.out.println("6. View & reply to enquiries");
             System.out.println("7. Change Password");
+            System.out.println("8. Update project location");     // ← new
+            System.out.println("9. Add an amenity");               // ← new
             System.out.println("0. Logout");
             System.out.print("Enter choice: ");
 
@@ -38,11 +41,13 @@ public class OfficerMenu {
                 case "5" -> generateReceipt(officer);
                 case "6" -> handleEnquiries(officer, sc);
                 case "7" -> AuthService.changePassword(officer, sc);
+                case "8" -> updateLocation(officer, sc);         // ← new
+                case "9" -> addAmenity(officer, sc);             // ← new
                 case "0" -> {
                     System.out.println("👋 Logging out...");
                     return;
                 }
-                default -> System.out.println("❌ Invalid input.");
+                default  -> System.out.println("❌ Invalid input.");
             }
         }
     }
@@ -221,4 +226,80 @@ public class OfficerMenu {
         System.out.println("\n🧾 Generate Receipt: Work in Progress...");
         System.out.println("This feature is currently under development and will be available soon.");
     }
+
+    private static void updateLocation(HDBOfficer officer, Scanner sc) {
+        Project p = officer.getAssignedProject();
+        if (p == null) {
+            System.out.println("❌ No assigned project to update.");
+            return;
+        }
+    
+        System.out.println("\n✏️  Update location for " + p.getProjectName());
+        System.out.printf("Current District [%s]: ", p.getLocation().getDistrict());
+        String input = sc.nextLine().trim();
+        if (!input.isEmpty()) p.getLocation().setDistrict(input);
+    
+        System.out.printf("Current Town     [%s]: ", p.getLocation().getTown());
+        input = sc.nextLine().trim();
+        if (!input.isEmpty()) p.getLocation().setTown(input);
+    
+        System.out.printf("Current Address  [%s]: ", p.getLocation().getAddress());
+        input = sc.nextLine().trim();
+        if (!input.isEmpty()) p.getLocation().setAddress(input);
+    
+        try {
+            System.out.printf("Current Latitude [%.6f]: ", p.getLocation().getLat());
+            input = sc.nextLine().trim();
+            if (!input.isEmpty()) p.getLocation().setLat(Double.parseDouble(input));
+    
+            System.out.printf("Current Longitude[%.6f]: ", p.getLocation().getLng());
+            input = sc.nextLine().trim();
+            if (!input.isEmpty()) p.getLocation().setLng(Double.parseDouble(input));
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Invalid coordinates – update aborted.");
+            return;
+        }
+    
+        // Persist only the one updated project
+        ProjectCsvMapper.updateProject(PROJECT_PATH, p);
+        System.out.println("✅ Location updated.");
+    }
+    
+
+    private static void addAmenity(HDBOfficer officer, Scanner sc) {
+        Project p = officer.getAssignedProject();
+        if (p == null) {
+            System.out.println("❌ No assigned project to add amenities.");
+            return;
+        }
+    
+        System.out.println("\n➕ Adding amenity for " + p.getProjectName());
+    
+        // compute next ID
+        int nextId = AmenitiesCsvMapper.loadAll().stream()
+                          .map(Amenities::getAmenityId)
+                          .max(Integer::compareTo)
+                          .orElse(0) + 1;
+    
+        System.out.print("Type (e.g. MRT, Clinic): ");
+        String type = sc.nextLine().trim();
+        System.out.print("Name: ");
+        String name = sc.nextLine().trim();
+    
+        double dist;
+        try {
+            System.out.print("Distance (km): ");
+            dist = Double.parseDouble(sc.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Invalid distance. Amenity not added.");
+            return;
+        }
+    
+        // hand off to the mapper
+        Amenities newAmenity = new Amenities(nextId, type, name, dist, p.getProjectName());
+        AmenitiesCsvMapper.add(newAmenity);
+    
+        System.out.println("✅ Amenity added (ID=" + nextId + ").");
+    }
+
 }

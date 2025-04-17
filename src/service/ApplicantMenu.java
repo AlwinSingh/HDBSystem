@@ -3,10 +3,16 @@ package src.service;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import src.model.*;
 import src.util.ApplicantCsvMapper;
+import src.util.ProjectCsvMapper;
 
 public class ApplicantMenu {
+
+    private static final String APPLICANT_PATH = "data/ApplicantList.csv";
+    private static final String PROJECT_PATH   = "data/ProjectList.csv";
 
     private static final Map<String, Consumer<ApplicantContext>> menuOptions = new LinkedHashMap<>() {{
         put("1", ApplicantMenu::viewEligibleProjects);
@@ -101,72 +107,67 @@ public class ApplicantMenu {
         Applicant applicant = ctx.applicant;
         Scanner sc = ctx.scanner;
 
+        // 1️⃣ Prevent double‐apply
         if (applicant.getApplication() != null) {
-            Application app = applicant.getApplication();
-            System.out.println("⚠️ You already have an active application for: " + app.getProject().getProjectName());
-            System.out.println("Status: " + app.getStatus());
+            System.out.println("⚠️ You already have an active application for: " 
+                + applicant.getApplication().getProject().getProjectName()
+                + " (Status: " + applicant.getApplication().getStatus() + ")");
             return;
         }
 
-        List<Project> eligibleProjects = new ArrayList<>();
-        for (Project p : ProjectLoader.loadProjects()) {
-            if (p != null && p.getProjectName() != null && isEligible(applicant, p) && p.isVisible()) {
-                eligibleProjects.add(p);
-            }
-        }
-
-        if (eligibleProjects.isEmpty()) {
+        // 2️⃣ Build eligible list
+        List<Project> eligible = ProjectLoader.loadProjects().stream()
+            .filter(p -> isEligible(applicant, p) && p.isVisible())
+            .collect(Collectors.toList());
+        if (eligible.isEmpty()) {
             System.out.println("❌ No eligible projects available.");
             return;
         }
 
-        System.out.println("\n📋 Eligible Projects:");
-        for (int i = 0; i < eligibleProjects.size(); i++) {
-            Project p = eligibleProjects.get(i);
+        // 3️⃣ Prompt choice…
+        for (int i = 0; i < eligible.size(); i++) {
+            Project p = eligible.get(i);
             System.out.printf("[%d] %s (%s)\n", i + 1, p.getProjectName(), p.getNeighborhood());
         }
-
-        int choice = -1;
-        while (choice < 1 || choice > eligibleProjects.size()) {
-            System.out.print("Enter project number to apply: ");
-            try {
-                choice = Integer.parseInt(sc.nextLine().trim());
-            } catch (NumberFormatException e) {
-                System.out.println("❌ Please enter a valid number.");
-            }
+        System.out.print("Enter project number to apply: ");
+        int choice = Integer.parseInt(sc.nextLine().trim()) - 1;
+        if (choice < 0 || choice >= eligible.size()) {
+            System.out.println("❌ Invalid selection.");
+            return;
         }
+        Project selected = eligible.get(choice);
 
-        Project selected = eligibleProjects.get(choice - 1);
+        // 4️⃣ Flat type
         String flatType = "2-Room";
-
-        if (applicant.getMaritalStatus().equalsIgnoreCase("Married")) {
-            while (true) {
-                System.out.print("Choose flat type (2-Room / 3-Room): ");
-                flatType = sc.nextLine().trim();
-                if (flatType.equals("2-Room") || flatType.equals("3-Room")) break;
-                System.out.println("❌ Invalid flat type.");
-            }
+        if ("Married".equalsIgnoreCase(applicant.getMaritalStatus())) {
+            System.out.print("Choose flat type (2-Room/3-Room): ");
+            flatType = sc.nextLine().trim();
         }
 
-        if (selected.getRemainingFlats(flatType) <= 0) {
-            System.out.println("❌ No available units for " + flatType);
-            return;
-        }
-
-        System.out.print("Submit application for " + selected.getProjectName() + " (" + flatType + ")? (Y/N): ");
+        // 5️⃣ Confirm
+        System.out.print("Submit application for " + selected.getProjectName()
+            + " (" + flatType + ")? (Y/N): ");
         if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
-            System.out.println("❌ Application cancelled.");
+            System.out.println("🔁 Application cancelled.");
             return;
         }
 
-        boolean success = applicant.applyForProject(selected, flatType);
-        if (success) {
+        // 6️⃣ Business logic + persistence
+        boolean ok = applicant.applyForProject(selected, flatType);
+        if (ok) {
+            // update applicant CSV
+            ApplicantCsvMapper.updateApplicant(APPLICANT_PATH, applicant);
+
+            // also record this applicant in the project
+            selected.getApplicantNRICs().add(applicant.getNric());
+            ProjectCsvMapper.updateProject(PROJECT_PATH, selected);
+
             System.out.println("✅ Application submitted. Status: PENDING.");
-            saveApplicantUpdate(applicant);
         } else {
             System.out.println("❌ Application failed.");
         }
     }
+
 
     private static void viewApplication(ApplicantContext ctx) {
         Application app = ctx.applicant.getApplication();

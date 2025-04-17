@@ -9,27 +9,28 @@ import java.util.Map;
 
 public class AmenitiesLoader {
 
+    private static final String AMENITY_CSV = "data/ProjectAmenities.csv";
+
     public static List<Amenities> loadAmenitiesByProject(String projectName) {
         List<Amenities> amenities = new ArrayList<>();
-        List<Map<String, String>> rows = CsvUtil.read("data/ProjectAmenities.csv");
+        List<Map<String,String>> rows = CsvUtil.read(AMENITY_CSV);
 
-        for (Map<String, String> row : rows) {
-            String projName = row.getOrDefault("Project Name", "").trim();
-            if (!projName.equalsIgnoreCase(projectName)) continue;
+        for (Map<String,String> row : rows) {
+            String proj = row.getOrDefault("Project Name", "").trim();
+            if (!proj.equalsIgnoreCase(projectName)) continue;
 
             try {
-                int amenityId = Integer.parseInt(row.getOrDefault("AmenityId", "0").trim());
-                String type = row.getOrDefault("Type", "").trim();
-                String name = row.getOrDefault("Name", "").trim();
-                double distance = Double.parseDouble(row.getOrDefault("Distance", "0").trim());
+                int    amenityId = Integer.parseInt(row.getOrDefault("AmenityID",  "0").trim());
+                String type      = row.getOrDefault("Type",       "").trim();
+                String name      = row.getOrDefault("Name",       "").trim();
+                double distance  = Double.parseDouble(row.getOrDefault("Distance", "0").trim());
 
-                Amenities amenity = new Amenities(amenityId, type, name, distance);
-                amenities.add(amenity);
+                // <-- pass 'proj' (not undefined 'projName' or 'proj')
+                amenities.add(new Amenities(amenityId, type, name, distance, proj));
             } catch (Exception e) {
                 System.err.println("⚠️ Skipped bad amenity row: " + row + " due to " + e.getMessage());
             }
         }
-
         return amenities;
     }
 }

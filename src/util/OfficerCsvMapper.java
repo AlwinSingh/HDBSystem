@@ -58,13 +58,17 @@ public class OfficerCsvMapper {
     
         for (Map<String, String> row : rows) {
             if (row.getOrDefault("NRIC", "").equalsIgnoreCase(updatedOfficer.getNric())) {
-                row.put("Password", updatedOfficer.getPassword());  // Only update password
+                // update everything, not just password
+                row.put("Password",            updatedOfficer.getPassword());
+                row.put("RegistrationStatus",  updatedOfficer.getRegistrationStatus() != null? updatedOfficer.getRegistrationStatus(): "");
+                row.put("AssignedProject",     updatedOfficer.getAssignedProject() != null? updatedOfficer.getAssignedProject().getProjectName(): "");
                 break;
             }
         }
     
         CsvUtil.write(csvPath, rows);
     }
+    
     
     
     

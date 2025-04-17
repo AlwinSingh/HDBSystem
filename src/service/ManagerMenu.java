@@ -45,7 +45,7 @@ public class ManagerMenu {
             System.out.println("\n");
             System.out.println(" [14] 🔒 Change Password");
 
-            System.out.println("\n [0] 🚪 Logout");
+            System.out.println(" [0] 🚪 Logout");
             System.out.print("Enter your choice: ");
 
             String choice = sc.nextLine().trim();
