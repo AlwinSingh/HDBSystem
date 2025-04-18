@@ -13,37 +13,44 @@ public class OfficerMenu {
 
     public static void show(HDBOfficer officer) {
         Scanner sc = new Scanner(System.in);
+    
         while (true) {
             System.out.println("\n===== 🧑‍💼 HDB Officer Dashboard =====");
             System.out.println("Welcome, Officer " + officer.getName());
-            System.out.println("1. View registration status");
-            System.out.println("2. Register for project");
-            System.out.println("3. View assigned project details");
-            System.out.println("4. Book flat for applicant");
-            System.out.println("5. Generate receipt for applicant");
-            System.out.println("6. View & reply to enquiries");
-            System.out.println("7. Update project location");
-            System.out.println("8. Add an amenity");
-            System.out.println("9. Change Password");
     
-            // Only show if officer is unregistered or rejected
+            System.out.println("\n📋 Registration");
+            System.out.printf(" [1] 📝 View Status           [2] 🏗️ Register for Project%n");
+    
+            System.out.println("\n📂 Project");
+            System.out.printf(" [3] 📄 View Details          [4] 🏠 Book Flat for Applicant%n");
+            System.out.printf(" [5] 🧾 Generate Receipt      [6] 📍 Update Location%n");
+            System.out.printf(" [7] ➕ Add Amenity%n");
+    
+            System.out.println("\n📬 Enquiries");
+            System.out.printf(" [8] 💬 View & Reply to Enquiries%n");
+    
+            System.out.println("\n🔐 Account");
+            System.out.printf(" [9] 🔑 Change Password");
+    
             if (officer.getRegistrationStatus() == null ||
                 officer.getRegistrationStatus().equalsIgnoreCase("REJECTED")) {
-                System.out.println("10. Switch to Applicant Dashboard");
+                System.out.printf("   [10] 🔁 Switch to Applicant Dashboard%n");
             }
     
-            System.out.println("0. Logout");
-            System.out.print("➡️ Enter your choice: ");
+            System.out.printf("   [0] 🚪 Logout%n");
     
-            switch (sc.nextLine().trim()) {
+            System.out.print("\n➡️ Enter your choice: ");
+            String choice = sc.nextLine().trim();
+    
+            switch (choice) {
                 case "1" -> viewRegistrationStatus(officer);
                 case "2" -> registerForProject(officer, sc);
                 case "3" -> viewAssignedProjectDetails(officer);
                 case "4" -> bookFlat(officer, sc);
                 case "5" -> generateReceipt(officer, sc);
-                case "6" -> handleEnquiries(officer, sc);
-                case "7" -> updateLocation(officer, sc);
-                case "8" -> addAmenity(officer, sc);
+                case "6" -> updateLocation(officer, sc);
+                case "7" -> addAmenity(officer, sc);
+                case "8" -> handleEnquiries(officer, sc);
                 case "9" -> AuthService.changePassword(officer, sc);
                 case "10" -> {
                     if (officer.getRegistrationStatus() == null ||
@@ -59,10 +66,11 @@ public class OfficerMenu {
                     AuthService.logout();
                     return;
                 }
-                default -> System.out.println("❌ Invalid input.");
+                default -> System.out.println("❌ Invalid input. Please try again.");
             }
         }
     }
+    
     
     private static void viewRegistrationStatus(HDBOfficer officer) {
         officer.viewOfficerRegistrationStatus();

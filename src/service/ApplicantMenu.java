@@ -27,26 +27,33 @@ public class ApplicantMenu {
     public static void show(Applicant applicant) {
         Scanner sc = new Scanner(System.in);
         boolean isOfficer = applicant instanceof HDBOfficer;
-
+    
         while (true) {
             System.out.println("\n===== 🏠 Applicant Dashboard =====");
             System.out.println("Welcome, " + applicant.getName());
-            System.out.println("1. View eligible open projects");
-            System.out.println("2. Apply for a project");
-            System.out.println("3. View my application");
-            System.out.println("4. Request withdrawal");
-            System.out.println("5. View and Pay Invoice");
-            System.out.println("6. View Receipts");
-            System.out.println("7. Enquiry Services");
-            System.out.println("8. Feedback Services");
-            System.out.println("9. Change Password");
-            
-            if (isOfficer) System.out.println("10. Switch to Officer Dashboard");
-            System.out.println("0. Logout");
-            System.out.print("➡️ Enter your choice: ");
-
+    
+            System.out.println("\n📋 Applications");
+            System.out.printf(" [1] 📄 View Eligible Projects   [2] 📝 Apply for a Project%n");
+            System.out.printf(" [3] 🔍 View My Application     [4] ❌ Request Withdrawal%n");
+    
+            System.out.println("\n💳 Payments");
+            System.out.printf(" [5] 💰 View & Pay Invoice      [6] 🧾 View Receipts%n");
+    
+            System.out.println("\n📬 Services");
+            System.out.printf(" [7] 💬 Enquiry Services        [8] 📝 Feedback Services%n");
+    
+            System.out.println("\n🔐 Account");
+            System.out.printf(" [9] 🔑 Change Password");
+    
+            if (isOfficer) {
+                System.out.printf("   [10] 🔁 Switch to Officer Dashboard%n");
+            }
+    
+            System.out.printf("   [0] 🚪 Logout%n");
+    
+            System.out.print("\n➡️ Enter your choice: ");
             String choice = sc.nextLine().trim();
-
+    
             if (choice.equals("0")) {
                 AuthService.logout();
                 return;
@@ -57,11 +64,11 @@ public class ApplicantMenu {
             } else if (menuOptions.containsKey(choice)) {
                 menuOptions.get(choice).accept(new ApplicantContext(applicant, sc));
             } else {
-                System.out.println("❌ Invalid input.");
+                System.out.println("❌ Invalid input. Please try again.");
             }
-            
         }
     }
+    
 
     private static void viewEligibleProjects(ApplicantContext ctx) {
         List<Project> projects = ProjectLoader.loadProjects();

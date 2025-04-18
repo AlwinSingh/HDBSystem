@@ -21,72 +21,63 @@ public class ManagerMenu {
             System.out.println("\n===== 🧠 HDB Manager Dashboard =====");
             System.out.println("Welcome, Manager " + manager.getName());
     
-            System.out.println("\n🏗️ Project Management");
-            System.out.println(" [1] ➕ Create Project");
-            System.out.println(" [2] ✏️ Edit Project");
-            System.out.println(" [3] ❌ Delete Project");
-            System.out.println(" [4] 🔁 Toggle Visibility");
+            System.out.println("""
+            
+    🏗️  Project Management
+     [1]  ➕ Create Project           [2]  ✏️ Edit Project
+     [3]  ❌ Delete Project           [4]  🔁 Toggle Visibility
     
-            System.out.println("\n📊 Project Viewing");
-            System.out.println(" [5] 🌐 View All Projects");
-            System.out.println(" [6] 📂 View My Projects");
+    📊  Project Viewing
+     [5]  🌐 View All Projects        [6]  📁 View My Projects
     
-            System.out.println("\n🧑‍💼 Officer Applications");
-            System.out.println(" [7] 📋 View Officer Registrations");
-            System.out.println(" [8] ✅/❌ Approve/Reject Officer");
+    👔  Officer Applications
+     [7]  📋 View Registrations       [8]  ✅/❌ Approve/Reject Officers
     
-            System.out.println("\n👥 Applicant Management");
-            System.out.println(" [9] 📄 View Applications");
-            System.out.println(" [10] ✅/❌ Approve/Reject Applications");
-            System.out.println(" [11] 🔄 Handle Withdrawal Requests");
+    👥  Applicant Management
+     [9]  📄 View Applications        [10] ✅/❌ Approve/Reject Applications
+     [11]  🔄 Handle Withdrawal Requests
     
-            System.out.println("\n📈 Reporting");
-            System.out.println(" [12] 📊 Generate Booking Reports");
+    📈  Reports
+     [12]  📊 Generate Booking Reports
     
-            System.out.println("\n🗃 Enquiries and Feedback");
-            System.out.println(" [13] 📬 View & Reply to Enquiries");
-            System.out.println(" [14] 📝 View & Resolve Feedback");
-            System.out.println(" [15] 📊 View Feedback Analytics");
+    📬  Enquiries & Feedback
+     [13]  📬 View & Reply to Enquiries
+     [14]  📝 View & Resolve Feedback
+     [15]  📊 View Feedback Analytics
     
-            System.out.println("\n [16] 🔒 Change Password");
-            System.out.println(" [0] Logout");
+    🔐  Account
+     [16]  🔒 Change Password         [0]  🚪 Logout
+    """);
+    
             System.out.print("➡️ Enter your choice: ");
-    
             String choice = sc.nextLine().trim();
     
             switch (choice) {
-                case "1" -> createProject(manager, sc);
-                case "2" -> editProject(manager, sc);
-                case "3" -> deleteProject(manager, sc);
-                case "4" -> toggleVisibility(manager, sc);
-    
-                case "5" -> viewAllProjects();
-                case "6" -> viewMyProjects(manager);
-    
-                case "7" -> viewOfficerRegistrations(manager);
-                case "8" -> handleOfficerApproval(manager, sc);
-    
+                case "1"  -> createProject(manager, sc);
+                case "2"  -> editProject(manager, sc);
+                case "3"  -> deleteProject(manager, sc);
+                case "4"  -> toggleVisibility(manager, sc);
+                case "5"  -> viewAllProjects();
+                case "6"  -> viewMyProjects(manager);
+                case "7"  -> viewOfficerRegistrations(manager);
+                case "8"  -> handleOfficerApproval(manager, sc);
                 case "9"  -> viewApplicantApplications(manager);
                 case "10" -> handleApplicantApproval(manager, sc);
                 case "11" -> handleWithdrawalRequests(manager, sc);
-    
                 case "12" -> generateReports(manager, sc);
-    
-                case "13" -> showEnquiryOptions(manager, sc);          // ✅ updated label and method
+                case "13" -> showEnquiryOptions(manager, sc);
                 case "14" -> viewAndResolveFeedback(manager, sc);
                 case "15" -> FeedbackAnalyticsService.generateManagerAnalytics(manager);
-    
                 case "16" -> AuthService.changePassword(manager, sc);
-    
-                case "0" -> {
+                case "0"  -> {
                     AuthService.logout();
                     return;
                 }
-    
                 default -> System.out.println("❌ Invalid input. Please try again.");
             }
         }
     }
+    
     
 
     private static void createProject(HDBManager manager, Scanner sc) {
