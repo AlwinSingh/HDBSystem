@@ -18,7 +18,7 @@ public class ApplicantMenu {
         put("4", ApplicantMenu::requestWithdrawal);
         put("5", ApplicantMenu::handleEnquiries);
         put("6", ctx -> viewAndPayInvoices(ctx.applicant, ctx.scanner));
-        put("7", ctx -> viewReceipts(ctx.applicant)); // ✅ Add this line
+        put("7", ctx -> viewReceipts(ctx.applicant)); 
         put("8", ApplicantMenu::changePassword);
     }};
     
@@ -47,11 +47,7 @@ public class ApplicantMenu {
 
             if (choice.equals("0")) {
                 AuthService.logout();
-            } else if (choice.equals("9") && isOfficer) {
-                System.out.println("🔙 Switching to Officer Dashboard...");
-                OfficerMenu.show((HDBOfficer) applicant);
-                return;
-            } else if (menuOptions.containsKey(choice)) {
+            }  else if (menuOptions.containsKey(choice)) {
                 menuOptions.get(choice).accept(new ApplicantContext(applicant, sc));
             } else {
                 System.out.println("❌ Invalid input.");
@@ -275,9 +271,19 @@ public class ApplicantMenu {
             return;
         }
     
-        System.out.println("\n📄 Your Invoices:");
-        for (int i = 0; i < myInvoices.size(); i++) {
-            Invoice inv = myInvoices.get(i);
+        // Filter unpaid invoices
+        List<Invoice> unpaidInvoices = myInvoices.stream()
+            .filter(inv -> !"Awaiting Receipt".equalsIgnoreCase(inv.getStatus()))
+            .toList();
+    
+        if (unpaidInvoices.isEmpty()) {
+            System.out.println("✅ All your invoices have already been paid.");
+            return;
+        }
+    
+        System.out.println("\n📄 Your Unpaid Invoices:");
+        for (int i = 0; i < unpaidInvoices.size(); i++) {
+            Invoice inv = unpaidInvoices.get(i);
             System.out.printf("[%d] Invoice #%d | Flat: %s | Amount: $%.2f | Status: %s\n",
                 i + 1, inv.getPaymentId(), inv.getFlatType(), inv.getAmount(), inv.getStatus());
         }
@@ -286,13 +292,9 @@ public class ApplicantMenu {
         try {
             int idx = Integer.parseInt(sc.nextLine().trim());
             if (idx == 0) return;
-            if (idx < 1 || idx > myInvoices.size()) throw new Exception();
+            if (idx < 1 || idx > unpaidInvoices.size()) throw new Exception();
     
-            Invoice selected = myInvoices.get(idx - 1);
-            if ("Processed".equalsIgnoreCase(selected.getStatus())) {
-                System.out.println("✅ This invoice has already been paid.");
-                return;
-            }
+            Invoice selected = unpaidInvoices.get(idx - 1);
     
             // Payment method selection
             System.out.println("Choose payment method:");
@@ -310,10 +312,12 @@ public class ApplicantMenu {
                     System.out.println("❌ Invalid payment method.");
                     return;
                 }
-            } 
+            }
+    
             selected.setMethod(method);
-            selected.setStatus(Payment.PaymentStatusType.PROCESSED.name());
-            InvoiceService.updateInvoice(selected); // Save changes
+            selected.setStatus("Awaiting Receipt");
+            InvoiceService.updateInvoice(selected);
+    
             Payment newPayment = new Payment(
                 selected.getPaymentId(),
                 selected.getAmount(),
@@ -327,6 +331,8 @@ public class ApplicantMenu {
             System.out.println("❌ Invalid input.");
         }
     }
+    
+    
     
     private static void viewReceipts(Applicant applicant) {
         List<Receipt> allReceipts = ReceiptService.getAllReceipts();

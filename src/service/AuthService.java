@@ -117,6 +117,5 @@ public class AuthService {
 
     public static void logout() {
         System.out.println("👋 Logging out...");
-        System.exit(0);
     }
 }

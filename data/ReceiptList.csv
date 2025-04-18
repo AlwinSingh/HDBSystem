@@ -1,2 +1,2 @@
 ReceiptID,ApplicantName,ApplicantNRIC,ProjectName,FlatTypeBooked,IssuedDate,InvoiceID,AmountPaid,Method,Status
-R-F423EA82,Sarah,T7654321B,ClementiLake,2-Room,2025-04-18,1,10000.0,Credit Card,Processed
+R-966DCF58,Sarah,T7654321B,ClementiLake,2-Room,2025-04-18,1,10000.0,Bank Transfer,PROCESSED

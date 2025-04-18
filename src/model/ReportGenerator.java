@@ -10,23 +10,34 @@ public class ReportGenerator {
         List<Applicant> applicants = ApplicantCsvMapper.loadAll();
         List<Invoice> invoices = InvoiceCsvMapper.loadAll();
         List<Receipt> receipts = ReceiptCsvMapper.loadAll();
+        List<Project> allProjects = ProjectCsvMapper.loadAll();  // 🔥 Load complete projects
         List<Report> reports = new ArrayList<>();
     
         for (Applicant a : applicants) {
             Application app = a.getApplication();
             if (app == null || !"BOOKED".equalsIgnoreCase(app.getStatus())) continue;
     
+            Project appProject = app.getProject();
+            if (appProject != null) {
+                Project full = allProjects.stream()
+                    .filter(p -> p.getProjectName().equalsIgnoreCase(appProject.getProjectName()))
+                    .findFirst()
+                    .orElse(null);
+    
+                if (full != null) app.setProject(full);
+            }
+    
             Invoice inv = invoices.stream()
                 .filter(i -> i.getApplicantNRIC().equalsIgnoreCase(a.getNric()))
                 .findFirst()
                 .orElse(null);
     
+            if (inv == null) continue;
+    
             Receipt receipt = receipts.stream()
                 .filter(r -> r.getApplicantNRIC().equalsIgnoreCase(a.getNric()))
                 .findFirst()
                 .orElse(null);
-    
-            if (inv == null) continue;
     
             reports.add(new Report(
                 a.getName(),
@@ -35,7 +46,7 @@ public class ReportGenerator {
                 a.getMaritalStatus(),
                 app.getProject().getProjectName(),
                 app.getFlatType(),
-                app.getFlatPrice(),
+                app.getFlatPrice(), // ✅ Now correctly returns the price
                 app.getStatus(),
                 inv.getStatus(),
                 inv.getDate(),
@@ -45,6 +56,7 @@ public class ReportGenerator {
     
         return reports;
     }
+    
 
     public List<Report> generateReportsByProject(String projectName) {
         return generateAllReports().stream()

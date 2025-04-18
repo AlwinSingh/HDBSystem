@@ -25,7 +25,6 @@ public class OfficerMenu {
             System.out.println("7. Update project location");     
             System.out.println("8. Add an amenity"); 
             System.out.println("9. Change Password");
-            System.out.println("10. Switch to Applicant Dashboard");
             System.out.println("0. Logout");
             System.out.print("➡️ Enter your choice: ");
 
@@ -39,11 +38,11 @@ public class OfficerMenu {
                 case "7" -> updateLocation(officer, sc);         
                 case "8" -> addAmenity(officer, sc);
                 case "9" -> AuthService.changePassword(officer, sc);
-                case "10" -> {
-                    System.out.println("🔙 Switching to Applicant Dashboard...");
-                    ApplicantMenu.show(officer);
+                case "0" -> {
+                    AuthService.logout();
+                    return;
                 }
-                case "0" -> AuthService.logout();
+                
                 default  -> System.out.println("❌ Invalid input.");
             }
         }
@@ -255,31 +254,32 @@ public class OfficerMenu {
         List<Applicant> applicants = ApplicantCsvMapper.loadAll();
         List<Project> allProjects = ProjectCsvMapper.loadAll();
     
-        List<Invoice> unpaid = invoices.stream()
-            .filter(i -> Payment.PaymentStatusType.PROCESSED.name().equalsIgnoreCase(i.getStatus()))
+        List<Invoice> awaitingReceipts = invoices.stream()
+            .filter(i -> "Awaiting Receipt".equalsIgnoreCase(i.getStatus()))
             .filter(i -> ReceiptService.findByInvoiceId(i.getPaymentId()) == null)
             .collect(Collectors.toList());
     
-        if (unpaid.isEmpty()) {
-            System.out.println("📭 No processed payments without receipts.");
+        if (awaitingReceipts.isEmpty()) {
+            System.out.println("📭 No paid invoices awaiting receipts.");
             return;
         }
     
-        System.out.println("\n📋 Processed Invoices (no receipt):");
-        for (int i = 0; i < unpaid.size(); i++) {
-            Invoice inv = unpaid.get(i);
+        System.out.println("\n📋 Paid Invoices (Awaiting Receipt):");
+        for (int i = 0; i < awaitingReceipts.size(); i++) {
+            Invoice inv = awaitingReceipts.get(i);
             System.out.printf("[%d] Invoice #%d | %s | %s | $%.2f\n",
                 i + 1, inv.getPaymentId(), inv.getApplicantNRIC(), inv.getFlatType(), inv.getAmount());
         }
     
         System.out.print("Select invoice to issue receipt for (0 to cancel): ");
         try {
-            int idx = Integer.parseInt(sc.nextLine().trim()) - 1;
-            if (idx < 0 || idx >= unpaid.size()) return;
+            int idx = Integer.parseInt(sc.nextLine().trim());
+            if (idx == 0) return;
+            if (idx < 1 || idx > awaitingReceipts.size()) throw new Exception();
     
-            Invoice selectedInvoice = unpaid.get(idx);
+            Invoice selectedInvoice = awaitingReceipts.get(idx - 1);
     
-            // ✅ SECURITY CHECK: Only allow if officer is assigned to the invoice's project
+            // ✅ SECURITY CHECK: Officer only handles their assigned project
             if (!selectedInvoice.getProjectName().equalsIgnoreCase(officer.getAssignedProject().getProjectName())) {
                 System.out.println("❌ You are not authorized to issue receipts for this project.");
                 return;
@@ -295,7 +295,7 @@ public class OfficerMenu {
                 return;
             }
     
-            // ✅ Attach full project data to avoid 0.0 price issue
+            // ✅ Attach full project to avoid 0.0 flat price issue
             Project fullProject = allProjects.stream()
                 .filter(p -> p.getProjectName().equalsIgnoreCase(selectedInvoice.getProjectName()))
                 .findFirst()
@@ -305,6 +305,7 @@ public class OfficerMenu {
                 applicant.getApplication().setProject(fullProject);
             }
     
+            // ✅ Create and save receipt
             Receipt receipt = officer.generateReceipt(
                 applicant.getApplication(),
                 selectedInvoice.getPaymentId(),
@@ -312,12 +313,27 @@ public class OfficerMenu {
             );
             ReceiptService.addReceipt(receipt);
     
+            // ✅ Update invoice status to "Processed"
+            selectedInvoice.setStatus("Processed");
+            InvoiceService.updateInvoice(selectedInvoice);
+    
+            // ✅ Update payment status to "Processed"
+            Payment payment = PaymentService.getAllPayments().stream()
+                .filter(p -> p.getPaymentId() == selectedInvoice.getPaymentId())
+                .findFirst()
+                .orElse(null);
+    
+            if (payment != null) {
+                payment.setStatus("Processed");
+                PaymentService.persist(); // Save changes to PaymentList.csv
+            }
+    
             System.out.println("✅ Receipt generated:\n" + receipt);
+    
         } catch (Exception e) {
             System.out.println("❌ Invalid input.");
         }
     }
-    
     
 
     private static void updateLocation(HDBOfficer officer, Scanner sc) {
