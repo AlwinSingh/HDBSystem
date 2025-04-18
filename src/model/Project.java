@@ -113,6 +113,15 @@ public class Project {
     public Set<String> getApplicantNRICs() {
         return applicantNRICs;
     }
+
+    public int getAvailableFlats2Room() {
+        return availableFlats2Room;
+    }
+    
+    public int getAvailableFlats3Room() {
+        return availableFlats3Room;
+    }
+    
     
     
     // Setters

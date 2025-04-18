@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import src.model.*;
+import src.util.ApplicantCsvMapper;
 import src.util.CsvUtil;
 import src.util.EnquiryCsvMapper;
 import src.util.FilePath;
@@ -564,19 +565,19 @@ public class ManagerMenu {
         }
     }
     
-    
     private static void handleApplicantApproval(HDBManager manager, Scanner sc) {
-        List<Map<String, String>> applicants = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
-        List<Map<String, String>> projects = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
+        List<Applicant> applicants = ApplicantCsvMapper.loadAll();
+        List<Project> projects = ProjectCsvMapper.loadAll();
     
         Set<String> myProjectNames = projects.stream()
-            .filter(p -> manager.getNric().equalsIgnoreCase(p.get("ManagerNRIC")))
-            .map(p -> p.get("Project Name"))
+            .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
+            .map(Project::getProjectName)
             .collect(Collectors.toSet());
     
-        List<Map<String, String>> pendingApps = applicants.stream()
-            .filter(a -> myProjectNames.contains(a.get("AppliedProjectName")))
-            .filter(a -> Applicant.AppStatusType.PENDING.name().equalsIgnoreCase(a.get("ApplicationStatus")))
+        List<Applicant> pendingApps = applicants.stream()
+            .filter(a -> a.getApplication() != null)
+            .filter(a -> myProjectNames.contains(a.getApplication().getProject().getProjectName()))
+            .filter(a -> Applicant.AppStatusType.PENDING.name().equalsIgnoreCase(a.getApplication().getStatus()))
             .toList();
     
         if (pendingApps.isEmpty()) {
@@ -585,10 +586,11 @@ public class ManagerMenu {
         }
     
         for (int i = 0; i < pendingApps.size(); i++) {
-            Map<String, String> app = pendingApps.get(i);
+            Applicant a = pendingApps.get(i);
             System.out.printf("[%d] %s (%s), Project: %s, Flat: %s\n", i + 1,
-                    app.get("Name"), app.get("NRIC"),
-                    app.get("AppliedProjectName"), app.get("FlatTypeApplied"));
+                a.getName(), a.getNric(),
+                a.getApplication().getProject().getProjectName(),
+                a.getApplication().getFlatType());
         }
     
         System.out.print("Select applicant to process (0 to cancel): ");
@@ -602,12 +604,12 @@ public class ManagerMenu {
             return;
         }
     
-        Map<String, String> selectedApp = pendingApps.get(choice - 1);
-        String flatType = selectedApp.get("FlatTypeApplied");
-        String projName = selectedApp.get("AppliedProjectName");
+        Applicant selectedApp = pendingApps.get(choice - 1);
+        String flatType = selectedApp.getApplication().getFlatType();
+        String projName = selectedApp.getApplication().getProject().getProjectName();
     
-        Map<String, String> project = projects.stream()
-            .filter(p -> projName.equalsIgnoreCase(p.get("Project Name")))
+        Project project = projects.stream()
+            .filter(p -> p.getProjectName().equalsIgnoreCase(projName))
             .findFirst()
             .orElse(null);
     
@@ -620,44 +622,49 @@ public class ManagerMenu {
         String decision = sc.nextLine().trim().toUpperCase();
     
         switch (decision) {
-            case "A" -> approveApplicant(selectedApp, project, flatType, sc);
-            case "R" -> rejectApplicant(selectedApp, sc);
-            default -> System.out.println("❌ Invalid input. Use A or R.");
+            case "A" -> {
+                if (!approveApplicant(selectedApp, project, flatType)) return;
+            }
+            case "R" -> {
+                System.out.print("Confirm rejection for " + selectedApp.getName() + " (Y/N): ");
+                if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
+                    System.out.println("❌ Rejection cancelled.");
+                    return;
+                }
+                selectedApp.getApplication().setStatus(Applicant.AppStatusType.UNSUCCESSFUL.name());
+                System.out.println("❌ Application rejected.");
+            }
+            default -> {
+                System.out.println("❌ Invalid input. Use A or R.");
+                return;
+            }
         }
     
-        CsvUtil.write(FilePath.APPLICANT_LIST_FILE, applicants);
-        CsvUtil.write(FilePath.PROJECT_LIST_FILE, projects);
+        ApplicantCsvMapper.updateApplicant(selectedApp);
+        ProjectCsvMapper.saveAll(projects);
     }
     
-    private static void approveApplicant(Map<String, String> app, Map<String, String> project, String flatType, Scanner sc) {
-        System.out.print("Confirm approval for " + app.get("Name") + " (Y/N): ");
-        if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
-            System.out.println("❌ Approval cancelled.");
-            return;
-        }
+    private static boolean approveApplicant(Applicant applicant, Project project, String flatType) {
+        int available = flatType.equalsIgnoreCase("2-Room")
+            ? project.getAvailableFlats2Room()
+            : project.getAvailableFlats3Room();
     
-        String key = flatType.equalsIgnoreCase("2-Room") ? "Number of units for Type 1" : "Number of units for Type 2";
-        int units = Integer.parseInt(project.getOrDefault(key, "0"));
-    
-        if (units <= 0) {
+        if (available <= 0) {
             System.out.println("❌ No units left for this flat type.");
-            return;
+            return false;
         }
     
-        project.put(key, String.valueOf(units - 1));
-        app.put("ApplicationStatus", Applicant.AppStatusType.SUCCESSFUL.name());
+        if (flatType.equalsIgnoreCase("2-Room")) {
+            project.setAvailableFlats2Room(available - 1);
+        } else {
+            project.setAvailableFlats3Room(available - 1);
+        }
+    
+        applicant.getApplication().setStatus(Applicant.AppStatusType.SUCCESSFUL.name());
         System.out.println("✅ Application approved and flat reserved.");
+        return true;
     }
     
-    private static void rejectApplicant(Map<String, String> app, Scanner sc) {
-        System.out.print("Confirm rejection for " + app.get("Name") + " (Y/N): ");
-        if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
-            System.out.println("❌ Rejection cancelled.");
-            return;
-        }
-        app.put("ApplicationStatus", Applicant.AppStatusType.UNSUCCESSFUL.name());
-        System.out.println("❌ Application rejected.");
-    }
     
     private static void handleWithdrawalRequests(HDBManager manager, Scanner sc) {
         List<Map<String, String>> applicants = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
