@@ -3,7 +3,6 @@ package src.service;
 import src.model.Report;
 import src.model.ReportGenerator;
 import src.util.ReportCsvMapper;
-import src.util.FilePath;
 
 import java.time.LocalDate;
 import java.util.List;
