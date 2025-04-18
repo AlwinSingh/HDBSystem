@@ -17,34 +17,39 @@ public class ReceiptCsvMapper {
 
         for (Map<String, String> row : rows) {
             try {
-                String applicantName = row.get("ApplicantName");
-                String applicantNRIC = row.get("ApplicantNRIC");
-                String projectName = row.get("ProjectName");
-                String flatType = row.get("FlatTypeBooked");
-                String receiptId = row.get("ReceiptID");
+                String applicantName = row.getOrDefault("ApplicantName", "").trim();
+                String applicantNRIC = row.getOrDefault("ApplicantNRIC", "").trim();
+                String projectName = row.getOrDefault("ProjectName", "").trim();
+                String flatType = row.getOrDefault("FlatTypeBooked", "").trim();
+                String receiptId = row.getOrDefault("ReceiptID", "").trim();
 
-                double amountPaid = Double.parseDouble(row.get("AmountPaid"));
-                String methodRaw = row.get("Method");
-                String status = row.get("Status");
-                int invoiceId = Integer.parseInt(row.get("InvoiceID"));
-                LocalDate issuedDate = LocalDate.parse(row.get("IssuedDate"));
+                String amountStr = row.getOrDefault("AmountPaid", "").trim();
+                String methodRaw = row.getOrDefault("Method", "").trim();
+                String status = row.getOrDefault("Status", "").trim();
+                String invoiceIdStr = row.getOrDefault("InvoiceID", "").trim();
+                String issuedDateStr = row.getOrDefault("IssuedDate", "").trim();
 
-                // Convert method string to PaymentMethod enum safely
+                // Skip if critical fields are missing
+                if (amountStr.isEmpty() || invoiceIdStr.isEmpty() || issuedDateStr.isEmpty()) continue;
+
+                double amountPaid = Double.parseDouble(amountStr);
+                int invoiceId = Integer.parseInt(invoiceIdStr);
+                LocalDate issuedDate = LocalDate.parse(issuedDateStr);
+
                 PaymentMethod method = Arrays.stream(PaymentMethod.values())
                         .filter(pm -> pm.toString().equalsIgnoreCase(methodRaw))
                         .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("Invalid payment method: " + methodRaw));
+                        .orElse(PaymentMethod.PAYNOW); // fallback method
 
                 Invoice invoice = new Invoice(invoiceId, amountPaid, issuedDate, method, status, applicantNRIC, projectName, flatType);
 
-                // Construct the Receipt (dummy age and status since not stored in CSV)
                 Receipt receipt = new Receipt(applicantName, applicantNRIC, 0, "", projectName, "", flatType, invoice);
                 receipt.setIssuedDate(issuedDate);
                 receipt.setReceiptId(receiptId);
 
                 list.add(receipt);
-            } catch (Exception ignored) {
-                ignored.printStackTrace(); // You can log instead of printing in production
+            } catch (Exception e) {
+                System.err.println("⚠️ Skipping malformed row in ReceiptList.csv: " + e.getMessage());
             }
         }
 

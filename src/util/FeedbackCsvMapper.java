@@ -37,8 +37,8 @@ public class FeedbackCsvMapper {
                     projectName.isEmpty() ? null : projectName
                 );
                 list.add(fb);
-            } catch (Exception e) {
-                System.out.println("❌ Error parsing row: " + e.getMessage());
+            } catch (Exception ignored) {
+
             }
         }
         return list;

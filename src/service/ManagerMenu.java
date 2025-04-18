@@ -431,13 +431,15 @@ public class ManagerMenu {
     
     
     private static void handleOfficerApproval(HDBManager manager, Scanner sc) {
-        List<Map<String, String>> projectList = CsvUtil.read(FilePath.OFFICER_LIST_FILE);
-        List<Map<String, String>> officerList = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
-    
+        List<Map<String, String>> officerList = CsvUtil.read(FilePath.OFFICER_LIST_FILE);
+        List<Map<String, String>> projectList = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
+
+        // find pending officers in the officer list
         List<Map<String, String>> pendingOfficers = officerList.stream()
-            .filter(o -> HDBOfficer.RegistrationStatusType.PENDING.name().equalsIgnoreCase(o.getOrDefault("RegistrationStatus", "")))
+            .filter(o -> HDBOfficer.RegistrationStatusType.PENDING
+                .name().equalsIgnoreCase(o.getOrDefault("RegistrationStatus", "")))
             .toList();
-    
+
         if (pendingOfficers.isEmpty()) {
             System.out.println("📭 No pending officer registrations.");
             return;

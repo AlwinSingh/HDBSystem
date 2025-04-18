@@ -50,11 +50,16 @@ public class ApplicantMenu {
             if (choice.equals("0")) {
                 AuthService.logout();
                 return;
-            }  else if (menuOptions.containsKey(choice)) {
+            } else if (choice.equals("10") && isOfficer) {
+                System.out.println("🔁 Switching to Officer Dashboard...");
+                OfficerMenu.show((HDBOfficer) applicant);  // safely cast
+                return;
+            } else if (menuOptions.containsKey(choice)) {
                 menuOptions.get(choice).accept(new ApplicantContext(applicant, sc));
             } else {
                 System.out.println("❌ Invalid input.");
             }
+            
         }
     }
 

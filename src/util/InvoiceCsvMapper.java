@@ -16,24 +16,32 @@ public class InvoiceCsvMapper {
 
         for (Map<String, String> row : rows) {
             try {
-                int paymentId = Integer.parseInt(row.get("PaymentID"));
-                double amount = Double.parseDouble(row.get("Amount"));
-                LocalDate date = LocalDate.parse(row.get("GeneratedDate"));
-                String methodRaw = row.get("Method");
-                String status = row.get("Status");
-                String applicantNRIC = row.get("ApplicantNRIC");
-                String projectName = row.get("ProjectName");
-                String flatType = row.get("FlatType");
+                String paymentIdStr = row.getOrDefault("PaymentID", "").trim();
+                String amountStr = row.getOrDefault("Amount", "").trim();
+                String dateStr = row.getOrDefault("GeneratedDate", "").trim();
+                String methodRaw = row.getOrDefault("Method", "").trim();
+                String status = row.getOrDefault("Status", "").trim();
+                String applicantNRIC = row.getOrDefault("ApplicantNRIC", "").trim();
+                String projectName = row.getOrDefault("ProjectName", "").trim();
+                String flatType = row.getOrDefault("FlatType", "").trim();
 
-                // Convert string to PaymentMethod enum
+                // Skip rows missing essential info
+                if (paymentIdStr.isEmpty() || amountStr.isEmpty() || dateStr.isEmpty()) {
+                    continue;
+                }
+
+                int paymentId = Integer.parseInt(paymentIdStr);
+                double amount = Double.parseDouble(amountStr);
+                LocalDate date = LocalDate.parse(dateStr);
+
                 PaymentMethod method = Arrays.stream(PaymentMethod.values())
                         .filter(pm -> pm.toString().equalsIgnoreCase(methodRaw))
                         .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("Invalid payment method: " + methodRaw));
+                        .orElse(PaymentMethod.PAYNOW);  // default fallback
 
                 list.add(new Invoice(paymentId, amount, date, method, status, applicantNRIC, projectName, flatType));
-            } catch (Exception ignored) {
-                ignored.printStackTrace(); // for debugging purposes
+            } catch (Exception e) {
+                System.err.println("⚠️ Skipping malformed row in InvoiceList.csv: " + e.getMessage());
             }
         }
         return list;
@@ -50,7 +58,7 @@ public class InvoiceCsvMapper {
             row.put("ProjectName", i.getProjectName());
             row.put("FlatType", i.getFlatType());
             row.put("Amount", String.valueOf(i.getAmount()));
-            row.put("Method", i.getMethodLabel());  // Use label from PaymentMethod enum
+            row.put("Method", i.getMethodLabel());  // from enum
             row.put("Status", i.getStatus());
             row.put("GeneratedDate", i.getDate().toString());
             rows.add(row);
