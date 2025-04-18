@@ -1,4 +1,4 @@
 RegistrationStatus,NRIC,AssignedProject,Marital Status,Age,Password,Name
-PENDING,T2109876H,Acacia Breeze,Single,36,password,Daniel
+PENDING,T2109876H,,Single,36,password,Daniel
 ,S6543210I,,Single,28,password,Emily
 ,T1234567J,,Married,29,password,David

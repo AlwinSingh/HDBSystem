@@ -9,6 +9,7 @@ import src.util.ApplicantCsvMapper;
 import src.util.CsvUtil;
 import src.util.EnquiryCsvMapper;
 import src.util.FilePath;
+import src.util.OfficerCsvMapper;
 import src.util.ProjectCsvMapper;
 
 public class ManagerMenu {
@@ -355,9 +356,11 @@ public class ManagerMenu {
         if (toggleTo) selected.openProject();
         else selected.closeProject();
     
-        ProjectCsvMapper.saveAll(allProjects);
+        ProjectCsvMapper.updateProject(selected);
+    
         System.out.printf("✅ Visibility updated. New visibility: %s\n", selected.isVisible());
     }
+    
     
     private static void viewAllProjects() {
         List<Project> projects = ProjectCsvMapper.loadAll();
@@ -435,27 +438,27 @@ public class ManagerMenu {
     
     
     private static void handleOfficerApproval(HDBManager manager, Scanner sc) {
-        List<Map<String, String>> officerList = CsvUtil.read(FilePath.OFFICER_LIST_FILE);
-        List<Map<String, String>> projectList = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
+        List<Project> allProjects = ProjectCsvMapper.loadAll();
+        List<HDBOfficer> allOfficers = OfficerCsvMapper.loadAll(allProjects);
 
-        // find pending officers in the officer list
-        List<Map<String, String>> pendingOfficers = officerList.stream()
-            .filter(o -> HDBOfficer.RegistrationStatusType.PENDING
-                .name().equalsIgnoreCase(o.getOrDefault("RegistrationStatus", "")))
+        // Filter pending officers
+        List<HDBOfficer> pendingOfficers = allOfficers.stream()
+            .filter(o -> HDBOfficer.RegistrationStatusType.PENDING.name().equalsIgnoreCase(o.getRegistrationStatus()))
             .toList();
 
         if (pendingOfficers.isEmpty()) {
             System.out.println("📭 No pending officer registrations.");
             return;
         }
-    
+
         System.out.println("\n📋 Pending Officer Registrations:");
         for (int i = 0; i < pendingOfficers.size(); i++) {
-            Map<String, String> o = pendingOfficers.get(i);
+            HDBOfficer o = pendingOfficers.get(i);
             System.out.printf("[%d] %s (%s) – Project: %s\n", i + 1,
-                    o.get("Name"), o.get("NRIC"), o.get("AssignedProject"));
+                    o.getName(), o.getNric(),
+                    o.getAssignedProject() != null ? o.getAssignedProject().getProjectName() : "N/A");
         }
-    
+
         System.out.print("Select officer to process (or 0 to cancel): ");
         int index;
         try {
@@ -466,69 +469,55 @@ public class ManagerMenu {
             System.out.println("❌ Invalid selection.");
             return;
         }
-    
-        Map<String, String> officer = pendingOfficers.get(index);
-        String officerNRIC = officer.get("NRIC");
-        String officerName = officer.get("Name");
-        String assignedProject = officer.get("AssignedProject");
-    
-        Map<String, String> project = projectList.stream()
-            .filter(p -> p.get("Project Name").equalsIgnoreCase(assignedProject))
-            .filter(p -> manager.getNric().equalsIgnoreCase(p.get("ManagerNRIC")))
-            .findFirst()
-            .orElse(null);
-    
-        if (project == null) {
+
+        HDBOfficer officer = pendingOfficers.get(index);
+        Project assignedProject = officer.getAssignedProject();
+
+        if (assignedProject == null || assignedProject.getManager() == null ||
+            !assignedProject.getManager().getNric().equalsIgnoreCase(manager.getNric())) {
             System.out.println("❌ You are not the assigned manager for this project.");
             return;
         }
-    
+
         System.out.print("Approve or Reject? (A/R): ");
         String decision = sc.nextLine().trim().toUpperCase();
-    
+
         switch (decision) {
-            case "A" -> approveOfficer(officer, officerNRIC, officerName, project);
-            case "R" -> rejectOfficer(officer, officerName, sc);
+            case "A" -> {
+                int slots = assignedProject.getOfficerSlots();
+                if (slots <= 0) {
+                    System.out.println("❌ No officer slots remaining.");
+                    return;
+                }
+
+                // Update project and officer
+                assignedProject.setOfficerSlots(slots - 1);
+                assignedProject.addOfficerNric(officer.getNric());
+                officer.setRegistrationStatus(HDBOfficer.RegistrationStatusType.APPROVED.name());
+
+                // Save updates
+                OfficerCsvMapper.updateOfficer(officer);
+                ProjectCsvMapper.updateProject(assignedProject);
+
+                System.out.println("✅ Officer approved and added to project.");
+            }
+            case "R" -> {
+                System.out.print("Confirm rejection for Officer " + officer.getName() + " (Y/N): ");
+                if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
+                    System.out.println("❌ Rejection cancelled.");
+                    return;
+                }
+
+                officer.setRegistrationStatus(HDBOfficer.RegistrationStatusType.REJECTED.name());
+                officer.setAssignedProject(null);
+                OfficerCsvMapper.updateOfficer(officer);
+
+                System.out.println("❌ Officer registration rejected.");
+            }
             default -> System.out.println("❌ Invalid input. Use A or R.");
         }
-    
-        CsvUtil.write(FilePath.OFFICER_LIST_FILE, officerList);
-        CsvUtil.write(FilePath.PROJECT_LIST_FILE, projectList);
     }
-    
-    private static void approveOfficer(Map<String, String> officer, String nric, String name, Map<String, String> project) {
-        int slots = Integer.parseInt(project.getOrDefault("Officer Slot", "0"));
-        if (slots <= 0) {
-            System.out.println("❌ No officer slots remaining.");
-            return;
-        }
-    
-        project.put("Officer Slot", String.valueOf(slots - 1));
-    
-        Set<String> nricSet = new LinkedHashSet<>(Arrays.asList(project.getOrDefault("OfficerNRICs", "").trim().split("\\s+")));
-        nricSet.add(nric);
-        nricSet.remove("");
-        project.put("OfficerNRICs", String.join(" ", nricSet));
-    
-        Set<String> nameSet = new LinkedHashSet<>(Arrays.asList(project.getOrDefault("Officer", "").trim().split("\\s+")));
-        nameSet.add(name);
-        nameSet.remove("");
-        project.put("Officer", String.join(" ", nameSet));
-    
-        officer.put("RegistrationStatus", HDBOfficer.RegistrationStatusType.APPROVED.name());
-        System.out.println("✅ Officer approved and added to project.");
-    }
-    
-    private static void rejectOfficer(Map<String, String> officer, String name, Scanner sc) {
-        System.out.print("Confirm rejection for Officer " + name + " (Y/N): ");
-        if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
-            System.out.println("❌ Rejection cancelled.");
-            return;
-        }
-        officer.put("RegistrationStatus", HDBOfficer.RegistrationStatusType.REJECTED.name());
-        officer.put("AssignedProject", "");
-        System.out.println("❌ Officer registration rejected.");
-    }
+
     
     private static void viewApplicantApplications(HDBManager manager) {
         List<Map<String, String>> applicants = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
@@ -641,8 +630,9 @@ public class ManagerMenu {
         }
     
         ApplicantCsvMapper.updateApplicant(selectedApp);
-        ProjectCsvMapper.saveAll(projects);
+        ProjectCsvMapper.updateProject(project); // ✅ Only update the affected project
     }
+    
     
     private static boolean approveApplicant(Applicant applicant, Project project, String flatType) {
         int available = flatType.equalsIgnoreCase("2-Room")
@@ -667,17 +657,18 @@ public class ManagerMenu {
     
     
     private static void handleWithdrawalRequests(HDBManager manager, Scanner sc) {
-        List<Map<String, String>> applicants = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
-        List<Map<String, String>> projects = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
+        List<Applicant> applicants = ApplicantCsvMapper.loadAll();
+        List<Project> projects = ProjectCsvMapper.loadAll();
     
         Set<String> myProjects = projects.stream()
-            .filter(p -> manager.getNric().equalsIgnoreCase(p.get("ManagerNRIC")))
-            .map(p -> p.get("Project Name"))
+            .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
+            .map(Project::getProjectName)
             .collect(Collectors.toSet());
     
-        List<Map<String, String>> withdrawals = applicants.stream()
-            .filter(a -> "WITHDRAWAL_REQUESTED".equalsIgnoreCase(a.get("ApplicationStatus")))
-            .filter(a -> myProjects.contains(a.get("AppliedProjectName")))
+        List<Applicant> withdrawals = applicants.stream()
+            .filter(a -> a.getApplication() != null)
+            .filter(a -> Applicant.AppStatusType.WITHDRAW_REQUESTED.name().equalsIgnoreCase(a.getApplication().getStatus()))
+            .filter(a -> myProjects.contains(a.getApplication().getProject().getProjectName()))
             .toList();
     
         if (withdrawals.isEmpty()) {
@@ -686,10 +677,11 @@ public class ManagerMenu {
         }
     
         for (int i = 0; i < withdrawals.size(); i++) {
-            Map<String, String> a = withdrawals.get(i);
+            Applicant a = withdrawals.get(i);
             System.out.printf("[%d] %s (NRIC: %s) — Project: %s — Flat: %s\n", i + 1,
-                    a.get("Name"), a.get("NRIC"),
-                    a.get("AppliedProjectName"), a.get("FlatTypeApplied"));
+                a.getName(), a.getNric(),
+                a.getApplication().getProject().getProjectName(),
+                a.getApplication().getFlatType());
         }
     
         System.out.print("Select applicant to process (0 to cancel): ");
@@ -703,22 +695,25 @@ public class ManagerMenu {
             return;
         }
     
-        Map<String, String> selected = withdrawals.get(index - 1);
+        Applicant selected = withdrawals.get(index - 1);
+    
         System.out.print("Approve or Reject withdrawal? (A/R): ");
         String decision = sc.nextLine().trim().toUpperCase();
     
         if (decision.equals("A")) {
-            selected.put("ApplicationStatus", Applicant.AppStatusType.WITHDRAWAL_APPROVED.name());
+            selected.getApplication().setStatus(Applicant.AppStatusType.WITHDRAWAL_APPROVED.name());
             System.out.println("✅ Withdrawal approved.");
         } else if (decision.equals("R")) {
-            selected.put("ApplicationStatus", Applicant.AppStatusType.WITHDRAWAL_REJECTED.name());
+            selected.getApplication().setStatus(Applicant.AppStatusType.WITHDRAWAL_REJECTED.name());
             System.out.println("❌ Withdrawal rejected.");
         } else {
             System.out.println("❌ Invalid input.");
+            return;
         }
     
-        CsvUtil.write(FilePath.APPLICANT_LIST_FILE, applicants);
+        ApplicantCsvMapper.updateApplicant(selected);
     }
+    
     
     private static void generateReports(HDBManager manager, Scanner sc) {
         while (true) {

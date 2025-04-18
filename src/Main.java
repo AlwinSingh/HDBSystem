@@ -71,7 +71,7 @@ public class Main {
                         case 2 -> ApplicantMenu.show(officer);
                         case 0 -> {
                             System.out.println("👋 Logging out...");
-                            System.exit(0);
+                            return;
                         }
                 }
             } else {
