@@ -46,8 +46,8 @@ public class ManagerMenu {
             System.out.println("\n");
             System.out.println(" [14] 🔒 Change Password");
 
-            System.out.println(" [0] 🚪 Logout");
-            System.out.print("Enter your choice: ");
+            System.out.println(" [0] Logout");
+            System.out.print("➡️ Enter your choice: ");
 
             String choice = sc.nextLine().trim();
 
@@ -71,10 +71,7 @@ public class ManagerMenu {
                 case "13" -> handleManagerEnquiries(manager, sc); // Newly added option
                 case "14" -> AuthService.changePassword(manager, sc);
             
-                case "0" -> {
-                    System.out.println("👋 Logging out...");
-                    return;
-                }
+                case "0" -> AuthService.logout();
                 default -> System.out.println("❌ Invalid input. Please try again.");
             }
             
@@ -432,7 +429,7 @@ public class ManagerMenu {
         List<Map<String, String>> officerList = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
     
         List<Map<String, String>> pendingOfficers = officerList.stream()
-            .filter(o -> "PENDING".equalsIgnoreCase(o.getOrDefault("RegistrationStatus", "")))
+            .filter(o -> HDBOfficer.RegistrationStatusType.PENDING.name().equalsIgnoreCase(o.getOrDefault("RegistrationStatus", "")))
             .toList();
     
         if (pendingOfficers.isEmpty()) {
@@ -506,7 +503,7 @@ public class ManagerMenu {
         nameSet.remove("");
         project.put("Officer", String.join(" ", nameSet));
     
-        officer.put("RegistrationStatus", "SUCCESSFUL");
+        officer.put("RegistrationStatus", HDBOfficer.RegistrationStatusType.APPROVED.name());
         System.out.println("✅ Officer approved and added to project.");
     }
     
@@ -516,7 +513,7 @@ public class ManagerMenu {
             System.out.println("❌ Rejection cancelled.");
             return;
         }
-        officer.put("RegistrationStatus", "REJECTED");
+        officer.put("RegistrationStatus", HDBOfficer.RegistrationStatusType.REJECTED.name());
         officer.put("AssignedProject", "");
         System.out.println("❌ Officer registration rejected.");
     }
@@ -568,7 +565,7 @@ public class ManagerMenu {
     
         List<Map<String, String>> pendingApps = applicants.stream()
             .filter(a -> myProjectNames.contains(a.get("AppliedProjectName")))
-            .filter(a -> "PENDING".equalsIgnoreCase(a.get("ApplicationStatus")))
+            .filter(a -> Applicant.AppStatusType.PENDING.name().equalsIgnoreCase(a.get("ApplicationStatus")))
             .toList();
     
         if (pendingApps.isEmpty()) {
@@ -637,7 +634,7 @@ public class ManagerMenu {
         }
     
         project.put(key, String.valueOf(units - 1));
-        app.put("ApplicationStatus", "SUCCESSFUL");
+        app.put("ApplicationStatus", Applicant.AppStatusType.SUCCESSFUL.name());
         System.out.println("✅ Application approved and flat reserved.");
     }
     
@@ -647,7 +644,7 @@ public class ManagerMenu {
             System.out.println("❌ Rejection cancelled.");
             return;
         }
-        app.put("ApplicationStatus", "UNSUCCESSFUL");
+        app.put("ApplicationStatus", Applicant.AppStatusType.UNSUCCESSFUL.name());
         System.out.println("❌ Application rejected.");
     }
     
@@ -693,10 +690,10 @@ public class ManagerMenu {
         String decision = sc.nextLine().trim().toUpperCase();
     
         if (decision.equals("A")) {
-            selected.put("ApplicationStatus", "WITHDRAWN");
+            selected.put("ApplicationStatus", Applicant.AppStatusType.WITHDRAWAL_APPROVED.name());
             System.out.println("✅ Withdrawal approved.");
         } else if (decision.equals("R")) {
-            selected.put("ApplicationStatus", "REJECTED");
+            selected.put("ApplicationStatus", Applicant.AppStatusType.WITHDRAWAL_REJECTED.name());
             System.out.println("❌ Withdrawal rejected.");
         } else {
             System.out.println("❌ Invalid input.");

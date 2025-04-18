@@ -39,17 +39,16 @@ public class ApplicantMenu {
             System.out.println("7. View Receipts");
             System.out.println("8. Change Password");
             
-            if (isOfficer) System.out.println("9. Back to Officer Dashboard");
+            if (isOfficer) System.out.println("9. Switch to Officer Dashboard");
             System.out.println("0. Logout");
-            System.out.print("Enter choice: ");
+            System.out.print("➡️ Enter your choice: ");
 
             String choice = sc.nextLine().trim();
 
             if (choice.equals("0")) {
-                System.out.println("🚪 Logged out.\n");
-                return;
+                AuthService.logout();
             } else if (choice.equals("9") && isOfficer) {
-                System.out.println("🔙 Returning to Officer Dashboard...");
+                System.out.println("🔙 Switching to Officer Dashboard...");
                 OfficerMenu.show((HDBOfficer) applicant);
                 return;
             } else if (menuOptions.containsKey(choice)) {
@@ -164,7 +163,7 @@ public class ApplicantMenu {
             selected.getApplicantNRICs().add(applicant.getNric());
             ProjectCsvMapper.updateProject(selected);
 
-            System.out.println("✅ Application submitted. Status: PENDING.");
+            System.out.println("✅ Application submitted. Status: " + Applicant.AppStatusType.PENDING.name() + ".");
         } else {
             System.out.println("❌ Application failed.");
         }
@@ -192,8 +191,8 @@ public class ApplicantMenu {
         System.out.println("💰 Price (2-Room)    : $" + String.format("%.2f", p.getPrice2Room()));
         System.out.println("💰 Price (3-Room)    : $" + String.format("%.2f", p.getPrice3Room()));
         System.out.println("📌 Application Status: " + (
-            "WITHDRAWAL_REQUESTED".equalsIgnoreCase(app.getStatus()) 
-                ? "WITHDRAWAL REQUESTED (Pending review)" 
+                Applicant.AppStatusType.WITHDRAW_REQUESTED.name().equalsIgnoreCase(app.getStatus())
+                ? Applicant.AppStatusType.WITHDRAW_REQUESTED.name() + " (Pending review)"
                 : app.getStatus()));
     
         if (!p.getAmenities().isEmpty()) {
@@ -216,12 +215,12 @@ public class ApplicantMenu {
             return;
         }
 
-        if ("WITHDRAWAL_REQUESTED".equalsIgnoreCase(app.getStatus())) {
+        if (Applicant.AppStatusType.WITHDRAW_REQUESTED.name().equalsIgnoreCase(app.getStatus())) {
             System.out.println("ℹ️ Withdrawal already requested.");
             return;
         }
 
-        if ("BOOKED".equalsIgnoreCase(app.getStatus())) {
+        if (Applicant.AppStatusType.BOOKED.name().equalsIgnoreCase(app.getStatus())) {
             System.out.println("❌ You cannot withdraw after booking.");
             return;
         }
@@ -232,7 +231,7 @@ public class ApplicantMenu {
             return;
         }
 
-        app.setStatus("WITHDRAWAL_REQUESTED");
+        app.setStatus(Applicant.AppStatusType.WITHDRAW_REQUESTED.name());
         saveApplicantUpdate(ctx.applicant);
         System.out.println("✅ Withdrawal request submitted.");
     }
@@ -248,7 +247,7 @@ public class ApplicantMenu {
             System.out.println("4. Delete an enquiry");
             System.out.println("0. Back");
 
-            System.out.print("Enter your choice: ");
+            System.out.print("➡️ Enter your choice: ");
             String input = sc.nextLine().trim();
 
             switch (input) {
@@ -300,7 +299,7 @@ public class ApplicantMenu {
             System.out.println("1. PayNow");
             System.out.println("2. Bank Transfer");
             System.out.println("3. Credit Card");
-            System.out.print("Enter choice: ");
+            System.out.print("➡️ Enter your choice: ");
             int methodChoice = Integer.parseInt(sc.nextLine().trim());
             String method;
             switch (methodChoice) {
@@ -313,7 +312,7 @@ public class ApplicantMenu {
                 }
             } 
             selected.setMethod(method);
-            selected.setStatus("Processed");
+            selected.setStatus(Payment.PaymentStatusType.PROCESSED.name());
             InvoiceService.updateInvoice(selected); // Save changes
             Payment newPayment = new Payment(
                 selected.getPaymentId(),

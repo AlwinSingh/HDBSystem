@@ -24,9 +24,10 @@ public class OfficerMenu {
             System.out.println("6. View & reply to enquiries");
             System.out.println("7. Update project location");     
             System.out.println("8. Add an amenity"); 
-            System.out.println("9. Change Password");              
+            System.out.println("9. Change Password");
+            System.out.println("10. Switch to Applicant Dashboard");
             System.out.println("0. Logout");
-            System.out.print("Enter choice: ");
+            System.out.print("➡️ Enter your choice: ");
 
             switch (sc.nextLine().trim()) {
                 case "1" -> viewRegistrationStatus(officer);
@@ -37,11 +38,12 @@ public class OfficerMenu {
                 case "6" -> handleEnquiries(officer, sc);
                 case "7" -> updateLocation(officer, sc);         
                 case "8" -> addAmenity(officer, sc);
-                case "9" -> AuthService.changePassword(officer, sc);             
-                case "0" -> {
-                    System.out.println("👋 Logging out...");
-                    return;
+                case "9" -> AuthService.changePassword(officer, sc);
+                case "10" -> {
+                    System.out.println("🔙 Switching to Applicant Dashboard...");
+                    ApplicantMenu.show(officer);
                 }
+                case "0" -> AuthService.logout();
                 default  -> System.out.println("❌ Invalid input.");
             }
         }
@@ -134,7 +136,7 @@ public class OfficerMenu {
             return;
         }
     
-        if ("PENDING".equalsIgnoreCase(officer.getRegistrationStatus())) {
+        if (HDBOfficer.RegistrationStatusType.PENDING.name().equalsIgnoreCase(officer.getRegistrationStatus())) {
             System.out.println("⚠️ You cannot perform bookings as your registration to this project is still pending approval.");
             return;
         }
@@ -146,7 +148,7 @@ public class OfficerMenu {
                 Project appProject = a.getApplication().getProject();
                 return appProject != null && appProject.getProjectName().equalsIgnoreCase(assigned.getProjectName());
             })
-            .filter(a -> "SUCCESSFUL".equalsIgnoreCase(a.getApplication().getStatus()))
+            .filter(a -> Applicant.AppStatusType.SUCCESSFUL.name().equalsIgnoreCase(a.getApplication().getStatus()))
             .collect(Collectors.toList());
     
         if (pending.isEmpty()) {
@@ -183,7 +185,7 @@ public class OfficerMenu {
             selected.getApplication().setProject(fullProject);
     
             officer.bookFlat(selected.getApplication(), flatType);
-            selected.getApplication().setStatus("BOOKED");
+            selected.getApplication().setStatus(Applicant.AppStatusType.BOOKED.name());
             ApplicantCsvMapper.updateApplicant(selected);
     
             int nextInvoiceId = InvoiceService.getNextInvoiceId();
@@ -207,7 +209,7 @@ public class OfficerMenu {
             return;
         }
     
-        if (!"SUCCESSFUL".equalsIgnoreCase(officer.getRegistrationStatus())) {
+        if (!HDBOfficer.RegistrationStatusType.APPROVED.name().equalsIgnoreCase(officer.getRegistrationStatus())) {
             System.out.println("⚠️ You are not authorized to view or reply to enquiries until your registration is approved.");
             return;
         }
@@ -254,7 +256,7 @@ public class OfficerMenu {
         List<Project> allProjects = ProjectCsvMapper.loadAll();
     
         List<Invoice> unpaid = invoices.stream()
-            .filter(i -> "Processed".equalsIgnoreCase(i.getStatus()))
+            .filter(i -> Payment.PaymentStatusType.PROCESSED.name().equalsIgnoreCase(i.getStatus()))
             .filter(i -> ReceiptService.findByInvoiceId(i.getPaymentId()) == null)
             .collect(Collectors.toList());
     

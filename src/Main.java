@@ -7,19 +7,18 @@ import src.service.AuthService;
 import src.service.ManagerMenu;
 import src.service.OfficerMenu;
 import src.service.RegistrationService;
+import src.util.InputValidator;
 
 public class Main {
+    public static final Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-
         while (true) {
             System.out.println("\n===== BTO Application System =====");
             System.out.println("1. Login");
             System.out.println("2. Register as Applicant");
             System.out.println("0. Exit");
-            System.out.print("Enter choice: ");
-
+            System.out.print("➡️ Enter your choice: ");
             String choice = sc.nextLine().trim();
 
             switch (choice) {
@@ -48,10 +47,10 @@ public class Main {
             return;
         }
 
-        System.out.println("✅ Welcome, " + user.getName());
+        System.out.println("\n✅ Welcome, " + user.getName());
 
         if (user instanceof HDBManager manager) {
-            System.out.println("🔓 Logged in as HDB Manager: " + manager.getNric());
+            System.out.println("🔓 Logged in as HDB Manager (" + manager.getNric() + ")");
             ManagerMenu.show(manager);
         }
         else if (user instanceof HDBOfficer officer) {
@@ -60,25 +59,27 @@ public class Main {
             boolean hasPendingStatus = officer.getRegistrationStatus() != null;
 
             if (!hasProject && !hasPendingStatus) {
-                System.out.println("\nWelcome, Officer " + officer.getName());
+                System.out.println("🔓 Logged in as HDB Officer (" + officer.getNric() + ")");
                 System.out.println("You are an HDB Officer and also eligible to apply as an Applicant.");
                 System.out.println("1. Access Officer Dashboard");
                 System.out.println("2. Access Applicant Dashboard");
                 System.out.println("0. Logout");
-                System.out.print("Enter choice: ");
-                String roleChoice = sc.nextLine().trim();
+                int roleChoice = InputValidator.getIntInRange("➡️ Enter your choice: ", 0, 2);
 
                 switch (roleChoice) {
-                    case "1" -> OfficerMenu.show(officer);
-                    case "2" -> ApplicantMenu.show(officer);
-                    default -> System.out.println("Logging out...");
+                        case 1 -> OfficerMenu.show(officer);
+                        case 2 -> ApplicantMenu.show(officer);
+                        case 0 -> {
+                            System.out.println("👋 Logging out...");
+                            System.exit(0);
+                        }
                 }
             } else {
                 OfficerMenu.show(officer);
             }
         }
         else if (user instanceof Applicant applicant) {
-            System.out.println("🔓 Logged in as Applicant: " + applicant.getNric());
+            System.out.println("🔓 Logged in as Applicant (" + applicant.getNric() + ")");
             ApplicantMenu.show(applicant);
         }
     }
