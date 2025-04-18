@@ -4,7 +4,7 @@ public class StandardApplication extends Application {
     private double applicationFee = 10.0;
 
     public StandardApplication(Applicant applicant, Project project, String flatType) {
-        super(applicant, project, "PENDING", flatType);
+        super(applicant, project, Applicant.AppStatusType.PENDING.name(), flatType);
         this.applicationFee = 10.0; // Default fee or logic
     }
     

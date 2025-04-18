@@ -114,4 +114,9 @@ public class AuthService {
         System.out.println("✅ Password changed successfully.");
         return true;
     }
+
+    public static void logout() {
+        System.out.println("👋 Logging out...");
+        System.exit(0);
+    }
 }

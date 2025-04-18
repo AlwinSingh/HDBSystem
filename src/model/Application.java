@@ -19,7 +19,7 @@ public class Application {
     }
 
     public void withdrawRequest() {
-        this.status = "WITHDRAWAL_REQUESTED";
+        this.status = Applicant.AppStatusType.WITHDRAW_REQUESTED.name();
     }
 
     public double getFlatPrice() {

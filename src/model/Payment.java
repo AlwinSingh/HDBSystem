@@ -7,7 +7,13 @@ public class Payment {
     protected double amount;
     protected LocalDate date;
     protected String method; // e.g., PayNow, Credit Card
-    protected String status; // e.g., "Processed", "Refunded", "Pending"
+    protected String status; // e.g., Processed, Refunded, Pending
+
+    public enum PaymentStatusType {
+        PROCESSED,
+        REFUNDED,
+        PENDING
+    }
 
     public Payment(int paymentId, double amount, LocalDate date, String method, String status) {
         this.paymentId = paymentId;
@@ -18,14 +24,14 @@ public class Payment {
     }
 
     public boolean processPayment() {
-        if (!"Pending".equalsIgnoreCase(status)) return false;
-        this.status = "Processed";
+        if (!PaymentStatusType.PENDING.name().equalsIgnoreCase(status)) return false;
+        this.status = PaymentStatusType.PROCESSED.name();
         return true;
     }
 
     public boolean refundPayment() {
-        if (!"Processed".equalsIgnoreCase(status)) return false;
-        this.status = "Refunded";
+        if (!PaymentStatusType.PROCESSED.name().equalsIgnoreCase(status)) return false;
+        this.status = PaymentStatusType.REFUNDED.name();
         return true;
     }
 

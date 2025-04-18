@@ -45,28 +45,28 @@ public class HDBManager extends User {
     }
 
     public void approveOfficerRegistration(HDBOfficer officer) {
-        officer.setRegistrationStatus("APPROVED");
+        officer.setRegistrationStatus(HDBOfficer.RegistrationStatusType.APPROVED.name());
     }
 
     public void rejectOfficerRegistration(HDBOfficer officer) {
-        officer.setRegistrationStatus("REJECTED");
+        officer.setRegistrationStatus(HDBOfficer.RegistrationStatusType.REJECTED.name());
     }
 
     public void approveApplication(Application app) {
-        app.setStatus("SUCCESSFUL");
+        app.setStatus(Applicant.AppStatusType.SUCCESSFUL.name());
         app.getProject().decrementFlatCount(app.getFlatType());
     }
 
     public void rejectApplication(Application app) {
-        app.setStatus("UNSUCCESSFUL");
+        app.setStatus(Applicant.AppStatusType.UNSUCCESSFUL.name());
     }
 
     public void approveWithdrawal(Application app) {
-        app.setStatus("WITHDRAWAL_APPROVED");
+        app.setStatus(Applicant.AppStatusType.WITHDRAWAL_APPROVED.name());
     }
 
     public void rejectWithdrawal(Application app) {
-        app.setStatus("WITHDRAWAL_REJECTED");
+        app.setStatus(Applicant.AppStatusType.WITHDRAWAL_REJECTED.name());
     }
 
     public List<String> generateReport(String filterType) {

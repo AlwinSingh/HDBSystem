@@ -7,6 +7,12 @@ public class HDBOfficer extends Applicant {
     private Project assignedProject;
     private String registrationStatus; // e.g., PENDING, APPROVED, REJECTED
 
+    public enum RegistrationStatusType {
+        PENDING,
+        APPROVED,
+        REJECTED
+    }
+
     public HDBOfficer(String nric, String password, String name, int age, String maritalStatus) {
         super(nric, password, name, age, maritalStatus);
     }
@@ -14,7 +20,7 @@ public class HDBOfficer extends Applicant {
     public boolean registerToHandleProject(Project project) {
         if (assignedProject == null && application == null) {
             assignedProject = project;
-            registrationStatus = "PENDING";
+            registrationStatus = RegistrationStatusType.PENDING.name();
             return true;
         }
         return false;
@@ -29,8 +35,8 @@ public class HDBOfficer extends Applicant {
 
     public void bookFlat(Application app, String flatType) {
         if (assignedProject != null && app.getProject().equals(assignedProject)) {
-            if (app.getStatus().equalsIgnoreCase("SUCCESSFUL")) {
-                app.setStatus("BOOKED");
+            if (app.getStatus().equalsIgnoreCase(AppStatusType.SUCCESSFUL.name())) {
+                app.setStatus(AppStatusType.BOOKED.name());
                 assignedProject.decrementFlatCount(flatType);
             }
         }
@@ -50,7 +56,7 @@ public class HDBOfficer extends Applicant {
             price,
             LocalDate.now(),
             selectedMethod,
-            "Processed",
+            Payment.PaymentStatusType.PROCESSED.name(),
             app.getApplicant().getNric(),
             app.getProject().getProjectName(),
             app.getFlatType()
