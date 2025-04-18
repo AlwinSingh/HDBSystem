@@ -2,10 +2,14 @@ package src.service;
 
 import src.model.Feedback;
 import src.model.FeedbackAnalytics;
-import src.util.FeedbackCsvMapper;
 import src.model.HDBManager;
+import src.model.Project;
+import src.util.FeedbackCsvMapper;
+import src.util.ProjectCsvMapper;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class FeedbackAnalyticsService {
 
@@ -14,12 +18,13 @@ public class FeedbackAnalyticsService {
         return FeedbackCsvMapper.loadAll();
     }
 
-    // Perform analytics on feedback data
+    // General analytics for all feedback (not scoped to manager)
     public static void generateAnalytics() {
         List<Feedback> feedbackList = getAllFeedback();
         FeedbackAnalytics analytics = new FeedbackAnalytics(feedbackList);
 
         // Print the analytics results
+        System.out.println("\n");
         System.out.println("===== Feedback Analytics =====");
         System.out.println("Total Feedback: " + analytics.countTotal());
         System.out.println("Resolved Feedback: " + analytics.countResolved());
@@ -28,22 +33,30 @@ public class FeedbackAnalyticsService {
         System.out.println("Feedback Grouped by Applicant: " + analytics.groupByApplicant());
     }
 
-    // Print analytics for a specific manager
+    // Manager-specific feedback analytics
     public static void generateManagerAnalytics(HDBManager manager) {
-        List<Feedback> feedbackList = FeedbackCsvMapper.loadAll();
-        FeedbackAnalytics analytics = new FeedbackAnalytics(feedbackList);
+        List<Feedback> feedbackList = getAllFeedback();
 
-        // Get feedback for the manager's assigned project
-        List<Feedback> managerFeedback = analytics.getFeedbackByManager(manager);
+        // Identify project names owned by this manager
+        Set<String> myProjects = ProjectCsvMapper.loadAll().stream()
+                .filter(p -> p.getManager() != null &&
+                             p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
+                .map(Project::getProjectName)
+                .collect(Collectors.toSet());
 
-        FeedbackAnalytics managerAnalytics = new FeedbackAnalytics(managerFeedback);
+        // Filter feedback related to manager's projects
+        List<Feedback> managerFeedback = feedbackList.stream()
+                .filter(f -> f.getProjectName() != null && myProjects.contains(f.getProjectName()))
+                .collect(Collectors.toList());
 
-        // Print the analytics results for the manager's feedback
+        FeedbackAnalytics analytics = new FeedbackAnalytics(managerFeedback);
+
+        // Print the analytics results for the manager's projects
         System.out.println("===== Manager Feedback Analytics =====");
-        System.out.println("Total Feedback: " + managerAnalytics.countTotal());
-        System.out.println("Resolved Feedback: " + managerAnalytics.countResolved());
-        System.out.println("Unresolved Feedback: " + managerAnalytics.countUnresolved());
-        System.out.println("Feedback Grouped by Status: " + managerAnalytics.groupByStatus());
-        System.out.println("Feedback Grouped by Applicant: " + managerAnalytics.groupByApplicant());
+        System.out.println("Total Feedback: " + analytics.countTotal());
+        System.out.println("Resolved Feedback: " + analytics.countResolved());
+        System.out.println("Unresolved Feedback: " + analytics.countUnresolved());
+        System.out.println("Feedback Grouped by Status: " + analytics.groupByStatus());
+        System.out.println("Feedback Grouped by Applicant: " + analytics.groupByApplicant());
     }
 }
