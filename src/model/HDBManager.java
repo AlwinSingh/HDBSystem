@@ -6,6 +6,7 @@ import java.util.List;
 
 public class HDBManager extends User {
     private List<Project> managedProjects;
+    private Project assignedProject;
 
     public HDBManager(String nric, String password, String name, int age, String maritalStatus) {
         super(nric, password, name, age, maritalStatus);
@@ -75,5 +76,13 @@ public class HDBManager extends User {
             reports.add("Report for: " + p.getProjectName() + " (" + p.getNeighborhood() + ")");
         }
         return reports;
+    }
+
+    public Project getAssignedProject() {
+        return assignedProject;
+    }
+
+    public void setAssignedProject(Project assignedProject) {
+        this.assignedProject = assignedProject;
     }
 }

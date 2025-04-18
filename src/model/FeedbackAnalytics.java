@@ -12,6 +12,13 @@ public class FeedbackAnalytics {
         this.feedbackList = feedbackList;
     }
 
+    // Get feedback by manager's assigned project
+    public List<Feedback> getFeedbackByManager(HDBManager manager) {
+        return feedbackList.stream()
+            .filter(f -> f.getProjectName() != null && f.getProjectName().equalsIgnoreCase(manager.getAssignedProject().getProjectName()))
+            .collect(Collectors.toList());
+    }
+
     public long countTotal() {
         return feedbackList.size();
     }

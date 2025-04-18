@@ -14,75 +14,78 @@ public class ManagerMenu {
 
     public static void show(HDBManager manager) {
         Scanner sc = new Scanner(System.in);
-
+    
         while (true) {
             System.out.println("\n===== 🧠 HDB Manager Dashboard =====");
             System.out.println("Welcome, Manager " + manager.getName());
-
+    
             System.out.println("\n🏗️ Project Management");
             System.out.println(" [1] ➕ Create Project");
             System.out.println(" [2] ✏️ Edit Project");
             System.out.println(" [3] ❌ Delete Project");
             System.out.println(" [4] 🔁 Toggle Visibility");
-
+    
             System.out.println("\n📊 Project Viewing");
             System.out.println(" [5] 🌐 View All Projects");
             System.out.println(" [6] 📂 View My Projects");
-
+    
             System.out.println("\n🧑‍💼 Officer Applications");
             System.out.println(" [7] 📋 View Officer Registrations");
             System.out.println(" [8] ✅/❌ Approve/Reject Officer");
-
+    
             System.out.println("\n👥 Applicant Management");
             System.out.println(" [9] 📄 View Applications");
             System.out.println(" [10] ✅/❌ Approve/Reject Applications");
             System.out.println(" [11] 🔄 Handle Withdrawal Requests");
-
+    
             System.out.println("\n📈 Reporting");
             System.out.println(" [12] 📊 Generate Booking Reports");
-
+    
             System.out.println("\n🗃 Enquiries and Feedback");
-            System.out.println(" [13]. View & reply to enquiries for my projects");
-            System.out.println(" [14] 📝 View & Resolve my Feedbacks"); 
-            System.out.println("\n");
-            System.out.println(" [15] 🔒 Change Password");
-
+            System.out.println(" [13] 📬 View & Reply to Enquiries");
+            System.out.println(" [14] 📝 View & Resolve Feedback");
+            System.out.println(" [15] 📊 View Feedback Analytics");
+    
+            System.out.println("\n [16] 🔒 Change Password");
             System.out.println(" [0] Logout");
             System.out.print("➡️ Enter your choice: ");
-
+    
             String choice = sc.nextLine().trim();
-
+    
             switch (choice) {
                 case "1" -> createProject(manager, sc);
                 case "2" -> editProject(manager, sc);
                 case "3" -> deleteProject(manager, sc);
                 case "4" -> toggleVisibility(manager, sc);
-            
+    
                 case "5" -> viewAllProjects();
                 case "6" -> viewMyProjects(manager);
-            
+    
                 case "7" -> viewOfficerRegistrations(manager);
                 case "8" -> handleOfficerApproval(manager, sc);
-            
+    
                 case "9"  -> viewApplicantApplications(manager);
                 case "10" -> handleApplicantApproval(manager, sc);
                 case "11" -> handleWithdrawalRequests(manager, sc);
-            
-                case "12" -> generateReports(manager, sc); 
-                case "13" -> handleManagerEnquiries(manager, sc); 
+    
+                case "12" -> generateReports(manager, sc);
+    
+                case "13" -> showEnquiryOptions(manager, sc);          // ✅ updated label and method
                 case "14" -> viewAndResolveFeedback(manager, sc);
-                case "15" -> AuthService.changePassword(manager, sc);
-            
+                case "15" -> FeedbackAnalyticsService.generateManagerAnalytics(manager);
+    
+                case "16" -> AuthService.changePassword(manager, sc);
+    
                 case "0" -> {
                     AuthService.logout();
                     return;
                 }
-                
+    
                 default -> System.out.println("❌ Invalid input. Please try again.");
             }
-            
         }
     }
+    
 
     private static void createProject(HDBManager manager, Scanner sc) {
         System.out.println("\n📌 Create New Project");
@@ -810,6 +813,49 @@ public class ManagerMenu {
         }
     }   
     
+    private static void showEnquiryOptions(HDBManager manager, Scanner sc) {
+        while (true) {
+            System.out.println("\n📨 Enquiry Options");
+            System.out.println(" [1] View All Enquiries");
+            System.out.println(" [2] Reply to Enquiries for My Projects");
+            System.out.println(" [0] Back");
+            System.out.print("➡️ Enter your choice: ");
+    
+            String choice = sc.nextLine().trim();
+            switch (choice) {
+                case "1" -> viewAllEnquiries();
+                case "2" -> handleManagerEnquiries(manager, sc);
+                case "0" -> {
+                    System.out.println("🔙 Returning to manager menu...");
+                    return;
+                }
+                default -> System.out.println("❌ Invalid input.");
+            }
+        }
+    }
+
+    private static void viewAllEnquiries() {
+        List<Enquiry> all = EnquiryCsvMapper.loadAll();
+        if (all.isEmpty()) {
+            System.out.println("📭 No enquiries in the system.");
+            return;
+        }
+    
+        System.out.println("\n📋 All Enquiries:");
+        for (Enquiry e : all) {
+            System.out.printf("📨 Enquiry #%d | Applicant: %s (%s) | Project: %s | Status: %s\n",
+                e.getEnquiryId(), e.getApplicantName(), e.getApplicantNric(), e.getProjectName(), e.getStatus());
+            System.out.println("📣 " + e.getContent());
+    
+            if (!e.getReplies().isEmpty()) {
+                System.out.println("💬 Replies:");
+                for (EnquiryReply r : e.getReplies()) {
+                    System.out.printf("   - [%s] %s: %s\n", r.getTimestamp(), r.getResponderRole(), r.getContent());
+                }
+            }
+            System.out.println("────────────────────────────────────────────");
+        }
+    }
     
     private static void handleManagerEnquiries(HDBManager manager, Scanner sc) {
         List<Enquiry> all = EnquiryCsvMapper.loadAll();

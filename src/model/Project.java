@@ -114,6 +114,7 @@ public class Project {
         return applicantNRICs;
     }
     
+    
     // Setters
     public void setProjectName(String name) {
         this.projectName = name;
