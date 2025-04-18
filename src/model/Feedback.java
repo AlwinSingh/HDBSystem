@@ -4,38 +4,65 @@ import java.time.LocalDate;
 
 public class Feedback {
     private int feedbackId;
+    private String applicantNRIC;
     private String content;
-    private int rating; // 1 to 5
-    private LocalDate dateSubmitted;
+    private String status; // e.g., PENDING, RESOLVED
+    private LocalDate submittedDate;
+    private String resolverName;      // Manager or Officer who resolved it
+    private LocalDate resolvedDate;
+    private String projectName;  
 
-    public Feedback(int feedbackId, String content, int rating) {
-        this.feedbackId = feedbackId;
-        this.content = content;
-        this.rating = rating;
-        this.dateSubmitted = LocalDate.now();
+    public static final String STATUS_PENDING = "PENDING";
+    public static final String STATUS_RESOLVED = "RESOLVED";
+
+    public Feedback(int feedbackId, String applicantNRIC, String content, String status,
+                LocalDate submittedDate, String resolverName, LocalDate resolvedDate, String projectName) {
+    this.feedbackId = feedbackId;
+    this.applicantNRIC = applicantNRIC;
+    this.content = content;
+    this.status = status;
+    this.submittedDate = submittedDate;
+    this.resolverName = resolverName;
+    this.resolvedDate = resolvedDate;
+    this.projectName = projectName; // NEW
+}
+
+    // === Business Logic ===
+    public void markResolved(String resolverName) {
+        this.status = STATUS_RESOLVED;
+        this.resolverName = resolverName;
+        this.resolvedDate = LocalDate.now();
     }
 
-    public int getRating() {
-        return rating;
-    }
-    
-    public String getContent() {
-        return content;
-    }
-    
-
-    public void submitFeedback() {
-        // Simulate storing feedback
-        System.out.println("Feedback submitted: " + content);
+    public boolean isResolved() {
+        return STATUS_RESOLVED.equalsIgnoreCase(status);
     }
 
-    public void editFeedback(String newContent) {
-        this.content = newContent;
+    public boolean isPending() {
+        return STATUS_PENDING.equalsIgnoreCase(status);
     }
 
-    public void deleteFeedback() {
-        this.content = "[deleted]";
-    }
+    // === Getters ===
+    public int getFeedbackId() { return feedbackId; }
+    public String getApplicantNRIC() { return applicantNRIC; }
+    public String getContent() { return content; }
+    public String getStatus() { return status; }
+    public LocalDate getSubmittedDate() { return submittedDate; }
+    public String getResolverName() { return resolverName; }
+    public LocalDate getResolvedDate() { return resolvedDate; }
+    public String getProjectName() {return projectName;}
 
-    // Getters
+    // === Setters (optional for editing) ===
+    public void setContent(String content) { this.content = content; }
+    public void setStatus(String status) { this.status = status; }
+    public void setResolverName(String resolverName) { this.resolverName = resolverName; }
+    public void setResolvedDate(LocalDate resolvedDate) { this.resolvedDate = resolvedDate; }
+
+    @Override
+    public String toString() {
+        return "📝 Feedback #" + feedbackId + " by " + applicantNRIC + "\n"
+             + "📅 Submitted: " + submittedDate + " | Status: " + status
+             + (resolverName != null ? " | Resolved by: " + resolverName : "")
+             + "\n📣 Content: " + content;
+    }
 }

@@ -16,10 +16,11 @@ public class ApplicantMenu {
         put("2", ApplicantMenu::applyForProject);
         put("3", ApplicantMenu::viewApplication);
         put("4", ApplicantMenu::requestWithdrawal);
-        put("5", ApplicantMenu::handleEnquiries);
-        put("6", ctx -> viewAndPayInvoices(ctx.applicant, ctx.scanner));
-        put("7", ctx -> viewReceipts(ctx.applicant)); 
-        put("8", ApplicantMenu::changePassword);
+        put("5", ctx -> viewAndPayInvoices(ctx.applicant, ctx.scanner));
+        put("6", ctx -> viewReceipts(ctx.applicant)); 
+        put("7", ApplicantMenu::handleEnquiries);
+        put("8", ctx -> ApplicantMenu.showFeedbackServices(ctx.applicant, ctx.scanner));
+        put("9", ApplicantMenu::changePassword);
     }};
     
 
@@ -34,12 +35,13 @@ public class ApplicantMenu {
             System.out.println("2. Apply for a project");
             System.out.println("3. View my application");
             System.out.println("4. Request withdrawal");
-            System.out.println("5. Enquiry Services");
-            System.out.println("6. View and Pay Invoice");
-            System.out.println("7. View Receipts");
-            System.out.println("8. Change Password");
+            System.out.println("5. View and Pay Invoice");
+            System.out.println("6. View Receipts");
+            System.out.println("7. Enquiry Services");
+            System.out.println("8. Feedback Services");
+            System.out.println("9. Change Password");
             
-            if (isOfficer) System.out.println("9. Switch to Officer Dashboard");
+            if (isOfficer) System.out.println("10. Switch to Officer Dashboard");
             System.out.println("0. Logout");
             System.out.print("➡️ Enter your choice: ");
 
@@ -47,6 +49,7 @@ public class ApplicantMenu {
 
             if (choice.equals("0")) {
                 AuthService.logout();
+                return;
             }  else if (menuOptions.containsKey(choice)) {
                 menuOptions.get(choice).accept(new ApplicantContext(applicant, sc));
             } else {
@@ -259,6 +262,52 @@ public class ApplicantMenu {
             }
         }
     }
+
+    private static void showFeedbackServices(Applicant applicant, Scanner sc) {
+        while (true) {
+            System.out.println("\n📝 Feedback Services");
+            System.out.println(" [1] Submit Feedback");
+            System.out.println(" [2] View My Feedback");
+            System.out.println(" [0] Back");
+            System.out.print("➡️ Enter your choice: ");
+            String choice = sc.nextLine().trim();
+    
+            switch (choice) {
+                case "1" -> {
+                    if (applicant.getApplication() == null || applicant.getApplication().getProject() == null) {
+                        System.out.println("❌ You must have an active application to submit feedback.");
+                        break;
+                    }
+    
+                    System.out.print("✉️ Enter your feedback message: ");
+                    String message = sc.nextLine().trim();
+    
+                    if (message.isBlank()) {
+                        System.out.println("❌ Feedback cannot be empty.");
+                        break;
+                    }
+    
+                    String projectName = applicant.getApplication().getProject().getProjectName();
+                    FeedbackService.submitFeedback(applicant.getNric(), message, projectName);
+                }
+    
+                case "2" -> {
+                    List<Feedback> myFeedback = FeedbackService.getFeedbackByApplicant(applicant.getNric());
+                    FeedbackService.printFeedbackList(myFeedback);
+                }
+    
+                case "0" -> {
+                    System.out.println("🔙 Returning to applicant dashboard...");
+                    return;
+                }
+    
+                default -> System.out.println("❌ Invalid input. Please choose from the menu.");
+            }
+        }
+    }
+    
+    
+    
 
     private static void viewAndPayInvoices(Applicant applicant, Scanner sc) {
         List<Invoice> allInvoices = InvoiceService.loadAll();

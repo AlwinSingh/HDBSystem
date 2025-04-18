@@ -41,10 +41,11 @@ public class ManagerMenu {
             System.out.println("\n📈 Reporting");
             System.out.println(" [12] 📊 Generate Booking Reports");
 
-            System.out.println("\n🗃 Enquiries");
+            System.out.println("\n🗃 Enquiries and Feedback");
             System.out.println(" [13]. View & reply to enquiries for my projects");
+            System.out.println(" [14] 📝 View & Resolve my Feedbacks"); 
             System.out.println("\n");
-            System.out.println(" [14] 🔒 Change Password");
+            System.out.println(" [15] 🔒 Change Password");
 
             System.out.println(" [0] Logout");
             System.out.print("➡️ Enter your choice: ");
@@ -67,12 +68,14 @@ public class ManagerMenu {
                 case "10" -> handleApplicantApproval(manager, sc);
                 case "11" -> handleWithdrawalRequests(manager, sc);
             
-                case "12" -> generateReports(manager, sc); // Now a placeholder
-                case "13" -> handleManagerEnquiries(manager, sc); // Newly added option
-                case "14" -> AuthService.changePassword(manager, sc);
+                case "12" -> generateReports(manager, sc); 
+                case "13" -> handleManagerEnquiries(manager, sc); 
+                case "14" -> viewAndResolveFeedback(manager, sc);
+                case "15" -> AuthService.changePassword(manager, sc);
             
                 case "0" -> {
                     AuthService.logout();
+                    return;
                 }
                 
                 default -> System.out.println("❌ Invalid input. Please try again.");
@@ -848,6 +851,81 @@ public class ManagerMenu {
             System.out.println("❌ Invalid selection.");
         }
     }
+
+    private static void viewAndResolveFeedback(HDBManager manager, Scanner sc) {
+        while (true) {
+            System.out.println("\n📝 Feedback Management");
+            System.out.println(" [1] View My Feedback");
+            System.out.println(" [2] View Unresolved Feedback");
+            System.out.println(" [3] Filter by Applicant NRIC");
+            System.out.println(" [4] Filter by Submission Date Range");
+            System.out.println(" [5] Resolve Feedback");
+            System.out.println(" [0] Back");
+            System.out.print("➡️ Enter choice: ");
+    
+            String choice = sc.nextLine().trim();
+            switch (choice) {
+                case "1" -> FeedbackService.printFeedbackList(
+                    FeedbackService.getFeedbackByManager(manager)
+                );
+    
+                case "2" -> FeedbackService.printFeedbackList(
+                    FeedbackService.getUnresolvedByManager(manager)
+                );
+    
+                case "3" -> {
+                    System.out.print("Enter Applicant NRIC: ");
+                    String nric = sc.nextLine().trim();
+                    FeedbackService.printFeedbackList(
+                        FeedbackService.getFeedbackByApplicant(manager, nric)
+                    );
+                }
+    
+                case "4" -> {
+                    try {
+                        System.out.print("Start date (yyyy-MM-dd): ");
+                        LocalDate start = LocalDate.parse(sc.nextLine().trim());
+                        System.out.print("End date (yyyy-MM-dd): ");
+                        LocalDate end = LocalDate.parse(sc.nextLine().trim());
+                        FeedbackService.printFeedbackList(
+                            FeedbackService.getFeedbackBySubmittedDateRange(manager, start, end)
+                        );
+                    } catch (Exception e) {
+                        System.out.println("❌ Invalid date format.");
+                    }
+                }
+    
+                case "5" -> {
+                    try {
+                        System.out.print("Enter Feedback ID to resolve: ");
+                        int id = Integer.parseInt(sc.nextLine().trim());
+    
+                        List<Feedback> myFeedback = FeedbackService.getFeedbackByManager(manager);
+                        boolean belongsToManager = myFeedback.stream()
+                            .anyMatch(f -> f.getFeedbackId() == id);
+    
+                        if (!belongsToManager) {
+                            System.out.println("❌ You can only resolve feedback from your assigned projects.");
+                            break;
+                        }
+    
+                        FeedbackService.resolveFeedback(id, manager.getName());
+                    } catch (Exception e) {
+                        System.out.println("❌ Invalid input.");
+                    }
+                }
+    
+                case "0" -> {
+                    System.out.println("🔙 Returning to manager menu...");
+                    return;
+                }
+    
+                default -> System.out.println("❌ Invalid input.");
+            }
+        }
+    }
+    
+    
     
     
 }

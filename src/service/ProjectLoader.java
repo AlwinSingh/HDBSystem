@@ -13,7 +13,7 @@ public class ProjectLoader {
         for (Project p : projects) {
             // Attach amenities from the separate CSV
             List<Amenities> amenities = AmenitiesLoader.loadAmenitiesByProject(p.getProjectName());
-            p.setAmenities(amenities);  // This is the key line you're missing
+            p.setAmenities(amenities); 
         }
 
         return projects;
