@@ -6,8 +6,8 @@ public class Payment {
     protected int paymentId;
     protected double amount;
     protected LocalDate date;
-    protected String method; // e.g., PayNow, Credit Card
-    protected String status; // e.g., Processed, Refunded, Pending
+    protected PaymentMethod method;  // Enum instead of String
+    protected String status;
 
     public enum PaymentStatusType {
         PROCESSED,
@@ -15,7 +15,7 @@ public class Payment {
         PENDING
     }
 
-    public Payment(int paymentId, double amount, LocalDate date, String method, String status) {
+    public Payment(int paymentId, double amount, LocalDate date, PaymentMethod method, String status) {
         this.paymentId = paymentId;
         this.amount = amount;
         this.date = date;
@@ -39,10 +39,11 @@ public class Payment {
     public int getPaymentId() { return paymentId; }
     public double getAmount() { return amount; }
     public LocalDate getDate() { return date; }
-    public String getMethod() { return method; }
+    public PaymentMethod getMethod() { return method; }
+    public String getMethodLabel() { return method.toString(); }
     public String getStatus() { return status; }
 
-    public void setMethod(String method) {
+    public void setMethod(PaymentMethod method) {
         this.method = method;
     }
 

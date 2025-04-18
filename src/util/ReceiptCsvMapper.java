@@ -1,6 +1,7 @@
 package src.util;
 
 import src.model.Invoice;
+import src.model.PaymentMethod;
 import src.model.Receipt;
 
 import java.time.LocalDate;
@@ -11,37 +12,44 @@ public class ReceiptCsvMapper {
     private static final String CSV_PATH = FilePath.RECEIPT_LIST_FILE;
 
     public static List<Receipt> loadAll() {
-    List<Map<String, String>> rows = read(CSV_PATH);
-    List<Receipt> list = new ArrayList<>();
+        List<Map<String, String>> rows = read(CSV_PATH);
+        List<Receipt> list = new ArrayList<>();
 
-    for (Map<String, String> row : rows) {
-        try {
-            String applicantName = row.get("ApplicantName");
-            String applicantNRIC = row.get("ApplicantNRIC");
-            String projectName = row.get("ProjectName");
-            String flatType = row.get("FlatTypeBooked");
-            String receiptId = row.get("ReceiptID");
+        for (Map<String, String> row : rows) {
+            try {
+                String applicantName = row.get("ApplicantName");
+                String applicantNRIC = row.get("ApplicantNRIC");
+                String projectName = row.get("ProjectName");
+                String flatType = row.get("FlatTypeBooked");
+                String receiptId = row.get("ReceiptID");
 
-            double amountPaid = Double.parseDouble(row.get("AmountPaid"));
-            String method = row.get("Method");
-            String status = row.get("Status");
-            int invoiceId = Integer.parseInt(row.get("InvoiceID"));
-            LocalDate issuedDate = LocalDate.parse(row.get("IssuedDate"));
+                double amountPaid = Double.parseDouble(row.get("AmountPaid"));
+                String methodRaw = row.get("Method");
+                String status = row.get("Status");
+                int invoiceId = Integer.parseInt(row.get("InvoiceID"));
+                LocalDate issuedDate = LocalDate.parse(row.get("IssuedDate"));
 
-            // You must reconstruct the Invoice manually
-            Invoice invoice = new Invoice(invoiceId, amountPaid, issuedDate, method, status, applicantNRIC, projectName, flatType);
+                // Convert method string to PaymentMethod enum safely
+                PaymentMethod method = Arrays.stream(PaymentMethod.values())
+                        .filter(pm -> pm.toString().equalsIgnoreCase(methodRaw))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Invalid payment method: " + methodRaw));
 
-            // Construct the Receipt
-            Receipt receipt = new Receipt(applicantName, applicantNRIC, 0, "", projectName, "", flatType, invoice);
-            receipt.setIssuedDate(issuedDate);  // optional if constructor already sets it
-            receipt.setReceiptId(receiptId);    // optional if constructor already sets it
+                Invoice invoice = new Invoice(invoiceId, amountPaid, issuedDate, method, status, applicantNRIC, projectName, flatType);
 
-            list.add(receipt);
-        } catch (Exception ignored) {}
+                // Construct the Receipt (dummy age and status since not stored in CSV)
+                Receipt receipt = new Receipt(applicantName, applicantNRIC, 0, "", projectName, "", flatType, invoice);
+                receipt.setIssuedDate(issuedDate);
+                receipt.setReceiptId(receiptId);
+
+                list.add(receipt);
+            } catch (Exception ignored) {
+                ignored.printStackTrace(); // You can log instead of printing in production
+            }
+        }
+
+        return list;
     }
-    return list;
-}
-
 
     public static void saveAll(List<Receipt> receipts) {
         List<Map<String, String>> rows = new ArrayList<>();
@@ -56,7 +64,7 @@ public class ReceiptCsvMapper {
             row.put("IssuedDate", r.getIssuedDate().toString());
             row.put("InvoiceID", String.valueOf(r.getInvoice().getPaymentId()));
             row.put("AmountPaid", String.valueOf(r.getInvoice().getAmount()));
-            row.put("Method", r.getInvoice().getMethod());
+            row.put("Method", r.getInvoice().getMethodLabel());
             row.put("Status", r.getInvoice().getStatus());
             rows.add(row);
         }

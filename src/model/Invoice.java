@@ -7,7 +7,7 @@ public class Invoice extends Payment {
     private String projectName;
     private String flatType;
 
-    public Invoice(int paymentId, double amount, LocalDate date, String method, String status,
+    public Invoice(int paymentId, double amount, LocalDate date, PaymentMethod method, String status,
                    String applicantNRIC, String projectName, String flatType) {
         super(paymentId, amount, date, method, status);
         this.applicantNRIC = applicantNRIC;
@@ -18,11 +18,26 @@ public class Invoice extends Payment {
     public String generateInvoice() {
         return String.format(
             "🧾 Invoice #%d\nApplicant: %s\nProject: %s\nFlat Type: %s\nAmount: $%.2f\nDate: %s\nMethod: %s\nStatus: %s",
-            paymentId, applicantNRIC, projectName, flatType, amount, date, method, status
+            paymentId,
+            applicantNRIC,
+            projectName,
+            flatType,
+            amount,
+            date,
+            method.toString(),  // 💡 Ensure label is shown nicely
+            status
         );
     }
 
-    public String getApplicantNRIC() { return applicantNRIC; }
-    public String getProjectName() { return projectName; }
-    public String getFlatType() { return flatType; }
+    public String getApplicantNRIC() {
+        return applicantNRIC;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public String getFlatType() {
+        return flatType;
+    }
 }

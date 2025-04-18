@@ -303,11 +303,12 @@ public class ApplicantMenu {
             System.out.println("3. Credit Card");
             System.out.print("➡️ Enter your choice: ");
             int methodChoice = Integer.parseInt(sc.nextLine().trim());
-            String method;
+    
+            PaymentMethod method;
             switch (methodChoice) {
-                case 1 -> method = "PayNow";
-                case 2 -> method = "Bank Transfer";
-                case 3 -> method = "Credit Card";
+                case 1 -> method = PaymentMethod.PAYNOW;
+                case 2 -> method = PaymentMethod.BANK_TRANSFER;
+                case 3 -> method = PaymentMethod.CREDIT_CARD;
                 default -> {
                     System.out.println("❌ Invalid payment method.");
                     return;
@@ -322,7 +323,7 @@ public class ApplicantMenu {
                 selected.getPaymentId(),
                 selected.getAmount(),
                 LocalDate.now(),
-                selected.getMethod(),
+                method,
                 selected.getStatus()
             );
             PaymentService.addPayment(newPayment);
@@ -331,6 +332,7 @@ public class ApplicantMenu {
             System.out.println("❌ Invalid input.");
         }
     }
+    
     
     
     

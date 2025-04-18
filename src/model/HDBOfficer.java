@@ -42,15 +42,9 @@ public class HDBOfficer extends Applicant {
         }
     }
 
-    public Receipt generateReceipt(Application app, int nextPaymentId, String selectedMethod) {
-        // Validate payment method
-        if (!PaymentMethod.isValid(selectedMethod)) {
-            throw new IllegalArgumentException("❌ Invalid payment method: " + selectedMethod);
-        }
-    
+    public Receipt generateReceipt(Application app, int nextPaymentId, PaymentMethod selectedMethod) {
         double price = app.getFlatPrice();
     
-        // Generate invoice
         Invoice invoice = new Invoice(
             nextPaymentId,
             price,
@@ -62,7 +56,6 @@ public class HDBOfficer extends Applicant {
             app.getFlatType()
         );
     
-        // Generate receipt
         return new Receipt(
             app.getApplicant().getName(),
             app.getApplicant().getNric(),
@@ -74,6 +67,8 @@ public class HDBOfficer extends Applicant {
             invoice
         );
     }
+    
+    
     
 
 

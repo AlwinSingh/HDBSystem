@@ -279,7 +279,7 @@ public class OfficerMenu {
     
             Invoice selectedInvoice = awaitingReceipts.get(idx - 1);
     
-            // ✅ SECURITY CHECK: Officer only handles their assigned project
+            // Officer validation
             if (!selectedInvoice.getProjectName().equalsIgnoreCase(officer.getAssignedProject().getProjectName())) {
                 System.out.println("❌ You are not authorized to issue receipts for this project.");
                 return;
@@ -295,7 +295,7 @@ public class OfficerMenu {
                 return;
             }
     
-            // ✅ Attach full project to avoid 0.0 flat price issue
+            // Fix flat price issue
             Project fullProject = allProjects.stream()
                 .filter(p -> p.getProjectName().equalsIgnoreCase(selectedInvoice.getProjectName()))
                 .findFirst()
@@ -305,7 +305,7 @@ public class OfficerMenu {
                 applicant.getApplication().setProject(fullProject);
             }
     
-            // ✅ Create and save receipt
+            // Generate and save receipt
             Receipt receipt = officer.generateReceipt(
                 applicant.getApplication(),
                 selectedInvoice.getPaymentId(),
@@ -313,19 +313,19 @@ public class OfficerMenu {
             );
             ReceiptService.addReceipt(receipt);
     
-            // ✅ Update invoice status to "Processed"
-            selectedInvoice.setStatus("Processed");
+            // Update invoice to PROCESSED
+            selectedInvoice.setStatus(Payment.PaymentStatusType.PROCESSED.name());
             InvoiceService.updateInvoice(selectedInvoice);
     
-            // ✅ Update payment status to "Processed"
+            // Update matching payment
             Payment payment = PaymentService.getAllPayments().stream()
                 .filter(p -> p.getPaymentId() == selectedInvoice.getPaymentId())
                 .findFirst()
                 .orElse(null);
     
             if (payment != null) {
-                payment.setStatus("Processed");
-                PaymentService.persist(); // Save changes to PaymentList.csv
+                payment.setStatus(Payment.PaymentStatusType.PROCESSED.name());
+                PaymentService.persist();
             }
     
             System.out.println("✅ Receipt generated:\n" + receipt);
@@ -334,6 +334,7 @@ public class OfficerMenu {
             System.out.println("❌ Invalid input.");
         }
     }
+    
     
 
     private static void updateLocation(HDBOfficer officer, Scanner sc) {
