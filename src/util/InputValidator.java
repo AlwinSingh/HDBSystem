@@ -4,8 +4,9 @@ import java.util.Scanner;
 
 public class InputValidator {
 
+    private static final Scanner sc = new Scanner(System.in); // Shared static scanner
+
     public static int getIntInRange(String prompt, int min, int max) {
-        Scanner sc = new Scanner(System.in);
         int choice;
 
         while (true) {
@@ -28,7 +29,6 @@ public class InputValidator {
     }
 
     public static double getPositiveDouble(String prompt) {
-        Scanner sc = new Scanner(System.in);
         double value;
 
         while (true) {
@@ -44,7 +44,6 @@ public class InputValidator {
     }
 
     public static String getNonEmptyString(String prompt) {
-        Scanner sc = new Scanner(System.in);
         while (true) {
             System.out.print(prompt);
             String input = sc.nextLine().trim();
