@@ -52,8 +52,8 @@ public class ApplicantCsvMapper {
         return row;
     }
 
-    public static List<Applicant> loadAll(String csvPath) {
-        List<Map<String, String>> rawRows = CsvUtil.read(csvPath);
+    public static List<Applicant> loadAll() {
+        List<Map<String, String>> rawRows = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
         List<Applicant> applicants = new ArrayList<>();
         for (Map<String, String> row : rawRows) {
             applicants.add(fromCsvRow(row));
@@ -61,33 +61,33 @@ public class ApplicantCsvMapper {
         return applicants;
     }
     
-    public static void updateApplicant(String csvPath, Applicant updatedApplicant) {
-        List<Applicant> all = loadAll(csvPath);
+    public static void updateApplicant(Applicant updatedApplicant) {
+        List<Applicant> all = loadAll();
         for (int i = 0; i < all.size(); i++) {
             if (all.get(i).getNric().equalsIgnoreCase(updatedApplicant.getNric())) {
                 all.set(i, updatedApplicant);
                 break;
             }
         }
-        saveAll(csvPath, all);
+        saveAll(all);
     }
     
-    public static void saveAll(String csvPath, List<Applicant> applicants) {
+    public static void saveAll(List<Applicant> applicants) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (Applicant a : applicants) {
             rows.add(toCsvRow(a));
         }
-        CsvUtil.write(csvPath, rows);
+        CsvUtil.write(FilePath.APPLICANT_LIST_FILE, rows);
     }
     public static boolean exists(String nric) {
-        return loadAll("data/ApplicantList.csv").stream()
+        return loadAll().stream()
             .anyMatch(a -> a.getNric().equalsIgnoreCase(nric));
     }
     
     public static void save(Applicant applicant) {
-        List<Applicant> all = loadAll("data/ApplicantList.csv");
+        List<Applicant> all = loadAll();
         all.add(applicant);
-        saveAll("data/ApplicantList.csv", all);
+        saveAll(all);
     }
     
 }

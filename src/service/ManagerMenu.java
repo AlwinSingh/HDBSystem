@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import src.model.*;
 import src.util.CsvUtil;
 import src.util.EnquiryCsvMapper;
+import src.util.FilePath;
 import src.util.ProjectCsvMapper;
 
 public class ManagerMenu {
@@ -83,7 +84,7 @@ public class ManagerMenu {
     private static void createProject(HDBManager manager, Scanner sc) {
         System.out.println("\n📌 Create New Project");
     
-        List<Project> allProjects = ProjectCsvMapper.loadAll("data/ProjectList.csv");
+        List<Project> allProjects = ProjectCsvMapper.loadAll();
     
         System.out.print("Enter project name: ");
         String name = sc.nextLine().trim();
@@ -162,13 +163,13 @@ public class ManagerMenu {
         newProject.setManager(manager); // ensure Manager NRIC + Name is captured
     
         allProjects.add(newProject);
-        ProjectCsvMapper.saveAll("data/ProjectList.csv", allProjects);
+        ProjectCsvMapper.saveAll(allProjects);
     
         System.out.println("✅ Project created and saved successfully!");
     }
     
     private static void editProject(HDBManager manager, Scanner sc) {
-        List<Project> allProjects = ProjectCsvMapper.loadAll("data/ProjectList.csv");
+        List<Project> allProjects = ProjectCsvMapper.loadAll();
         List<Project> myProjects = allProjects.stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
             .toList();
@@ -251,7 +252,7 @@ public class ManagerMenu {
                 p.setManager(manager);
             }
     
-            ProjectCsvMapper.saveAll("data/ProjectList.csv", allProjects);
+            ProjectCsvMapper.saveAll(allProjects);
             System.out.println("✅ Project updated successfully.");
     
         } catch (Exception e) {
@@ -261,7 +262,7 @@ public class ManagerMenu {
     
 
     private static void deleteProject(HDBManager manager, Scanner sc) {
-        List<Project> allProjects = ProjectCsvMapper.loadAll("data/ProjectList.csv");
+        List<Project> allProjects = ProjectCsvMapper.loadAll();
         List<Project> myProjects = allProjects.stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
             .toList();
@@ -301,13 +302,13 @@ public class ManagerMenu {
         }
     
         allProjects.remove(selected);
-        ProjectCsvMapper.saveAll("data/ProjectList.csv", allProjects);
+        ProjectCsvMapper.saveAll(allProjects);
         System.out.println("✅ Project deleted successfully.");
     }
     
     
     private static void toggleVisibility(HDBManager manager, Scanner sc) {
-        List<Project> allProjects = ProjectCsvMapper.loadAll("data/ProjectList.csv");
+        List<Project> allProjects = ProjectCsvMapper.loadAll();
         List<Project> myProjects = allProjects.stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
             .toList();
@@ -347,12 +348,12 @@ public class ManagerMenu {
         if (toggleTo) selected.openProject();
         else selected.closeProject();
     
-        ProjectCsvMapper.saveAll("data/ProjectList.csv", allProjects);
+        ProjectCsvMapper.saveAll(allProjects);
         System.out.printf("✅ Visibility updated. New visibility: %s\n", selected.isVisible());
     }
     
     private static void viewAllProjects() {
-        List<Project> projects = ProjectCsvMapper.loadAll("data/ProjectList.csv");
+        List<Project> projects = ProjectCsvMapper.loadAll();
     
         if (projects.isEmpty()) {
             System.out.println("❌ No projects found.");
@@ -366,7 +367,7 @@ public class ManagerMenu {
     }
     
     private static void viewMyProjects(HDBManager manager) {
-        List<Project> allProjects = ProjectCsvMapper.loadAll("data/ProjectList.csv");
+        List<Project> allProjects = ProjectCsvMapper.loadAll();
     
         List<Project> myProjects = allProjects.stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
@@ -397,8 +398,8 @@ public class ManagerMenu {
     
     
     private static void viewOfficerRegistrations(HDBManager manager) {
-        List<Map<String, String>> officers = CsvUtil.read("data/OfficerList.csv");
-        List<Map<String, String>> projects = CsvUtil.read("data/ProjectList.csv");
+        List<Map<String, String>> officers = CsvUtil.read(FilePath.OFFICER_LIST_FILE);
+        List<Map<String, String>> projects = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
     
         Set<String> managerProjectNames = projects.stream()
             .filter(p -> manager.getNric().equalsIgnoreCase(p.getOrDefault("ManagerNRIC", "").trim()))
@@ -427,8 +428,8 @@ public class ManagerMenu {
     
     
     private static void handleOfficerApproval(HDBManager manager, Scanner sc) {
-        List<Map<String, String>> projectList = CsvUtil.read("data/ProjectList.csv");
-        List<Map<String, String>> officerList = CsvUtil.read("data/OfficerList.csv");
+        List<Map<String, String>> projectList = CsvUtil.read(FilePath.OFFICER_LIST_FILE);
+        List<Map<String, String>> officerList = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
     
         List<Map<String, String>> pendingOfficers = officerList.stream()
             .filter(o -> "PENDING".equalsIgnoreCase(o.getOrDefault("RegistrationStatus", "")))
@@ -482,8 +483,8 @@ public class ManagerMenu {
             default -> System.out.println("❌ Invalid input. Use A or R.");
         }
     
-        CsvUtil.write("data/OfficerList.csv", officerList);
-        CsvUtil.write("data/ProjectList.csv", projectList);
+        CsvUtil.write(FilePath.OFFICER_LIST_FILE, officerList);
+        CsvUtil.write(FilePath.PROJECT_LIST_FILE, projectList);
     }
     
     private static void approveOfficer(Map<String, String> officer, String nric, String name, Map<String, String> project) {
@@ -521,8 +522,8 @@ public class ManagerMenu {
     }
     
     private static void viewApplicantApplications(HDBManager manager) {
-        List<Map<String, String>> applicants = CsvUtil.read("data/ApplicantList.csv");
-        List<Map<String, String>> projects = CsvUtil.read("data/ProjectList.csv");
+        List<Map<String, String>> applicants = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
+        List<Map<String, String>> projects = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
     
         Set<String> myProjectNames = projects.stream()
             .filter(p -> manager.getNric().equalsIgnoreCase(p.get("ManagerNRIC")))
@@ -557,8 +558,8 @@ public class ManagerMenu {
     
     
     private static void handleApplicantApproval(HDBManager manager, Scanner sc) {
-        List<Map<String, String>> applicants = CsvUtil.read("data/ApplicantList.csv");
-        List<Map<String, String>> projects = CsvUtil.read("data/ProjectList.csv");
+        List<Map<String, String>> applicants = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
+        List<Map<String, String>> projects = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
     
         Set<String> myProjectNames = projects.stream()
             .filter(p -> manager.getNric().equalsIgnoreCase(p.get("ManagerNRIC")))
@@ -616,8 +617,8 @@ public class ManagerMenu {
             default -> System.out.println("❌ Invalid input. Use A or R.");
         }
     
-        CsvUtil.write("data/ApplicantList.csv", applicants);
-        CsvUtil.write("data/ProjectList.csv", projects);
+        CsvUtil.write(FilePath.APPLICANT_LIST_FILE, applicants);
+        CsvUtil.write(FilePath.PROJECT_LIST_FILE, projects);
     }
     
     private static void approveApplicant(Map<String, String> app, Map<String, String> project, String flatType, Scanner sc) {
@@ -651,8 +652,8 @@ public class ManagerMenu {
     }
     
     private static void handleWithdrawalRequests(HDBManager manager, Scanner sc) {
-        List<Map<String, String>> applicants = CsvUtil.read("data/ApplicantList.csv");
-        List<Map<String, String>> projects = CsvUtil.read("data/ProjectList.csv");
+        List<Map<String, String>> applicants = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
+        List<Map<String, String>> projects = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
     
         Set<String> myProjects = projects.stream()
             .filter(p -> manager.getNric().equalsIgnoreCase(p.get("ManagerNRIC")))
@@ -701,7 +702,7 @@ public class ManagerMenu {
             System.out.println("❌ Invalid input.");
         }
     
-        CsvUtil.write("data/ApplicantList.csv", applicants);
+        CsvUtil.write(FilePath.APPLICANT_LIST_FILE, applicants);
     }
     
     private static void generateReports(HDBManager manager, Scanner sc) {
@@ -711,9 +712,9 @@ public class ManagerMenu {
     }
     
     private static void handleManagerEnquiries(HDBManager manager, Scanner sc) {
-        List<Enquiry> all = EnquiryCsvMapper.loadAll("data/EnquiryList.csv");
+        List<Enquiry> all = EnquiryCsvMapper.loadAll();
     
-        Set<String> managedProjects = ProjectCsvMapper.loadAll("data/ProjectList.csv").stream()
+        Set<String> managedProjects = ProjectCsvMapper.loadAll().stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
             .map(Project::getProjectName)
             .collect(Collectors.toSet());
@@ -745,7 +746,7 @@ public class ManagerMenu {
             String reply = sc.nextLine().trim();
     
             selected.addReply(reply, manager); // NEW REPLY HANDLING
-            EnquiryCsvMapper.saveAll("data/EnquiryList.csv", all);
+            EnquiryCsvMapper.saveAll(all);
             System.out.println("✅ Reply sent and enquiry marked as CLOSED.");
     
         } catch (Exception e) {

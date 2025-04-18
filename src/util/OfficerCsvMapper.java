@@ -44,8 +44,8 @@ public class OfficerCsvMapper {
         return row;
     }
 
-    public static List<HDBOfficer> loadAll(String csvPath, List<Project> allProjects) {
-        List<Map<String, String>> rows = CsvUtil.read(csvPath);
+    public static List<HDBOfficer> loadAll(List<Project> allProjects) {
+        List<Map<String, String>> rows = CsvUtil.read(FilePath.OFFICER_LIST_FILE);
         List<HDBOfficer> officers = new ArrayList<>();
         for (Map<String, String> row : rows) {
             officers.add(fromCsvRow(row, allProjects)); // ✅ FIXED
@@ -53,8 +53,8 @@ public class OfficerCsvMapper {
         return officers;
     }
     
-    public static void updateOfficer(String csvPath, HDBOfficer updatedOfficer) {
-        List<Map<String, String>> rows = CsvUtil.read(csvPath);
+    public static void updateOfficer(HDBOfficer updatedOfficer) {
+        List<Map<String, String>> rows = CsvUtil.read(FilePath.OFFICER_LIST_FILE);
     
         for (Map<String, String> row : rows) {
             if (row.getOrDefault("NRIC", "").equalsIgnoreCase(updatedOfficer.getNric())) {
@@ -66,18 +66,14 @@ public class OfficerCsvMapper {
             }
         }
     
-        CsvUtil.write(csvPath, rows);
+        CsvUtil.write(FilePath.OFFICER_LIST_FILE, rows);
     }
-    
-    
-    
-    
 
-    public static void saveAll(String csvPath, List<HDBOfficer> officers) {
+    public static void saveAll(List<HDBOfficer> officers) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (HDBOfficer o : officers) {
             rows.add(toCsvRow(o));
         }
-        CsvUtil.write(csvPath, rows);
+        CsvUtil.write(FilePath.OFFICER_LIST_FILE, rows);
     }
 }

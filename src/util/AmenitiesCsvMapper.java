@@ -4,7 +4,7 @@ import src.model.Amenities;
 import java.util.*;
 
 public class AmenitiesCsvMapper {
-    private static final String CSV = "data/ProjectAmenities.csv";
+    private static final String CSV = FilePath.AMENITIES_LIST_FILE;
 
     public static List<Amenities> loadAll() {
         List<Map<String,String>> rows = CsvUtil.read(CSV);

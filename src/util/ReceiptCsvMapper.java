@@ -8,7 +8,7 @@ import java.util.*;
 import static src.util.CsvUtil.*;
 
 public class ReceiptCsvMapper {
-    private static final String CSV_PATH = "data/ReceiptList.csv";
+    private static final String CSV_PATH = FilePath.RECEIPT_LIST_FILE;
 
     public static List<Receipt> loadAll() {
     List<Map<String, String>> rows = read(CSV_PATH);

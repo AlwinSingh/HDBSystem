@@ -1,12 +1,13 @@
 package src.util;
 
 import src.model.Invoice;
+
 import java.time.LocalDate;
 import java.util.*;
 import static src.util.CsvUtil.*;
 
 public class InvoiceCsvMapper {
-    private static final String CSV_PATH = "data/InvoiceList.csv";
+    private static final String CSV_PATH = FilePath.INVOICE_LIST_FILE;
 
     public static List<Invoice> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);

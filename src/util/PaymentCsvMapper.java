@@ -6,7 +6,7 @@ import java.util.*;
 import static src.util.CsvUtil.*;
 
 public class PaymentCsvMapper {
-    private static final String CSV_PATH = "data/PaymentList.csv";
+    private static final String CSV_PATH = FilePath.PAYMENT_LIST_FILE;
 
     public static List<Payment> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);

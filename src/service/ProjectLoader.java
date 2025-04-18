@@ -3,14 +3,12 @@ package src.service;
 import src.model.Project;
 import src.model.Amenities;
 import src.util.ProjectCsvMapper;
-
 import java.util.List;
 
 public class ProjectLoader {
-    private static final String PROJECT_CSV_PATH = "data/ProjectList.csv";
 
     public static List<Project> loadProjects() {
-        List<Project> projects = ProjectCsvMapper.loadAll(PROJECT_CSV_PATH);
+        List<Project> projects = ProjectCsvMapper.loadAll();
 
         for (Project p : projects) {
             // Attach amenities from the separate CSV

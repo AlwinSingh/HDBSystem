@@ -11,11 +11,6 @@ import src.util.ProjectCsvMapper;
 
 public class OfficerMenu {
 
-    private static final String APPLICANT_PATH = "data/ApplicantList.csv";
-    private static final String OFFICER_PATH   = "data/OfficerList.csv";
-    private static final String PROJECT_PATH   = "data/ProjectList.csv";
-    private static final String ENQUIRY_PATH   = "data/EnquiryList.csv";
-
     public static void show(HDBOfficer officer) {
         Scanner sc = new Scanner(System.in);
         while (true) {
@@ -63,7 +58,7 @@ public class OfficerMenu {
             return;
         }
     
-        List<Project> projects = ProjectCsvMapper.loadAll(PROJECT_PATH);
+        List<Project> projects = ProjectCsvMapper.loadAll();
     
         System.out.println("\n📋 Available Projects:");
         List<Project> available = projects.stream()
@@ -87,7 +82,7 @@ public class OfficerMenu {
             Project selected = available.get(idx);
             boolean registered = officer.registerToHandleProject(selected);
             if (registered) {
-                OfficerCsvMapper.updateOfficer(OFFICER_PATH, officer);
+                OfficerCsvMapper.updateOfficer(officer);
                 System.out.println("✅ Registration submitted.");
             } else {
                 System.out.println("❌ Could not register. Check your current assignment or application status.");
@@ -144,7 +139,7 @@ public class OfficerMenu {
             return;
         }
     
-        List<Applicant> applicants = ApplicantCsvMapper.loadAll(APPLICANT_PATH);
+        List<Applicant> applicants = ApplicantCsvMapper.loadAll();
         List<Applicant> pending = applicants.stream()
             .filter(a -> a.getApplication() != null)
             .filter(a -> {
@@ -174,7 +169,7 @@ public class OfficerMenu {
             String flatType = selected.getApplication().getFlatType();
     
             // ✅ FIX: Rebind full project with correct pricing
-            Project fullProject = ProjectCsvMapper.loadAll(PROJECT_PATH).stream()
+            Project fullProject = ProjectCsvMapper.loadAll().stream()
                 .filter(p -> p.getProjectName().equalsIgnoreCase(assigned.getProjectName()))
                 .findFirst()
                 .orElse(null);
@@ -189,14 +184,14 @@ public class OfficerMenu {
     
             officer.bookFlat(selected.getApplication(), flatType);
             selected.getApplication().setStatus("BOOKED");
-            ApplicantCsvMapper.updateApplicant(APPLICANT_PATH, selected);
+            ApplicantCsvMapper.updateApplicant(selected);
     
             int nextInvoiceId = InvoiceService.getNextInvoiceId();
             Invoice invoice = InvoiceService.generateInvoiceForBooking(selected.getApplication(), nextInvoiceId);
             InvoiceService.addInvoice(invoice);
     
             System.out.println("🧾 Invoice generated and saved (Invoice ID: " + invoice.getPaymentId() + ")");
-            ProjectCsvMapper.saveAll(PROJECT_PATH, ProjectCsvMapper.loadAll(PROJECT_PATH));
+            ProjectCsvMapper.saveAll(ProjectCsvMapper.loadAll());
     
             System.out.println("✅ Booking successful.");
         } catch (Exception e) {
@@ -217,7 +212,7 @@ public class OfficerMenu {
             return;
         }
     
-        List<Enquiry> allEnquiries = EnquiryCsvMapper.loadAll(ENQUIRY_PATH);
+        List<Enquiry> allEnquiries = EnquiryCsvMapper.loadAll();
         List<Enquiry> projectEnquiries = allEnquiries.stream()
             .filter(e -> e.getProject().getProjectName().equalsIgnoreCase(assignedProject.getProjectName()))
             .filter(e -> Enquiry.STATUS_PENDING.equalsIgnoreCase(e.getStatus()))
@@ -245,7 +240,7 @@ public class OfficerMenu {
             String reply = sc.nextLine().trim();
     
             selected.addReply(reply, officer); // NEW REPLY HANDLING
-            EnquiryCsvMapper.saveAll(ENQUIRY_PATH, allEnquiries);
+            EnquiryCsvMapper.saveAll(allEnquiries);
             System.out.println("✅ Reply sent and enquiry marked as CLOSED.");
     
         } catch (Exception e) {
@@ -255,8 +250,8 @@ public class OfficerMenu {
     
     private static void generateReceipt(HDBOfficer officer, Scanner sc) {
         List<Invoice> invoices = InvoiceService.loadAll();
-        List<Applicant> applicants = ApplicantCsvMapper.loadAll(APPLICANT_PATH);
-        List<Project> allProjects = ProjectCsvMapper.loadAll(PROJECT_PATH);
+        List<Applicant> applicants = ApplicantCsvMapper.loadAll();
+        List<Project> allProjects = ProjectCsvMapper.loadAll();
     
         List<Invoice> unpaid = invoices.stream()
             .filter(i -> "Processed".equalsIgnoreCase(i.getStatus()))
@@ -357,7 +352,7 @@ public class OfficerMenu {
         }
     
         // Persist only the one updated project
-        ProjectCsvMapper.updateProject(PROJECT_PATH, p);
+        ProjectCsvMapper.updateProject(p);
         System.out.println("✅ Location updated.");
     }
     

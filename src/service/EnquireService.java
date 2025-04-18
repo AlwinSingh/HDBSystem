@@ -4,18 +4,18 @@ package src.service;
 import src.model.*;
 import src.util.CsvUtil;
 import src.util.EnquiryCsvMapper;
+import src.util.FilePath;
+
 import java.util.*;
 
 public class EnquireService {
 
-    private static final String ENQUIRY_CSV_PATH = "data/EnquiryList.csv";
-
     public static List<Enquiry> loadFromCSV() {
-        return EnquiryCsvMapper.loadAll(ENQUIRY_CSV_PATH);
+        return EnquiryCsvMapper.loadAll();
     }
 
     public static void saveAllToCSV(List<Enquiry> enquiries) {
-        EnquiryCsvMapper.saveAll(ENQUIRY_CSV_PATH, enquiries);
+        EnquiryCsvMapper.saveAll(enquiries);
     }
 
     public static void submitEnquiry(Applicant applicant, Scanner sc) {
@@ -278,7 +278,7 @@ public class EnquireService {
     private static List<String> getHandledProjects(User user) {
         List<String> projects = new ArrayList<>();
         if (user instanceof HDBManager manager) {
-            List<Map<String, String>> projectData = CsvUtil.read("data/ProjectList.csv");
+            List<Map<String, String>> projectData = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
             for (Map<String, String> p : projectData) {
                 if (manager.getNric().equalsIgnoreCase(p.get("ManagerNRIC"))) {
                     projects.add(p.get("Project Name"));

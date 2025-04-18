@@ -130,8 +130,8 @@ public class ProjectCsvMapper {
         return row;
     }
 
-    public static List<Project> loadAll(String csvPath) {
-        List<Map<String, String>> raw = CsvUtil.read(csvPath);
+    public static List<Project> loadAll() {
+        List<Map<String, String>> raw = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
         List<Project> projects = new ArrayList<>();
         for (Map<String, String> row : raw) {
             try {
@@ -144,23 +144,23 @@ public class ProjectCsvMapper {
         return projects;
     }
 
-    public static void saveAll(String csvPath, List<Project> projects) {
+    public static void saveAll(List<Project> projects) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (Project p : projects) {
             rows.add(toCsvRow(p));
         }
-        CsvUtil.write(csvPath, rows);
+        CsvUtil.write(FilePath.PROJECT_LIST_FILE, rows);
     }
     
-    public static void updateProject(String csvPath, Project updated) {
-        List<Project> all = loadAll(csvPath);
+    public static void updateProject(Project updated) {
+        List<Project> all = loadAll();
         for (int i = 0; i < all.size(); i++) {
             if (all.get(i).getProjectName().equalsIgnoreCase(updated.getProjectName())) {
                 all.set(i, updated);
                 break;
             }
         }
-        saveAll(csvPath, all);
+        saveAll(all);
     }
 
 }

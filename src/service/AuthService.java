@@ -4,16 +4,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import src.model.*;
-import src.util.ApplicantCsvMapper;
-import src.util.CsvUtil;
-import src.util.ManagerCsvMapper;
-import src.util.OfficerCsvMapper;
+import src.util.*;
 
 public class AuthService {
 
     public static User authenticate(String nric, String password) {
         // 1. Try ApplicantList
-        List<Map<String, String>> applicants = CsvUtil.read("data/ApplicantList.csv");
+        List<Map<String, String>> applicants = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
         for (Map<String, String> row : applicants) {
             if (row.get("NRIC").equalsIgnoreCase(nric) && row.get("Password").equals(password)) {
                 Applicant applicant = new Applicant(
@@ -47,7 +44,7 @@ public class AuthService {
         }
 
         // 2. Try OfficerList
-        List<Map<String, String>> officers = CsvUtil.read("data/OfficerList.csv");
+        List<Map<String, String>> officers = CsvUtil.read(FilePath.OFFICER_LIST_FILE);
         for (Map<String, String> row : officers) {
             if (row.get("NRIC").equalsIgnoreCase(nric) && row.get("Password").equals(password)) {
                 HDBOfficer officer = new HDBOfficer(
@@ -74,7 +71,7 @@ public class AuthService {
         }
 
         // 3. Try ManagerList
-        List<Map<String, String>> managers = CsvUtil.read("data/ManagerList.csv");
+        List<Map<String, String>> managers = CsvUtil.read(FilePath.MANAGER_LIST_FILE);
         for (Map<String, String> row : managers) {
             if (row.get("NRIC").equalsIgnoreCase(nric) && row.get("Password").equals(password)) {
                 return new HDBManager(
@@ -107,16 +104,14 @@ public class AuthService {
         user.setPassword(newPass);
     
         if (user instanceof HDBManager) {
-            ManagerCsvMapper.updateManager("data/ManagerList.csv", (HDBManager) user);
+            ManagerCsvMapper.updateManager((HDBManager) user);
         } else if (user instanceof HDBOfficer) {
-            OfficerCsvMapper.updateOfficer("data/OfficerList.csv", (HDBOfficer) user);
+            OfficerCsvMapper.updateOfficer((HDBOfficer) user);
         } else if (user instanceof Applicant) {
-            ApplicantCsvMapper.updateApplicant("data/ApplicantList.csv", (Applicant) user);
+            ApplicantCsvMapper.updateApplicant((Applicant) user);
         }
     
         System.out.println("✅ Password changed successfully.");
         return true;
     }
-    
-
 }

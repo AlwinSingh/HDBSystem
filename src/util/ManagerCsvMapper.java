@@ -25,8 +25,8 @@ public class ManagerCsvMapper {
         return row;
     }
 
-    public static List<HDBManager> loadAll(String csvPath) {
-        List<Map<String, String>> raw = CsvUtil.read(csvPath);
+    public static List<HDBManager> loadAll() {
+        List<Map<String, String>> raw = CsvUtil.read(FilePath.MANAGER_LIST_FILE);
         List<HDBManager> managers = new ArrayList<>();
         for (Map<String, String> row : raw) {
             managers.add(fromCsvRow(row));
@@ -34,15 +34,15 @@ public class ManagerCsvMapper {
         return managers;
     }
 
-    public static void saveAll(String csvPath, List<HDBManager> managers) {
+    public static void saveAll(List<HDBManager> managers) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (HDBManager manager : managers) {
             rows.add(toCsvRow(manager));
         }
-        CsvUtil.write(csvPath, rows);
+        CsvUtil.write(FilePath.MANAGER_LIST_FILE, rows);
     }
     public static HDBManager findByNric(String nric) {
-        List<HDBManager> allManagers = loadAll("data/ManagerList.csv");
+        List<HDBManager> allManagers = loadAll();
         for (HDBManager manager : allManagers) {
             if (manager.getNric().equalsIgnoreCase(nric)) {
                 return manager;
@@ -50,16 +50,14 @@ public class ManagerCsvMapper {
         }
         return null;
     }
-    public static void updateManager(String csvPath, HDBManager updatedManager) {
-        List<HDBManager> all = loadAll(csvPath);
+    public static void updateManager(HDBManager updatedManager) {
+        List<HDBManager> all = loadAll();
         for (int i = 0; i < all.size(); i++) {
             if (all.get(i).getNric().equalsIgnoreCase(updatedManager.getNric())) {
                 all.set(i, updatedManager);
                 break;
             }
         }
-        saveAll(csvPath, all);
+        saveAll(all);
     }
-    
-    
 }

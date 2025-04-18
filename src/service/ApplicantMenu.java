@@ -11,9 +11,6 @@ import src.util.ProjectCsvMapper;
 
 public class ApplicantMenu {
 
-    private static final String APPLICANT_PATH = "data/ApplicantList.csv";
-    private static final String PROJECT_PATH   = "data/ProjectList.csv";
-
     private static final Map<String, Consumer<ApplicantContext>> menuOptions = new LinkedHashMap<>() {{
         put("1", ApplicantMenu::viewEligibleProjects);
         put("2", ApplicantMenu::applyForProject);
@@ -161,11 +158,11 @@ public class ApplicantMenu {
         boolean ok = applicant.applyForProject(selected, flatType);
         if (ok) {
             // update applicant CSV
-            ApplicantCsvMapper.updateApplicant(APPLICANT_PATH, applicant);
+            ApplicantCsvMapper.updateApplicant(applicant);
 
             // also record this applicant in the project
             selected.getApplicantNRICs().add(applicant.getNric());
-            ProjectCsvMapper.updateProject(PROJECT_PATH, selected);
+            ProjectCsvMapper.updateProject(selected);
 
             System.out.println("✅ Application submitted. Status: PENDING.");
         } else {
@@ -356,14 +353,14 @@ public class ApplicantMenu {
     
 
     private static void saveApplicantUpdate(Applicant updatedApplicant) {
-        List<Applicant> all = ApplicantCsvMapper.loadAll("data/ApplicantList.csv");
+        List<Applicant> all = ApplicantCsvMapper.loadAll();
         for (int i = 0; i < all.size(); i++) {
             if (all.get(i).getNric().equalsIgnoreCase(updatedApplicant.getNric())) {
                 all.set(i, updatedApplicant);
                 break;
             }
         }
-        ApplicantCsvMapper.saveAll("data/ApplicantList.csv", all);
+        ApplicantCsvMapper.saveAll(all);
     }
 
     private static class ApplicantContext {

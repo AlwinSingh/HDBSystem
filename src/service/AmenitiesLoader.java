@@ -2,6 +2,7 @@ package src.service;
 
 import src.model.Amenities;
 import src.util.CsvUtil;
+import src.util.FilePath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,11 +10,9 @@ import java.util.Map;
 
 public class AmenitiesLoader {
 
-    private static final String AMENITY_CSV = "data/ProjectAmenities.csv";
-
     public static List<Amenities> loadAmenitiesByProject(String projectName) {
         List<Amenities> amenities = new ArrayList<>();
-        List<Map<String,String>> rows = CsvUtil.read(AMENITY_CSV);
+        List<Map<String,String>> rows = CsvUtil.read(FilePath.AMENITIES_LIST_FILE);
 
         for (Map<String,String> row : rows) {
             String proj = row.getOrDefault("Project Name", "").trim();

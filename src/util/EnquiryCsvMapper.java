@@ -59,8 +59,8 @@ public class EnquiryCsvMapper {
         return row;
     }
 
-    public static List<Enquiry> loadAll(String path) {
-        List<Map<String, String>> rawRows = CsvUtil.read(path);
+    public static List<Enquiry> loadAll() {
+        List<Map<String, String>> rawRows = CsvUtil.read(FilePath.ENQUIRY_LIST_FILE);
         List<Enquiry> enquiries = new ArrayList<>();
 
         for (Map<String, String> row : rawRows) {
@@ -79,11 +79,11 @@ public class EnquiryCsvMapper {
         return enquiries;
     }
 
-    public static void saveAll(String path, List<Enquiry> enquiries) {
+    public static void saveAll(List<Enquiry> enquiries) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (Enquiry e : enquiries) {
             rows.add(toCsvRow(e));
         }
-        CsvUtil.write(path, rows);
+        CsvUtil.write(FilePath.ENQUIRY_LIST_FILE, rows);
     }
 }
