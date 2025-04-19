@@ -1,8 +1,6 @@
 package src.service;
 
 import java.util.*;
-import java.util.function.Consumer;
-
 import src.model.*;
 
 public class ApplicantMenu {
@@ -32,7 +30,7 @@ public class ApplicantMenu {
                 System.out.printf("   [10] 🔁 Switch to Officer Dashboard%n");
             }
     
-            System.out.printf("%n       [0] 🚪 Logout%n");
+            System.out.printf("%n[0] 🚪 Logout%n");
     
             System.out.print("\n➡️ Enter your choice: ");
             String choice = sc.nextLine().trim();
