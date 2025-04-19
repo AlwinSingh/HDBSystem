@@ -1,2 +1,1 @@
 InvoiceID,PaymentID,ApplicantNRIC,ProjectName,FlatType,Amount,Method,Status,GeneratedDate
-1,1,S1234567A,Acacia Breeze,2-Room,350000.0,BANK_TRANSFER,PROCESSED,2025-04-19
