@@ -46,6 +46,8 @@ public class ApplicantService {
         System.out.println();
     }
 
+    
+
     public static List<Project> getEligibleProjects(Applicant applicant) {
         return ProjectLoader.loadProjects().stream()
             .filter(p -> p != null && p.getProjectName() != null)
