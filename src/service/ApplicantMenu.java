@@ -7,25 +7,8 @@ import src.model.*;
 
 public class ApplicantMenu {
 
-    private static String filterNeighborhood = null;
-    private static String filterDistrict = null;
-    private static String filterFlatType = null;
-
-    private static final Map<String, Consumer<ApplicantContext>> menuOptions = new LinkedHashMap<>() {{
-        put("1", ctx -> handleViewEligibleProjects(ctx.applicant, ctx.scanner));
-        put("2", ApplicantMenu::applyForProject);
-        put("3", ApplicantMenu::viewApplication);
-        put("4", ApplicantMenu::requestWithdrawal);
-        put("5", ctx -> viewAndPayInvoices(ctx.applicant, ctx.scanner));
-        put("6", ctx -> viewReceipts(ctx.applicant)); 
-        put("7", ApplicantMenu::handleEnquiries);
-        put("8", ctx -> showFeedbackServices(ctx.applicant, ctx.scanner));
-        put("9", ApplicantMenu::changePassword);
-    }};
-
     public static void show(Applicant applicant) {
         Scanner sc = new Scanner(System.in);
-    
         boolean isOfficer = applicant.isOfficer();
     
         while (true) {
@@ -54,85 +37,36 @@ public class ApplicantMenu {
             System.out.print("\n➡️ Enter your choice: ");
             String choice = sc.nextLine().trim();
     
-            if (choice.equals("0")) {
-                AuthService.logout();
-                return;
-            } else if (choice.equals("10") && isOfficer) {
-                System.out.println("🔁 Switching to Officer Dashboard...");
-                OfficerMenu.show((HDBOfficer) applicant);
-                return;
-            } else if (menuOptions.containsKey(choice)) {
-                menuOptions.get(choice).accept(new ApplicantContext(applicant, sc));
-            } else {
-                System.out.println("❌ Invalid input. Please try again.");
-            }
-        }
-    }
-    
-    
-
-    private static void handleViewEligibleProjects(Applicant applicant, Scanner sc) {
-        while (true) {
-            // 🏠 Display filtered eligible projects first
-            List<Project> filtered = ApplicantService.getFilteredEligibleProjects(
-                applicant,
-                filterNeighborhood,
-                filterDistrict,
-                filterFlatType
-            );
-    
-            System.out.println("\n📋 Eligible Open Projects:");
-            if (filtered.isEmpty()) {
-                System.out.println("❌ No eligible projects found for current filters.");
-            } else {
-                for (Project p : filtered) {
-                    ApplicantService.displayProjectDetails(p, applicant);
-                }
-            }
-
-            System.out.println("\n===== 🔧 Filter Options =====");
-            System.out.println(" [1] Apply Filter");
-            System.out.println(" [2] Clear Filters");
-            System.out.println(" [0] Back");
-            System.out.print("➡️ Enter your choice: ");
-            String choice = sc.nextLine().trim();
-    
             switch (choice) {
-                case "1" -> applyProjectFilters(sc);
-                case "2" -> {
-                    filterNeighborhood = null;
-                    filterDistrict = null;
-                    filterFlatType = null;
-                    System.out.println("✅ Filters cleared.");
+                // in ApplicantMenu.java
+                case "1" -> ApplicantService.handleViewEligibleProjects(applicant, sc);
+                case "2" -> applyForProject(new ApplicantContext(applicant, sc));
+                case "3" -> viewApplication(new ApplicantContext(applicant, sc));
+                case "4" -> requestWithdrawal(new ApplicantContext(applicant, sc));
+                case "5" -> viewAndPayInvoices(applicant, sc);
+                case "6" -> viewReceipts(applicant);
+                case "7" -> handleEnquiries(new ApplicantContext(applicant, sc));
+                case "8" -> showFeedbackServices(applicant, sc);
+                case "9" -> changePassword(new ApplicantContext(applicant, sc));
+                case "10" -> {
+                    if (isOfficer) {
+                        System.out.println("🔁 Switching to Officer Dashboard...");
+                        OfficerMenu.show((HDBOfficer) applicant);
+                        return;
+                    } else {
+                        System.out.println("❌ You are not eligible to access the Officer dashboard.");
+                    }
                 }
                 case "0" -> {
-                    System.out.println("🔙 Returning to dashboard...");
+                    AuthService.logout();
                     return;
                 }
-                default -> System.out.println("❌ Invalid input.");
+                default -> System.out.println("❌ Invalid input. Please try again.");
             }
         }
     }
     
 
-    private static void applyProjectFilters(Scanner sc) {
-        System.out.print("🏘️  Neighborhood [" + optional(filterNeighborhood) + "]: ");
-        String n = sc.nextLine().trim();
-        if (!n.isBlank()) filterNeighborhood = n;
-    
-        System.out.print("🏙️  District [" + optional(filterDistrict) + "]: ");
-        String d = sc.nextLine().trim();
-        if (!d.isBlank()) filterDistrict = d;
-    
-        System.out.print("🏢 Flat Type (2-Room / 3-Room) [" + optional(filterFlatType) + "]: ");
-        String f = sc.nextLine().trim();
-        if (!f.isBlank()) filterFlatType = f;
-    }
-    
-    
-    private static String optional(String value) {
-        return value == null ? "Any" : value;
-    }
 
     private static void applyForProject(ApplicantContext ctx) {
         Applicant applicant = ctx.applicant;

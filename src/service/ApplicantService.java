@@ -7,9 +7,14 @@ import src.util.ProjectCsvMapper;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class ApplicantService {
+
+    private static String filterNeighborhood = null;
+    private static String filterDistrict = null;
+    private static String filterFlatType = null;
 
     public static boolean isEligible(Applicant applicant, Project project) {
         String status = applicant.getMaritalStatus();
@@ -44,6 +49,69 @@ public class ApplicantService {
             }
         }
         System.out.println();
+    }
+
+    public static void handleViewEligibleProjects(Applicant applicant, Scanner sc) {
+        while (true) {
+            // 🏠 Display filtered eligible projects first
+            List<Project> filtered = ApplicantService.getFilteredEligibleProjects(
+                applicant,
+                filterNeighborhood,
+                filterDistrict,
+                filterFlatType
+            );
+    
+            System.out.println("\n📋 Eligible Open Projects:");
+            if (filtered.isEmpty()) {
+                System.out.println("❌ No eligible projects found for current filters.");
+            } else {
+                for (Project p : filtered) {
+                    ApplicantService.displayProjectDetails(p, applicant);
+                }
+            }
+
+            System.out.println("\n===== 🔧 Filter Options =====");
+            System.out.println(" [1] Apply Filter");
+            System.out.println(" [2] Clear Filters");
+            System.out.println(" [0] Back");
+            System.out.print("➡️ Enter your choice: ");
+            String choice = sc.nextLine().trim();
+    
+            switch (choice) {
+                case "1" -> applyProjectFilters(sc);
+                case "2" -> {
+                    filterNeighborhood = null;
+                    filterDistrict = null;
+                    filterFlatType = null;
+                    System.out.println("✅ Filters cleared.");
+                }
+                case "0" -> {
+                    System.out.println("🔙 Returning to dashboard...");
+                    return;
+                }
+                default -> System.out.println("❌ Invalid input.");
+            }
+        }
+    }
+    
+
+    public static void applyProjectFilters(Scanner sc) {
+        System.out.print("🏘️  Neighborhood [" + optional(filterNeighborhood) + "]: ");
+        String n = sc.nextLine().trim();
+        if (!n.isBlank()) filterNeighborhood = n;
+    
+        System.out.print("🏙️  District [" + optional(filterDistrict) + "]: ");
+        String d = sc.nextLine().trim();
+        if (!d.isBlank()) filterDistrict = d;
+    
+        System.out.print("🏢 Flat Type (2-Room / 3-Room) [" + optional(filterFlatType) + "]: ");
+        String f = sc.nextLine().trim();
+        if (!f.isBlank()) filterFlatType = f;
+    }
+    
+    
+    private static String optional(String value) {
+        return value == null ? "Any" : value;
     }
 
     
