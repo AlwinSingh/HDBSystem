@@ -1,32 +1,32 @@
 package src.service;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import src.model.*;
-import src.util.ApplicantCsvMapper;
-import src.util.ProjectCsvMapper;
 
 public class ApplicantMenu {
 
+    private static String filterNeighborhood = null;
+    private static String filterDistrict = null;
+    private static String filterFlatType = null;
+
     private static final Map<String, Consumer<ApplicantContext>> menuOptions = new LinkedHashMap<>() {{
-        put("1", ApplicantMenu::viewEligibleProjects);
+        put("1", ctx -> handleViewEligibleProjects(ctx.applicant, ctx.scanner));
         put("2", ApplicantMenu::applyForProject);
         put("3", ApplicantMenu::viewApplication);
         put("4", ApplicantMenu::requestWithdrawal);
         put("5", ctx -> viewAndPayInvoices(ctx.applicant, ctx.scanner));
         put("6", ctx -> viewReceipts(ctx.applicant)); 
         put("7", ApplicantMenu::handleEnquiries);
-        put("8", ctx -> ApplicantMenu.showFeedbackServices(ctx.applicant, ctx.scanner));
+        put("8", ctx -> showFeedbackServices(ctx.applicant, ctx.scanner));
         put("9", ApplicantMenu::changePassword);
     }};
-    
 
     public static void show(Applicant applicant) {
         Scanner sc = new Scanner(System.in);
-        boolean isOfficer = applicant instanceof HDBOfficer;
+    
+        boolean isOfficer = applicant.isOfficer();
     
         while (true) {
             System.out.println("\n===== 🏠 Applicant Dashboard =====");
@@ -49,7 +49,7 @@ public class ApplicantMenu {
                 System.out.printf("   [10] 🔁 Switch to Officer Dashboard%n");
             }
     
-            System.out.printf("       [0] 🚪 Logout%n");
+            System.out.printf("%n       [0] 🚪 Logout%n");
     
             System.out.print("\n➡️ Enter your choice: ");
             String choice = sc.nextLine().trim();
@@ -59,7 +59,7 @@ public class ApplicantMenu {
                 return;
             } else if (choice.equals("10") && isOfficer) {
                 System.out.println("🔁 Switching to Officer Dashboard...");
-                OfficerMenu.show((HDBOfficer) applicant);  // safely cast
+                OfficerMenu.show((HDBOfficer) applicant);
                 return;
             } else if (menuOptions.containsKey(choice)) {
                 menuOptions.get(choice).accept(new ApplicantContext(applicant, sc));
@@ -69,57 +69,76 @@ public class ApplicantMenu {
         }
     }
     
+    
 
-    private static void viewEligibleProjects(ApplicantContext ctx) {
-        List<Project> projects = ProjectLoader.loadProjects();
-        Applicant applicant = ctx.applicant;
-        System.out.println("\n📋 Eligible Open Projects:");
-        boolean anyShown = false;
+    private static void handleViewEligibleProjects(Applicant applicant, Scanner sc) {
+        while (true) {
+            // 🏠 Display filtered eligible projects first
+            List<Project> filtered = ApplicantService.getFilteredEligibleProjects(
+                applicant,
+                filterNeighborhood,
+                filterDistrict,
+                filterFlatType
+            );
     
-        for (Project p : projects) {
-            if (p != null && p.getProjectName() != null && isEligible(applicant, p) && p.isVisible()) {
-                anyShown = true;
-                System.out.println("────────────────────────────");
-                System.out.println("🏠 Project Name      : " + p.getProjectName());
-                System.out.println("📍 Location          : " + p.getNeighborhood());
-                System.out.println("🏙️ District & Town   : " + p.getLocation().getDistrict() + ", " + p.getLocation().getTown());
-                System.out.println("🗺️ Address           : " + p.getLocation().getAddress());
-                System.out.println("📅 Application Period: " + p.getOpenDate() + " to " + p.getCloseDate());
-                System.out.println("🏢 2-Room Units      : " + p.getRemainingFlats("2-Room") + " ($" + p.getPrice2Room() + ")");
-                if (applicant.getMaritalStatus().equalsIgnoreCase("Married")) {
-                    System.out.println("🏢 3-Room Units      : " + p.getRemainingFlats("3-Room") + " ($" + p.getPrice3Room() + ")");
+            System.out.println("\n📋 Eligible Open Projects:");
+            if (filtered.isEmpty()) {
+                System.out.println("❌ No eligible projects found for current filters.");
+            } else {
+                for (Project p : filtered) {
+                    ApplicantService.displayProjectDetails(p, applicant);
                 }
-                if (!p.getAmenities().isEmpty()) {
-                    System.out.println("🏞️ Nearby Amenities:");
-                    for (Amenities a : p.getAmenities()) {
-                        System.out.println("   - " + a.getAmenityDetails());
-                    }
-                }
-                System.out.println(); // extra line break between entries
             }
-        }
+
+            System.out.println("\n===== 🔧 Filter Options =====");
+            System.out.println(" [1] Apply Filter");
+            System.out.println(" [2] Clear Filters");
+            System.out.println(" [0] Back");
+            System.out.print("➡️ Enter your choice: ");
+            String choice = sc.nextLine().trim();
     
-        if (!anyShown) {
-            System.out.println("❌ No eligible open projects available at the moment.");
+            switch (choice) {
+                case "1" -> applyProjectFilters(sc);
+                case "2" -> {
+                    filterNeighborhood = null;
+                    filterDistrict = null;
+                    filterFlatType = null;
+                    System.out.println("✅ Filters cleared.");
+                }
+                case "0" -> {
+                    System.out.println("🔙 Returning to dashboard...");
+                    return;
+                }
+                default -> System.out.println("❌ Invalid input.");
+            }
         }
     }
     
 
-    private static boolean isEligible(Applicant applicant, Project project) {
-        String status = applicant.getMaritalStatus();
-        int age = applicant.getAge();
-        boolean withinDateRange = !LocalDate.now().isBefore(project.getOpenDate())
-                                && !LocalDate.now().isAfter(project.getCloseDate());
-        return withinDateRange && status != null &&
-               ((status.equalsIgnoreCase("Single") && age >= 35) ||
-                (status.equalsIgnoreCase("Married") && age >= 21));
+    private static void applyProjectFilters(Scanner sc) {
+        System.out.print("🏘️  Neighborhood [" + optional(filterNeighborhood) + "]: ");
+        String n = sc.nextLine().trim();
+        if (!n.isBlank()) filterNeighborhood = n;
+    
+        System.out.print("🏙️  District [" + optional(filterDistrict) + "]: ");
+        String d = sc.nextLine().trim();
+        if (!d.isBlank()) filterDistrict = d;
+    
+        System.out.print("🏢 Flat Type (2-Room / 3-Room) [" + optional(filterFlatType) + "]: ");
+        String f = sc.nextLine().trim();
+        if (!f.isBlank()) filterFlatType = f;
+    }
+    
+    
+    private static String optional(String value) {
+        return value == null ? "Any" : value;
     }
 
     private static void applyForProject(ApplicantContext ctx) {
         Applicant applicant = ctx.applicant;
         Scanner sc = ctx.scanner;
 
-        // 1️⃣ Prevent double‐apply
+        // 1️⃣ Prevent double-apply
         if (applicant.getApplication() != null) {
             System.out.println("⚠️ You already have an active application for: " 
                 + applicant.getApplication().getProject().getProjectName()
@@ -127,16 +146,14 @@ public class ApplicantMenu {
             return;
         }
 
-        // 2️⃣ Build eligible list
-        List<Project> eligible = ProjectLoader.loadProjects().stream()
-            .filter(p -> isEligible(applicant, p) && p.isVisible())
-            .collect(Collectors.toList());
+        // 2️⃣ Get eligible projects from service
+        List<Project> eligible = ApplicantService.getEligibleProjects(applicant);
         if (eligible.isEmpty()) {
             System.out.println("❌ No eligible projects available.");
             return;
         }
 
-        // 3️⃣ Prompt choice…
+        // 3️⃣ Prompt choice
         for (int i = 0; i < eligible.size(); i++) {
             Project p = eligible.get(i);
             System.out.printf("[%d] %s (%s)\n", i + 1, p.getProjectName(), p.getNeighborhood());
@@ -149,7 +166,7 @@ public class ApplicantMenu {
         }
         Project selected = eligible.get(choice);
 
-        // 4️⃣ Flat type
+        // 4️⃣ Choose flat type
         String flatType = "2-Room";
         if ("Married".equalsIgnoreCase(applicant.getMaritalStatus())) {
             System.out.print("Choose flat type (2-Room/3-Room): ");
@@ -164,22 +181,14 @@ public class ApplicantMenu {
             return;
         }
 
-        // 6️⃣ Business logic + persistence
-        boolean ok = applicant.applyForProject(selected, flatType);
+        // 6️⃣ Apply via service
+        boolean ok = ApplicantService.submitApplication(applicant, selected, flatType);
         if (ok) {
-            // update applicant CSV
-            ApplicantCsvMapper.updateApplicant(applicant);
-
-            // also record this applicant in the project
-            selected.getApplicantNRICs().add(applicant.getNric());
-            ProjectCsvMapper.updateProject(selected);
-
             System.out.println("✅ Application submitted. Status: " + Applicant.AppStatusType.PENDING.name() + ".");
         } else {
             System.out.println("❌ Application failed.");
         }
     }
-
 
     private static void viewApplication(ApplicantContext ctx) {
         Application app = ctx.applicant.getApplication();
@@ -219,20 +228,9 @@ public class ApplicantMenu {
 
     private static void requestWithdrawal(ApplicantContext ctx) {
         Scanner sc = ctx.scanner;
-        Application app = ctx.applicant.getApplication();
+        Applicant applicant = ctx.applicant;
     
-        if (app == null) {
-            System.out.println("❌ No application to withdraw.");
-            return;
-        }
-    
-        if (Applicant.AppStatusType.WITHDRAW_REQUESTED.name().equalsIgnoreCase(app.getStatus())) {
-            System.out.println("ℹ️ Withdrawal already requested.");
-            return;
-        }
-    
-        if (Applicant.AppStatusType.BOOKED.name().equalsIgnoreCase(app.getStatus())) {
-            System.out.println("❌ You cannot withdraw after booking.");
+        if (!ApplicantService.canWithdraw(applicant)) {
             return;
         }
     
@@ -242,10 +240,10 @@ public class ApplicantMenu {
             return;
         }
     
-        app.setStatus(Applicant.AppStatusType.WITHDRAW_REQUESTED.name());
-        ApplicantCsvMapper.updateApplicant(ctx.applicant);  
+        ApplicantService.submitWithdrawalRequest(applicant);
         System.out.println("✅ Withdrawal request submitted.");
     }
+    
     
 
     private static void handleEnquiries(ApplicantContext ctx) {
@@ -287,22 +285,18 @@ public class ApplicantMenu {
     
             switch (choice) {
                 case "1" -> {
-                    if (applicant.getApplication() == null || applicant.getApplication().getProject() == null) {
-                        System.out.println("❌ You must have an active application to submit feedback.");
-                        break;
-                    }
-    
                     System.out.print("✉️ Enter your feedback message: ");
                     String message = sc.nextLine().trim();
-    
                     if (message.isBlank()) {
                         System.out.println("❌ Feedback cannot be empty.");
                         break;
                     }
-    
-                    String projectName = applicant.getApplication().getProject().getProjectName();
-                    FeedbackService.submitFeedback(applicant.getNric(), message, projectName);
+                    boolean ok = ApplicantService.submitFeedback(applicant, message);
+                    if (!ok) {
+                        System.out.println("❌ You must have an active application to submit feedback.");
+                    }
                 }
+                
     
                 case "2" -> {
                     List<Feedback> myFeedback = FeedbackService.getFeedbackByApplicant(applicant.getNric());
@@ -320,20 +314,7 @@ public class ApplicantMenu {
     }
     
     private static void viewAndPayInvoices(Applicant applicant, Scanner sc) {
-        List<Invoice> allInvoices = InvoiceService.getAllInvoices();
-        List<Invoice> myInvoices = allInvoices.stream()
-            .filter(inv -> inv.getApplicantNRIC().equalsIgnoreCase(applicant.getNric()))
-            .toList();
-    
-        if (myInvoices.isEmpty()) {
-            System.out.println("📭 No invoices found for your account.");
-            return;
-        }
-    
-        List<Invoice> unpaidInvoices = myInvoices.stream()
-            .filter(inv -> !"Awaiting Receipt".equalsIgnoreCase(inv.getStatus()))
-            .sorted(Comparator.comparing(Invoice::getPaymentId))
-            .toList();
+        List<Invoice> unpaidInvoices = ApplicantService.getUnpaidInvoices(applicant);
     
         if (unpaidInvoices.isEmpty()) {
             System.out.println("✅ All your invoices have already been paid.");
@@ -344,7 +325,7 @@ public class ApplicantMenu {
         for (int i = 0; i < unpaidInvoices.size(); i++) {
             Invoice inv = unpaidInvoices.get(i);
             System.out.printf("[%d] Invoice #%d | Flat: %s | Amount: $%.2f | Status: %s\n",
-                i + 1, inv.getPaymentId(), inv.getFlatType(), inv.getAmount(), inv.getStatus());
+                    i + 1, inv.getPaymentId(), inv.getFlatType(), inv.getAmount(), inv.getStatus());
         }
     
         System.out.print("Enter invoice number to pay (or 0 to cancel): ");
@@ -365,43 +346,26 @@ public class ApplicantMenu {
             System.out.print("➡️ Enter your choice: ");
             int methodChoice = Integer.parseInt(sc.nextLine().trim());
     
-            PaymentMethod method;
+            PaymentMethod method = null;
             switch (methodChoice) {
                 case 1 -> method = PaymentMethod.PAYNOW;
                 case 2 -> method = PaymentMethod.BANK_TRANSFER;
                 case 3 -> method = PaymentMethod.CREDIT_CARD;
-                default -> {
-                    System.out.println("❌ Invalid payment method.");
-                    return;
-                }
+                default -> System.out.println("❌ Invalid payment method.");
             }
+
+            if (method == null) return;
+
+            ApplicantService.processInvoicePayment(applicant, selected, method);
     
-            selected.setMethod(method);
-            selected.setStatus("Awaiting Receipt");
-            InvoiceService.updateInvoice(selected);
-    
-            int nextPaymentId = PaymentService.getNextPaymentId();
-            Payment newPayment = new Payment(
-                nextPaymentId,
-                selected.getAmount(),
-                LocalDate.now(),
-                method,
-                selected.getStatus()
-            );
-            PaymentService.addPayment(newPayment);
-    
-            System.out.println("💸 Payment successful via " + method + "!");
         } catch (Exception e) {
             System.out.println("❌ Invalid input.");
         }
-    }  
+    }
+    
     
     private static void viewReceipts(Applicant applicant) {
-        List<Receipt> allReceipts = ReceiptService.getAllReceipts();
-        List<Receipt> myReceipts = allReceipts.stream()
-            .filter(r -> r.getApplicantNRIC().equalsIgnoreCase(applicant.getNric()))
-            .sorted(Comparator.comparing(r -> r.getInvoice().getPaymentId()))
-            .toList();
+        List<Receipt> myReceipts = ApplicantService.getReceiptsByApplicant(applicant);
     
         if (myReceipts.isEmpty()) {
             System.out.println("📭 No receipts found for your account.");
@@ -420,7 +384,6 @@ public class ApplicantMenu {
         }
     }
     
-
     private static class ApplicantContext {
         Applicant applicant;
         Scanner scanner;
@@ -432,8 +395,5 @@ public class ApplicantMenu {
     }
     private static void changePassword(ApplicantContext ctx) {
         AuthService.changePassword(ctx.applicant, ctx.scanner);
-    }
-
-    
-    
+    }   
 }

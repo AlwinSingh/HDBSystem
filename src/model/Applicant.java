@@ -45,4 +45,9 @@ public class Applicant extends User {
             System.out.println("Application status: " + application.getStatus());
         }
     }
+
+    public boolean isOfficer() {
+        return false;
+    }
+    
 }

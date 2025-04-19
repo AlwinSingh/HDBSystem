@@ -1,7 +1,5 @@
 package src.model;
 
-import java.util.List;
-
 public abstract class User {
     protected String nric;
     protected String password;
@@ -36,13 +34,6 @@ public abstract class User {
     public void changePassword(String newPassword) {
         this.password = newPassword;
     }
-
-    // Placeholder methods for subclasses
-    public List<Enquiry> viewEnquiries() { return null; }
-    public Enquiry createEnquiry(String content) { return null; }
-    public void editEnquiry(Enquiry e, String newContent) {}
-    public void deleteEnquiry(Enquiry e) {}
-
     public String getName() { return name; }
     public int getAge() { return age; }
     public String getMaritalStatus() { return maritalStatus; }

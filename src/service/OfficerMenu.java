@@ -216,7 +216,7 @@ public class OfficerMenu {
             ApplicantCsvMapper.updateApplicant(selected);
     
             int nextInvoiceId = InvoiceService.getNextInvoiceId();
-            Invoice invoice = InvoiceService.generateInvoiceForBooking(selected.getApplication(), nextInvoiceId);
+            Invoice invoice = HDBOfficer.generateInvoiceForBooking(selected.getApplication(), nextInvoiceId);
             InvoiceService.addInvoice(invoice);
     
             // ✅ Update only the project involved

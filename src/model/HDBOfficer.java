@@ -68,7 +68,18 @@ public class HDBOfficer extends Applicant {
         );
     }
     
-    
+    public static Invoice generateInvoiceForBooking(Application app, int paymentId) {
+        return new Invoice(
+            paymentId,
+            app.getFlatPrice(),
+            LocalDate.now(),
+            null,  
+            "Awaiting Payment",
+            app.getApplicant().getNric(),
+            app.getProject().getProjectName(),
+            app.getFlatType()
+        );
+    }
     
 
 
@@ -96,5 +107,11 @@ public class HDBOfficer extends Applicant {
     public void setAssignedProject(Project project) {
         this.assignedProject = project;
     }
+
+    @Override
+    public boolean isOfficer() {
+        return true;
+    }
+
     
 }

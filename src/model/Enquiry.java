@@ -55,10 +55,6 @@ public class Enquiry {
         this.status = STATUS_CLOSED;
     }
 
-    public void reopen() {
-        this.status = STATUS_OPEN;
-    }
-
     public boolean isClosed() {
         return STATUS_CLOSED.equalsIgnoreCase(status);
     }

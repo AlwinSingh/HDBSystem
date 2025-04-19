@@ -1,10 +1,9 @@
 package src.service;
 
-import src.model.Application;
+
 import src.model.Invoice;
 import src.util.InvoiceCsvMapper;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,21 +14,6 @@ public class InvoiceService {
     static {
         invoices = InvoiceCsvMapper.loadAll();
     }
-
-    // Generate a new Invoice and store it
-    public static Invoice generateInvoiceForBooking(Application app, int paymentId) {
-        return new Invoice(
-            paymentId,
-            app.getFlatPrice(),
-            LocalDate.now(),
-            null,  // ✅ No default method selected at invoice creation
-            "Awaiting Payment",
-            app.getApplicant().getNric(),
-            app.getProject().getProjectName(),
-            app.getFlatType()
-        );
-    }
-    
 
     // Append new invoice to file + in-memory
     public static void addInvoice(Invoice invoice) {
