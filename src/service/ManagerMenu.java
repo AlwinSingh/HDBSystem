@@ -160,10 +160,7 @@ public class ManagerMenu {
         newProject.setPrice3Room(price3);
         newProject.openProject();
         newProject.setManager(manager); // ensure Manager NRIC + Name is captured
-    
-        allProjects.add(newProject);
-        ProjectCsvMapper.saveAll(allProjects);
-    
+        ProjectCsvMapper.save(newProject);  
         System.out.println("✅ Project created and saved successfully!");
     }
     
@@ -816,8 +813,8 @@ public class ManagerMenu {
     
             String choice = sc.nextLine().trim();
             switch (choice) {
-                case "1" -> viewAllEnquiries();
-                case "2" -> handleManagerEnquiries(manager, sc);
+                case "1" -> EnquireService.viewAllEnquiries();
+                case "2" -> EnquireService.replyAsManager(manager, sc);
                 case "0" -> {
                     System.out.println("🔙 Returning to manager menu...");
                     return;
@@ -826,72 +823,7 @@ public class ManagerMenu {
             }
         }
     }
-
-    private static void viewAllEnquiries() {
-        List<Enquiry> all = EnquiryCsvMapper.loadAll();
-        if (all.isEmpty()) {
-            System.out.println("📭 No enquiries in the system.");
-            return;
-        }
     
-        System.out.println("\n📋 All Enquiries:");
-        for (Enquiry e : all) {
-            System.out.printf("📨 Enquiry #%d | Applicant: %s (%s) | Project: %s | Status: %s\n",
-                e.getEnquiryId(), e.getApplicantName(), e.getApplicantNric(), e.getProjectName(), e.getStatus());
-            System.out.println("📣 " + e.getContent());
-    
-            if (!e.getReplies().isEmpty()) {
-                System.out.println("💬 Replies:");
-                for (EnquiryReply r : e.getReplies()) {
-                    System.out.printf("   - [%s] %s: %s\n", r.getTimestamp(), r.getResponderRole(), r.getContent());
-                }
-            }
-            System.out.println("────────────────────────────────────────────");
-        }
-    }
-    
-    private static void handleManagerEnquiries(HDBManager manager, Scanner sc) {
-        List<Enquiry> all = EnquiryCsvMapper.loadAll();
-    
-        Set<String> managedProjects = ProjectCsvMapper.loadAll().stream()
-            .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
-            .map(Project::getProjectName)
-            .collect(Collectors.toSet());
-    
-        List<Enquiry> myEnquiries = all.stream()
-            .filter(e -> managedProjects.contains(e.getProjectName()))
-            .filter(e -> Enquiry.STATUS_PENDING.equalsIgnoreCase(e.getStatus()))
-            .toList();
-    
-        if (myEnquiries.isEmpty()) {
-            System.out.println("📭 No open enquiries for your projects.");
-            return;
-        }
-    
-        System.out.println("\n📬 Enquiries:");
-        for (int i = 0; i < myEnquiries.size(); i++) {
-            Enquiry e = myEnquiries.get(i);
-            System.out.printf("[%d] %s (%s): %s\n", i + 1, e.getApplicantName(), e.getApplicantNric(), e.getContent());
-        }
-    
-        System.out.print("Choose enquiry to reply (0 to cancel): ");
-        try {
-            int choice = Integer.parseInt(sc.nextLine());
-            if (choice == 0) return;
-            if (choice < 1 || choice > myEnquiries.size()) throw new IndexOutOfBoundsException();
-    
-            Enquiry selected = myEnquiries.get(choice - 1);
-            System.out.print("Enter reply: ");
-            String reply = sc.nextLine().trim();
-    
-            selected.addReply(reply, manager); // NEW REPLY HANDLING
-            EnquiryCsvMapper.saveAll(all);
-            System.out.println("✅ Reply sent and enquiry marked as CLOSED.");
-    
-        } catch (Exception e) {
-            System.out.println("❌ Invalid selection.");
-        }
-    }
 
     private static void viewAndResolveFeedback(HDBManager manager, Scanner sc) {
         while (true) {

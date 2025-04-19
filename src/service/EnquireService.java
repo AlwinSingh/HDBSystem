@@ -1,21 +1,18 @@
-
 package src.service;
 
 import src.model.*;
-import src.util.CsvUtil;
 import src.util.EnquiryCsvMapper;
-import src.util.FilePath;
-
+import src.util.CsvUtil;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import src.util.FilePath;
+import src.util.ProjectCsvMapper;
 
 public class EnquireService {
 
     public static List<Enquiry> loadFromCSV() {
         return EnquiryCsvMapper.loadAll();
-    }
-
-    public static void saveAllToCSV(List<Enquiry> enquiries) {
-        EnquiryCsvMapper.saveAll(enquiries);
     }
 
     public static void submitEnquiry(Applicant applicant, Scanner sc) {
@@ -53,21 +50,20 @@ public class EnquireService {
             return;
         }
 
-        List<Enquiry> all = loadFromCSV();
-        int newId = all.size() + 1;
+        int newId = loadFromCSV().stream()
+                .mapToInt(Enquiry::getEnquiryId)
+                .max()
+                .orElse(0) + 1;
 
         Enquiry newEntry = new Enquiry(newId, content, Enquiry.STATUS_PENDING,
                 applicant.getNric(), applicant.getName(), selected.getProjectName());
 
-        all.add(newEntry);
-        saveAllToCSV(all);
-
+        EnquiryCsvMapper.add(newEntry);
         System.out.println("✅ Enquiry submitted.");
     }
 
     public static void viewOwnEnquiries(Applicant applicant) {
-        List<Enquiry> all = loadFromCSV();
-        List<Enquiry> own = all.stream()
+        List<Enquiry> own = loadFromCSV().stream()
                 .filter(e -> e.getApplicantNric().equalsIgnoreCase(applicant.getNric()))
                 .toList();
 
@@ -100,8 +96,7 @@ public class EnquireService {
     }
 
     public static void editOwnEnquiry(Applicant applicant, Scanner sc) {
-        List<Enquiry> all = loadFromCSV();
-        List<Enquiry> editable = all.stream()
+        List<Enquiry> editable = loadFromCSV().stream()
                 .filter(e -> e.getApplicantNric().equalsIgnoreCase(applicant.getNric()))
                 .filter(e -> Enquiry.STATUS_PENDING.equalsIgnoreCase(e.getStatus()))
                 .toList();
@@ -129,7 +124,7 @@ public class EnquireService {
         }
 
         selected.editContent(newContent);
-        saveAllToCSV(all);
+        EnquiryCsvMapper.update(selected);
         System.out.println("✅ Enquiry updated.");
     }
 
@@ -161,56 +156,54 @@ public class EnquireService {
         }
 
         selected.delete();
-        saveAllToCSV(all);
+        EnquiryCsvMapper.saveAll(all);  // acceptable as deletion is rare
         System.out.println("✅ Enquiry deleted.");
     }
 
     public static void replyToEnquiry(User user, Scanner sc) {
         List<Enquiry> all = loadFromCSV();
         List<String> projectNames = getHandledProjects(user);
-    
+
         List<Enquiry> relevant = all.stream()
                 .filter(e -> projectNames.contains(e.getProjectName()))
                 .filter(e -> Enquiry.STATUS_PENDING.equalsIgnoreCase(e.getStatus()))
                 .toList();
-    
+
         if (relevant.isEmpty()) {
             System.out.println("📭 No pending enquiries available for reply.");
             return;
         }
-    
+
         System.out.println("\n📬 Pending Enquiries:");
         for (int i = 0; i < relevant.size(); i++) {
             Enquiry e = relevant.get(i);
             System.out.printf("[%d] 🆔 %d — %s (%s)\n", i + 1, e.getEnquiryId(), e.getApplicantName(), e.getProjectName());
             System.out.println("   " + e.getContent());
         }
-    
+
         System.out.print("Select enquiry to reply (0 to cancel): ");
         int choice = getValidChoice(sc, relevant.size());
         if (choice == 0) return;
-    
+
         Enquiry selected = relevant.get(choice - 1);
-    
-        // Final double-check if it's already closed (edge case)
+
         if (selected.isClosed()) {
             System.out.println("⚠️ This enquiry has already been closed.");
             return;
         }
-    
+
         System.out.print("Enter reply: ");
         String reply = sc.nextLine().trim();
         if (reply.isBlank() || !reply.matches(".*[a-zA-Z].*")) {
             System.out.println("❌ Invalid reply. Must contain letters.");
             return;
         }
-    
-        selected.addReply(reply, user);  // Stores reply content cleanly
-        saveAllToCSV(all);
-    
+
+        selected.addReply(reply, user);
+        EnquiryCsvMapper.update(selected);
+
         System.out.println("✅ Reply submitted and enquiry marked as CLOSED.");
     }
-    
 
     public static void viewAllEnquiriesForManager(HDBManager manager) {
         List<Enquiry> all = loadFromCSV();
@@ -230,8 +223,7 @@ public class EnquireService {
             return;
         }
 
-        List<Enquiry> all = loadFromCSV();
-        List<Enquiry> own = all.stream()
+        List<Enquiry> own = loadFromCSV().stream()
                 .filter(e -> e.getProjectName().equalsIgnoreCase(project))
                 .toList();
 
@@ -258,22 +250,21 @@ public class EnquireService {
         System.out.println("🏠 Project    : " + e.getProjectName());
         System.out.println("📝 Content    : " + e.getContent());
         System.out.println("📌 Status     : " + e.getStatus());
-    
+
         if (e.getReplies().isEmpty()) {
             System.out.println("💬 Replies    : No replies yet.");
         } else {
             System.out.println("💬 Replies    :");
             for (EnquiryReply reply : e.getReplies()) {
-                String role = reply.getResponderRole();  // ✅ fixed
+                String role = reply.getResponderRole();
                 System.out.printf("  - %s replied with: %s [%s]\n",
-                    role,
-                    reply.getContent(),
-                    reply.getTimestamp()
+                        role,
+                        reply.getContent(),
+                        reply.getTimestamp()
                 );
             }
         }
     }
-    
 
     private static List<String> getHandledProjects(User user) {
         List<String> projects = new ArrayList<>();
@@ -289,4 +280,70 @@ public class EnquireService {
         }
         return projects;
     }
+
+    public static void viewAllEnquiries() {
+    List<Enquiry> all = loadFromCSV();
+    if (all.isEmpty()) {
+        System.out.println("📭 No enquiries in the system.");
+        return;
+    }
+
+    System.out.println("\n📋 All Enquiries:");
+    for (Enquiry e : all) {
+        System.out.printf("📨 Enquiry #%d | Applicant: %s (%s) | Project: %s | Status: %s\n",
+                e.getEnquiryId(), e.getApplicantName(), e.getApplicantNric(), e.getProjectName(), e.getStatus());
+        System.out.println("📣 " + e.getContent());
+
+        if (!e.getReplies().isEmpty()) {
+            System.out.println("💬 Replies:");
+            for (EnquiryReply r : e.getReplies()) {
+                System.out.printf("   - [%s] %s: %s\n", r.getTimestamp(), r.getResponderRole(), r.getContent());
+            }
+        }
+        System.out.println("────────────────────────────────────────────");
+    }
+}
+
+public static void replyAsManager(HDBManager manager, Scanner sc) {
+    Set<String> managedProjects = ProjectCsvMapper.loadAll().stream()
+            .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
+            .map(Project::getProjectName)
+            .collect(Collectors.toSet());
+
+    List<Enquiry> all = loadFromCSV();
+    List<Enquiry> myEnquiries = all.stream()
+            .filter(e -> managedProjects.contains(e.getProjectName()))
+            .filter(e -> Enquiry.STATUS_PENDING.equalsIgnoreCase(e.getStatus()))
+            .toList();
+
+    if (myEnquiries.isEmpty()) {
+        System.out.println("📭 No open enquiries for your projects.");
+        return;
+    }
+
+    System.out.println("\n📬 Enquiries:");
+    for (int i = 0; i < myEnquiries.size(); i++) {
+        Enquiry e = myEnquiries.get(i);
+        System.out.printf("[%d] %s (%s): %s\n", i + 1, e.getApplicantName(), e.getApplicantNric(), e.getContent());
+    }
+
+    System.out.print("Choose enquiry to reply (0 to cancel): ");
+    try {
+        int choice = Integer.parseInt(sc.nextLine());
+        if (choice == 0) return;
+        if (choice < 1 || choice > myEnquiries.size()) throw new IndexOutOfBoundsException();
+
+        Enquiry selected = myEnquiries.get(choice - 1);
+        System.out.print("Enter reply: ");
+        String reply = sc.nextLine().trim();
+
+        selected.addReply(reply, manager);
+        EnquiryCsvMapper.update(selected);
+        System.out.println("✅ Reply sent and enquiry marked as CLOSED.");
+
+    } catch (Exception e) {
+        System.out.println("❌ Invalid selection.");
+    }
+}
+
 }

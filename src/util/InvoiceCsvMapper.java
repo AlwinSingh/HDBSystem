@@ -66,4 +66,31 @@ public class InvoiceCsvMapper {
 
         write(CSV_PATH, rows);
     }
+
+    public static void append(Invoice invoice) {
+        Map<String, String> row = new LinkedHashMap<>();
+        row.put("InvoiceID", String.valueOf(invoice.getPaymentId()));
+        row.put("PaymentID", String.valueOf(invoice.getPaymentId()));
+        row.put("ApplicantNRIC", invoice.getApplicantNRIC());
+        row.put("ProjectName", invoice.getProjectName());
+        row.put("FlatType", invoice.getFlatType());
+        row.put("Amount", String.valueOf(invoice.getAmount()));
+        row.put("Method", invoice.getMethodLabel());
+        row.put("Status", invoice.getStatus());
+        row.put("GeneratedDate", invoice.getDate().toString());
+    
+        CsvUtil.append(CSV_PATH, row);
+    }
+    
+    public static void update(Invoice updated) {
+        List<Invoice> all = loadAll();
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i).getPaymentId() == updated.getPaymentId()) {
+                all.set(i, updated);
+                break;
+            }
+        }
+        saveAll(all);
+    }
+    
 }

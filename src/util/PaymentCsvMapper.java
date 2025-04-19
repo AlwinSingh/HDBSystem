@@ -51,4 +51,29 @@ public class PaymentCsvMapper {
 
         write(CSV_PATH, rows);
     }
+
+    public static void append(Payment payment) {
+        Map<String, String> row = new LinkedHashMap<>();
+        row.put("PaymentID", String.valueOf(payment.getPaymentId()));
+        row.put("Amount", String.valueOf(payment.getAmount()));
+        row.put("Date", payment.getDate().toString());
+        row.put("Method", payment.getMethodLabel());
+        row.put("Status", payment.getStatus());
+    
+        CsvUtil.append(CSV_PATH, row);
+    }
+
+    public static void update(Payment updated) {
+        List<Payment> all = loadAll();
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i).getPaymentId() == updated.getPaymentId()) {
+                all.set(i, updated);
+                break;
+            }
+        }
+        saveAll(all);
+    }
+    
+    
+    
 }

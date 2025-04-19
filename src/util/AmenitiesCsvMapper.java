@@ -37,8 +37,27 @@ public class AmenitiesCsvMapper {
     }
 
     public static void add(Amenities amenity) {
+        CsvUtil.append(CSV, toCsvRow(amenity));
+    }
+
+    private static Map<String, String> toCsvRow(Amenities a) {
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put("Project Name", a.getProjectName());
+        m.put("AmenityID",    String.valueOf(a.getAmenityId()));
+        m.put("Type",         a.getType());
+        m.put("Name",         a.getName());
+        m.put("Distance",     String.valueOf(a.getDistance()));
+        return m;
+    }
+
+    public static void update(Amenities updatedAmenity) {
         List<Amenities> all = loadAll();
-        all.add(amenity);
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i).getAmenityId() == updatedAmenity.getAmenityId()) {
+                all.set(i, updatedAmenity);
+                break;
+            }
+        }
         saveAll(all);
     }
 }

@@ -86,4 +86,20 @@ public class EnquiryCsvMapper {
         }
         CsvUtil.write(FilePath.ENQUIRY_LIST_FILE, rows);
     }
+
+    public static void add(Enquiry newEnquiry) {
+        CsvUtil.append(FilePath.ENQUIRY_LIST_FILE, toCsvRow(newEnquiry));
+    }
+    
+    public static void update(Enquiry updatedEnquiry) {
+        List<Enquiry> all = loadAll();
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i).getEnquiryId() == updatedEnquiry.getEnquiryId()) {
+                all.set(i, updatedEnquiry);
+                break;
+            }
+        }
+        saveAll(all);
+    }
+    
 }

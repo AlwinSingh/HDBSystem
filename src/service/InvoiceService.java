@@ -31,26 +31,25 @@ public class InvoiceService {
         );
     }
 
+    // Append new invoice to file + in-memory
     public static void addInvoice(Invoice invoice) {
-        List<Invoice> all = loadAll();
-        all.add(invoice);
-        InvoiceCsvMapper.saveAll(all);
+        InvoiceCsvMapper.append(invoice);     // Only write the new invoice
+        invoices.add(invoice);                // Update in-memory cache
     }
 
-    public static List<Invoice> loadAll() {
-        return InvoiceCsvMapper.loadAll();
-    }
-
+    // Return cached list (used for filtering, views)
     public static List<Invoice> getAllInvoices() {
         return invoices;
     }
 
+    // Get all invoices related to specific applicant
     public static List<Invoice> getInvoicesByNRIC(String applicantNRIC) {
         return invoices.stream()
             .filter(i -> i.getApplicantNRIC().equalsIgnoreCase(applicantNRIC))
             .collect(Collectors.toList());
     }
 
+    // Generate next unique invoice ID
     public static int getNextInvoiceId() {
         return invoices.stream()
             .mapToInt(Invoice::getPaymentId)
@@ -58,22 +57,19 @@ public class InvoiceService {
             .orElse(0) + 1;
     }
 
+    // Persist full list (use cautiously; prefer `addInvoice()` and `updateInvoice()`)
     public static void persist() {
         InvoiceCsvMapper.saveAll(invoices);
     }
 
-    public static void saveAll(List<Invoice> invoices) {
-        InvoiceCsvMapper.saveAll(invoices);
-    }
-
+    // Update invoice entry (efficient overwrite of one record)
     public static void updateInvoice(Invoice updated) {
-        List<Invoice> all = loadAll();
-        for (int i = 0; i < all.size(); i++) {
-            if (all.get(i).getPaymentId() == updated.getPaymentId()) {
-                all.set(i, updated);
+        InvoiceCsvMapper.update(updated); // Write to disk
+        for (int i = 0; i < invoices.size(); i++) {
+            if (invoices.get(i).getPaymentId() == updated.getPaymentId()) {
+                invoices.set(i, updated);  // Update in-memory cache
                 break;
             }
         }
-        saveAll(all);
     }
 }

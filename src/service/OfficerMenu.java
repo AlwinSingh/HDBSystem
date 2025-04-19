@@ -49,7 +49,7 @@ public class OfficerMenu {
                 case "4" -> bookFlat(officer, sc);
                 case "5" -> generateReceipt(officer, sc);
                 case "6" -> updateLocation(officer, sc);
-                case "7" -> addAmenity(officer, sc);
+                case "7" -> addOrUpdateAmenity(officer, sc);
                 case "8" -> handleEnquiries(officer, sc);
                 case "9" -> AuthService.changePassword(officer, sc);
                 case "10" -> {
@@ -264,8 +264,8 @@ public class OfficerMenu {
             System.out.print("Enter your reply: ");
             String reply = sc.nextLine().trim();
     
-            selected.addReply(reply, officer); // NEW REPLY HANDLING
-            EnquiryCsvMapper.saveAll(allEnquiries);
+            selected.addReply(reply, officer);
+            EnquiryCsvMapper.update(selected);  // ✅ efficient single-row update
             System.out.println("✅ Reply sent and enquiry marked as CLOSED.");
     
         } catch (Exception e) {
@@ -273,19 +273,21 @@ public class OfficerMenu {
         }
     }
     
+    
     private static void generateReceipt(HDBOfficer officer, Scanner sc) {
         if (!"APPROVED".equalsIgnoreCase(officer.getRegistrationStatus())) {
             System.out.println("❌ Access denied. Officer registration status must be APPROVED to generate receipts.");
             return;
         }
-        List<Invoice> invoices = InvoiceService.loadAll();
+    
+        List<Invoice> invoices = InvoiceService.getAllInvoices();
         List<Applicant> applicants = ApplicantCsvMapper.loadAll();
         List<Project> allProjects = ProjectCsvMapper.loadAll();
     
         List<Invoice> awaitingReceipts = invoices.stream()
             .filter(i -> "Awaiting Receipt".equalsIgnoreCase(i.getStatus()))
             .filter(i -> ReceiptService.findByInvoiceId(i.getPaymentId()) == null)
-            .collect(Collectors.toList());
+            .toList();
     
         if (awaitingReceipts.isEmpty()) {
             System.out.println("📭 No paid invoices awaiting receipts.");
@@ -307,7 +309,6 @@ public class OfficerMenu {
     
             Invoice selectedInvoice = awaitingReceipts.get(idx - 1);
     
-            // Officer validation
             if (!selectedInvoice.getProjectName().equalsIgnoreCase(officer.getAssignedProject().getProjectName())) {
                 System.out.println("❌ You are not authorized to issue receipts for this project.");
                 return;
@@ -323,7 +324,6 @@ public class OfficerMenu {
                 return;
             }
     
-            // Fix flat price issue
             Project fullProject = allProjects.stream()
                 .filter(p -> p.getProjectName().equalsIgnoreCase(selectedInvoice.getProjectName()))
                 .findFirst()
@@ -333,19 +333,19 @@ public class OfficerMenu {
                 applicant.getApplication().setProject(fullProject);
             }
     
-            // Generate and save receipt
+            // ✅ Append receipt instead of full save
             Receipt receipt = officer.generateReceipt(
                 applicant.getApplication(),
                 selectedInvoice.getPaymentId(),
                 selectedInvoice.getMethod()
             );
-            ReceiptService.addReceipt(receipt);
+            ReceiptService.addReceipt(receipt);  // uses CsvUtil.append internally
     
-            // Update invoice to PROCESSED
+            // ✅ Update invoice status only
             selectedInvoice.setStatus(Payment.PaymentStatusType.PROCESSED.name());
             InvoiceService.updateInvoice(selectedInvoice);
     
-            // Update matching payment
+            // ✅ Update payment status only
             Payment payment = PaymentService.getAllPayments().stream()
                 .filter(p -> p.getPaymentId() == selectedInvoice.getPaymentId())
                 .findFirst()
@@ -353,7 +353,7 @@ public class OfficerMenu {
     
             if (payment != null) {
                 payment.setStatus(Payment.PaymentStatusType.PROCESSED.name());
-                PaymentService.persist();
+                PaymentService.updatePayment(payment);
             }
     
             System.out.println("✅ Receipt generated:\n" + receipt);
@@ -362,6 +362,7 @@ public class OfficerMenu {
             System.out.println("❌ Invalid input.");
         }
     }
+    
     
     
 
@@ -408,44 +409,112 @@ public class OfficerMenu {
     }
     
 
-    private static void addAmenity(HDBOfficer officer, Scanner sc) {
+    private static void addOrUpdateAmenity(HDBOfficer officer, Scanner sc) {
         if (!"APPROVED".equalsIgnoreCase(officer.getRegistrationStatus())) {
-            System.out.println("❌ Access denied. Officer registration status must be APPROVED to add amenities.");
+            System.out.println("❌ Access denied. Officer registration status must be APPROVED to manage amenities.");
             return;
         }
+    
         Project p = officer.getAssignedProject();
         if (p == null) {
-            System.out.println("❌ No assigned project to add amenities.");
+            System.out.println("❌ No assigned project to manage amenities.");
             return;
         }
     
-        System.out.println("\n➕ Adding amenity for " + p.getProjectName());
+        System.out.println("\n🏗️ Managing amenities for " + p.getProjectName());
+        System.out.print("Would you like to (A)dd or (U)pdate an amenity? ");
+        String action = sc.nextLine().trim().toUpperCase();
     
-        // compute next ID
-        int nextId = AmenitiesCsvMapper.loadAll().stream()
-                          .map(Amenities::getAmenityId)
-                          .max(Integer::compareTo)
-                          .orElse(0) + 1;
+        switch (action) {
+            case "A" -> {
+                int nextId = AmenitiesCsvMapper.loadAll().stream()
+                    .map(Amenities::getAmenityId)
+                    .max(Integer::compareTo)
+                    .orElse(0) + 1;
     
-        System.out.print("Type (e.g. MRT, Clinic): ");
-        String type = sc.nextLine().trim();
-        System.out.print("Name: ");
-        String name = sc.nextLine().trim();
+                System.out.print("Type (e.g. MRT, Clinic): ");
+                String type = sc.nextLine().trim();
+                System.out.print("Name: ");
+                String name = sc.nextLine().trim();
+                System.out.print("Distance (km): ");
+                double dist = getDoubleInput(sc);
     
-        double dist;
-        try {
-            System.out.print("Distance (km): ");
-            dist = Double.parseDouble(sc.nextLine().trim());
-        } catch (NumberFormatException e) {
-            System.out.println("❌ Invalid distance. Amenity not added.");
-            return;
+                Amenities newAmenity = new Amenities(nextId, type, name, dist, p.getProjectName());
+                AmenitiesCsvMapper.add(newAmenity);
+                System.out.println("✅ Amenity added (ID=" + nextId + ").");
+            }
+    
+            case "U" -> {
+                List<Amenities> amenities = AmenitiesCsvMapper.loadAll().stream()
+                    .filter(a -> a.getProjectName().equalsIgnoreCase(p.getProjectName()))
+                    .toList();
+    
+                if (amenities.isEmpty()) {
+                    System.out.println("📭 No amenities found for this project.");
+                    return;
+                }
+    
+                System.out.println("\n📋 Existing Amenities:");
+                for (Amenities a : amenities) {
+                    System.out.printf("ID: %d | Type: %s | Name: %s | Distance: %.2f km\n",
+                            a.getAmenityId(), a.getType(), a.getName(), a.getDistance());
+                }
+    
+                System.out.print("Enter Amenity ID to update: ");
+                int idToUpdate;
+                try {
+                    idToUpdate = Integer.parseInt(sc.nextLine().trim());
+                } catch (NumberFormatException e) {
+                    System.out.println("❌ Invalid ID.");
+                    return;
+                }
+    
+                Amenities target = amenities.stream()
+                    .filter(a -> a.getAmenityId() == idToUpdate)
+                    .findFirst()
+                    .orElse(null);
+    
+                if (target == null) {
+                    System.out.println("❌ Amenity ID not found for this project.");
+                    return;
+                }
+    
+                System.out.printf("Current Type [%s]: ", target.getType());
+                String type = sc.nextLine().trim();
+                if (!type.isEmpty()) target.setType(type);
+    
+                System.out.printf("Current Name [%s]: ", target.getName());
+                String name = sc.nextLine().trim();
+                if (!name.isEmpty()) target.setName(name);
+    
+                System.out.printf("Current Distance [%.2f]: ", target.getDistance());
+                String distInput = sc.nextLine().trim();
+                if (!distInput.isEmpty()) {
+                    try {
+                        target.setDistance(Double.parseDouble(distInput));
+                    } catch (NumberFormatException e) {
+                        System.out.println("❌ Invalid distance. Update skipped.");
+                        return;
+                    }
+                }
+    
+                AmenitiesCsvMapper.update(target);
+                System.out.println("✅ Amenity updated.");
+            }
+    
+            default -> System.out.println("❌ Invalid option. Please choose A or U.");
         }
-    
-        // hand off to the mapper
-        Amenities newAmenity = new Amenities(nextId, type, name, dist, p.getProjectName());
-        AmenitiesCsvMapper.add(newAmenity);
-    
-        System.out.println("✅ Amenity added (ID=" + nextId + ").");
     }
+    
+    private static double getDoubleInput(Scanner sc) {
+        while (true) {
+            try {
+                return Double.parseDouble(sc.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.print("❌ Invalid number. Please enter again: ");
+            }
+        }
+    }
+    
 
 }

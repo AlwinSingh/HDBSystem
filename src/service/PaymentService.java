@@ -17,8 +17,9 @@ public class PaymentService {
     // Create and save a new payment
     public static void addPayment(Payment payment) {
         payments.add(payment);
-        persist();
+        PaymentCsvMapper.append(payment); // Efficient CSV write
     }
+    
 
     // Retrieve all payments
     public static List<Payment> getAllPayments() {
@@ -48,8 +49,14 @@ public class PaymentService {
                 .orElse(0) + 1;
     }
 
-    // Save all to CSV
-    public static void persist() {
-        PaymentCsvMapper.saveAll(payments);
+    public static void updatePayment(Payment updated) {
+        for (int i = 0; i < payments.size(); i++) {
+            if (payments.get(i).getPaymentId() == updated.getPaymentId()) {
+                payments.set(i, updated);
+                break;
+            }
+        }
+        PaymentCsvMapper.update(updated); // You’ll also need to implement this in the mapper
     }
+    
 }

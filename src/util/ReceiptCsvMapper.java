@@ -76,4 +76,20 @@ public class ReceiptCsvMapper {
 
         write(CSV_PATH, rows);
     }
+
+    public static void append(Receipt r) {
+        Map<String, String> row = new LinkedHashMap<>();
+        row.put("ReceiptID", r.getReceiptId());
+        row.put("ApplicantName", r.getApplicantName());
+        row.put("ApplicantNRIC", r.getApplicantNRIC());
+        row.put("ProjectName", r.getProjectName());
+        row.put("FlatTypeBooked", r.getFlatTypeBooked());
+        row.put("IssuedDate", r.getIssuedDate().toString());
+        row.put("InvoiceID", String.valueOf(r.getInvoice().getPaymentId()));
+        row.put("AmountPaid", String.valueOf(r.getInvoice().getAmount()));
+        row.put("Method", r.getInvoice().getMethodLabel());
+        row.put("Status", r.getInvoice().getStatus());
+        CsvUtil.append(FilePath.RECEIPT_LIST_FILE, row);
+    }   
+    
 }

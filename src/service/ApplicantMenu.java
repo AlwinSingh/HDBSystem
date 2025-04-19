@@ -220,32 +220,33 @@ public class ApplicantMenu {
     private static void requestWithdrawal(ApplicantContext ctx) {
         Scanner sc = ctx.scanner;
         Application app = ctx.applicant.getApplication();
-
+    
         if (app == null) {
             System.out.println("❌ No application to withdraw.");
             return;
         }
-
+    
         if (Applicant.AppStatusType.WITHDRAW_REQUESTED.name().equalsIgnoreCase(app.getStatus())) {
             System.out.println("ℹ️ Withdrawal already requested.");
             return;
         }
-
+    
         if (Applicant.AppStatusType.BOOKED.name().equalsIgnoreCase(app.getStatus())) {
             System.out.println("❌ You cannot withdraw after booking.");
             return;
         }
-
+    
         System.out.print("Confirm withdrawal? (Y/N): ");
         if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
             System.out.println("🔁 Withdrawal cancelled.");
             return;
         }
-
+    
         app.setStatus(Applicant.AppStatusType.WITHDRAW_REQUESTED.name());
-        saveApplicantUpdate(ctx.applicant);
+        ApplicantCsvMapper.updateApplicant(ctx.applicant);  
         System.out.println("✅ Withdrawal request submitted.");
     }
+    
 
     private static void handleEnquiries(ApplicantContext ctx) {
         Scanner sc = ctx.scanner;
@@ -318,11 +319,8 @@ public class ApplicantMenu {
         }
     }
     
-    
-    
-
     private static void viewAndPayInvoices(Applicant applicant, Scanner sc) {
-        List<Invoice> allInvoices = InvoiceService.loadAll();
+        List<Invoice> allInvoices = InvoiceService.getAllInvoices(); // ✅ Fixed
         List<Invoice> myInvoices = allInvoices.stream()
             .filter(inv -> inv.getApplicantNRIC().equalsIgnoreCase(applicant.getNric()))
             .toList();
@@ -396,7 +394,6 @@ public class ApplicantMenu {
     
     
     
-    
     private static void viewReceipts(Applicant applicant) {
         List<Receipt> allReceipts = ReceiptService.getAllReceipts();
         List<Receipt> myReceipts = allReceipts.stream()
@@ -417,18 +414,6 @@ public class ApplicantMenu {
             System.out.println("💳 Payment Method     : " + r.getInvoice().getMethod());
             System.out.println("📅 Date               : " + r.getInvoice().getDate());
         }
-    }
-    
-
-    private static void saveApplicantUpdate(Applicant updatedApplicant) {
-        List<Applicant> all = ApplicantCsvMapper.loadAll();
-        for (int i = 0; i < all.size(); i++) {
-            if (all.get(i).getNric().equalsIgnoreCase(updatedApplicant.getNric())) {
-                all.set(i, updatedApplicant);
-                break;
-            }
-        }
-        ApplicantCsvMapper.saveAll(all);
     }
 
     private static class ApplicantContext {

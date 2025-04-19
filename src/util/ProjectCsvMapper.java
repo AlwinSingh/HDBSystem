@@ -151,7 +151,11 @@ public class ProjectCsvMapper {
         }
         CsvUtil.write(FilePath.PROJECT_LIST_FILE, rows);
     }
-    
+
+    public static void save(Project project) {
+        CsvUtil.append(FilePath.PROJECT_LIST_FILE, toCsvRow(project));
+    }
+
     public static void updateProject(Project updated) {
         List<Project> all = loadAll();
         for (int i = 0; i < all.size(); i++) {
@@ -162,5 +166,6 @@ public class ProjectCsvMapper {
         }
         saveAll(all);
     }
+    
 
 }

@@ -49,4 +49,19 @@ public class CsvUtil {
             System.err.println("❌ Error writing CSV: " + e.getMessage());
         }
     }
+
+    public static void append(String path, Map<String, String> newRow) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(path, true))) {
+            List<String> headers = new ArrayList<>(newRow.keySet());
+            List<String> values = new ArrayList<>();
+            for (String h : headers) {
+                values.add(newRow.getOrDefault(h, ""));
+            }
+            bw.write(String.join(",", values));
+            bw.newLine();
+        } catch (IOException e) {
+            System.err.println("❌ Error appending to CSV: " + e.getMessage());
+        }
+    }
+    
 }

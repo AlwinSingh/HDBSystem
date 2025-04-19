@@ -17,8 +17,9 @@ public class ReceiptService {
     // Add a new receipt and persist it
     public static void addReceipt(Receipt receipt) {
         receipts.add(receipt);
-        persist();
+        ReceiptCsvMapper.append(receipt); // Efficient: Append only the new one
     }
+    
 
     // Get all receipts
     public static List<Receipt> getAllReceipts() {
@@ -38,11 +39,6 @@ public class ReceiptService {
         return receipts.stream()
                 .filter(r -> r.getProjectName().equalsIgnoreCase(projectName))
                 .collect(Collectors.toList());
-    }
-
-    // Persist to CSV
-    public static void persist() {
-        ReceiptCsvMapper.saveAll(receipts);
     }
 
     public static Receipt findByInvoiceId(int invoiceId) {
