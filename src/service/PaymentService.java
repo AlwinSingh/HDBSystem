@@ -11,27 +11,33 @@ public class PaymentService {
     private static List<Payment> payments = new ArrayList<>();
 
     static {
-        payments = PaymentCsvMapper.loadAll();
+        payments = PaymentCsvMapper.loadAll();  // Load once into memory
     }
 
-    // Create and save a new payment
+    // Append new payment to disk and in-memory list
     public static void addPayment(Payment payment) {
         payments.add(payment);
-        PaymentCsvMapper.append(payment); // Efficient CSV write
+        PaymentCsvMapper.append(payment);
     }
-    
 
-    // Retrieve all payments
+    // Retrieve latest in-memory list
     public static List<Payment> getAllPayments() {
         return payments;
     }
 
-    // Retrieve payments by NRIC (if available in subclass)
+    // Get next ID from memory (or fallback to reload if needed)
+    public static int getNextPaymentId() {
+        return payments.stream()
+            .mapToInt(Payment::getPaymentId)
+            .max()
+            .orElse(0) + 1;
+    }
+
+    // Get payments by NRIC if method exists
     public static List<Payment> getPaymentsByNRIC(String nric) {
         return payments.stream()
                 .filter(p -> {
                     try {
-                        // Only if it's a subclass that has NRIC
                         return p.getClass().getMethod("getApplicantNRIC") != null
                                 && ((String) p.getClass().getMethod("getApplicantNRIC").invoke(p)).equalsIgnoreCase(nric);
                     } catch (Exception e) {
@@ -41,23 +47,14 @@ public class PaymentService {
                 .collect(Collectors.toList());
     }
 
-    // Retrieve latest payment ID for incremental generation
-    public static int getNextPaymentId() {
-        return PaymentCsvMapper.loadAll().stream()
-            .mapToInt(Payment::getPaymentId)
-            .max()
-            .orElse(0) + 1;
-    }
-
+    // Update payment in both CSV and memory
     public static void updatePayment(Payment updated) {
-        PaymentCsvMapper.update(updated); // persist to disk
-    
+        PaymentCsvMapper.update(updated);  // Write to CSV
         for (int i = 0; i < payments.size(); i++) {
             if (payments.get(i).getPaymentId() == updated.getPaymentId()) {
-                payments.set(i, updated); // update in-memory
+                payments.set(i, updated);  // Update cache
                 break;
             }
         }
     }
-    
 }

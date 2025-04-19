@@ -7,6 +7,7 @@ import src.util.ApplicantCsvMapper;
 import src.util.AmenitiesCsvMapper;
 import src.util.EnquiryCsvMapper;
 import src.util.OfficerCsvMapper;
+import src.util.PaymentCsvMapper;
 import src.util.ProjectCsvMapper;
 
 public class OfficerMenu {
@@ -343,6 +344,7 @@ public class OfficerMenu {
                 applicant.getApplication().setProject(fullProject);
             }
     
+            // ✅ Generate receipt and update records
             Receipt receipt = officer.generateReceipt(
                 applicant.getApplication(),
                 selectedInvoice.getPaymentId(),
@@ -360,7 +362,7 @@ public class OfficerMenu {
     
             if (payment != null) {
                 payment.setStatus(Payment.PaymentStatusType.PROCESSED.name());
-                PaymentService.updatePayment(payment);
+                PaymentService.updatePayment(payment);  // ✅ This updates PaymentList.csv
             }
     
             System.out.println("✅ Receipt generated:\n" + receipt);
@@ -369,6 +371,8 @@ public class OfficerMenu {
             System.out.println("❌ Invalid input.");
         }
     }
+    
+
 
     private static void updateLocation(HDBOfficer officer, Scanner sc) {
         if (!"APPROVED".equalsIgnoreCase(officer.getRegistrationStatus())) {

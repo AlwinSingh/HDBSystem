@@ -1,1 +1,2 @@
 ReceiptID,ApplicantName,ApplicantNRIC,ProjectName,FlatTypeBooked,IssuedDate,InvoiceID,AmountPaid,Method,Status
+R-92B058A3,John,S1234567A,Acacia Breeze,2-Room,2025-04-19,1,350000.0,BANK_TRANSFER,PROCESSED

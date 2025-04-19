@@ -18,6 +18,7 @@ public class PaymentCsvMapper {
             try {
                 String idStr = row.get("PaymentID");
                 if (idStr == null || idStr.isBlank()) throw new NumberFormatException("Missing PaymentID");
+
                 int paymentId = Integer.parseInt(idStr.trim());
                 double amount = Double.parseDouble(row.get("Amount"));
                 LocalDate date = LocalDate.parse(row.get("Date"));
@@ -25,7 +26,7 @@ public class PaymentCsvMapper {
                 String status = row.get("Status");
 
                 PaymentMethod method = Arrays.stream(PaymentMethod.values())
-                        .filter(m -> m.toString().equalsIgnoreCase(methodRaw))
+                        .filter(m -> m.name().equalsIgnoreCase(methodRaw != null ? methodRaw : ""))
                         .findFirst()
                         .orElseThrow(() -> new IllegalArgumentException("Invalid payment method: " + methodRaw));
 
@@ -39,30 +40,15 @@ public class PaymentCsvMapper {
     }
 
     public static void saveAll(List<Payment> payments) {
-        List<Map<String, String>> rows = new ArrayList<>();
-
-        for (Payment p : payments) {
-            Map<String, String> row = new LinkedHashMap<>();
-            row.put("PaymentID", String.valueOf(p.getPaymentId()));
-            row.put("Amount", String.valueOf(p.getAmount()));
-            row.put("Date", p.getDate().toString());
-            row.put("Method", p.getMethodLabel()); // get readable method string
-            row.put("Status", p.getStatus());
-            rows.add(row);
-        }
+        List<Map<String, String>> rows = payments.stream()
+            .map(PaymentCsvMapper::toCsvRow)
+            .toList();
 
         write(CSV_PATH, rows);
     }
 
     public static void append(Payment payment) {
-        Map<String, String> row = new LinkedHashMap<>();
-        row.put("PaymentID", String.valueOf(payment.getPaymentId()));
-        row.put("Amount", String.valueOf(payment.getAmount()));
-        row.put("Date", payment.getDate().toString());
-        row.put("Method", payment.getMethodLabel());
-        row.put("Status", payment.getStatus());
-    
-        CsvUtil.append(CSV_PATH, row);
+        CsvUtil.append(CSV_PATH, toCsvRow(payment));
     }
 
     public static void update(Payment updated) {
@@ -73,7 +59,19 @@ public class PaymentCsvMapper {
                 break;
             }
         }
-        saveAll(all); // writes back to file
+        saveAll(all);  // Persist the updated list
     }
     
+    
+    
+
+    private static Map<String, String> toCsvRow(Payment p) {
+        Map<String, String> row = new LinkedHashMap<>();
+        row.put("PaymentID", String.valueOf(p.getPaymentId()));
+        row.put("Amount", String.valueOf(p.getAmount()));
+        row.put("Date", p.getDate().toString());
+        row.put("Method", p.getMethodLabel());
+        row.put("Status", p.getStatus());
+        return row;
+    }
 }
