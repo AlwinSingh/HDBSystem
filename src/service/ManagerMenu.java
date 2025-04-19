@@ -79,7 +79,6 @@ public class ManagerMenu {
     }
     
     
-
     private static void createProject(HDBManager manager, Scanner sc) {
         System.out.println("\n📌 Create New Project");
     
@@ -152,6 +151,17 @@ public class ManagerMenu {
             return;
         }
     
+        // ✅ Enforce only one project per manager per overlapping period
+        boolean overlaps = allProjects.stream()
+            .filter(p -> p.getManager() != null)
+            .filter(p -> p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
+            .anyMatch(p -> !(closeDate.isBefore(p.getOpenDate()) || openDate.isAfter(p.getCloseDate())));
+    
+        if (overlaps) {
+            System.out.println("❌ You already manage a project during this application period.");
+            return;
+        }
+    
         // Use dummy location with just neighborhood for now
         ProjectLocation location = new ProjectLocation(0, "", neighborhood, "", 0, 0);
     
@@ -159,14 +169,15 @@ public class ManagerMenu {
         newProject.setPrice2Room(price2);
         newProject.setPrice3Room(price3);
         newProject.openProject();
-        newProject.setManager(manager); // ensure Manager NRIC + Name is captured
-        ProjectCsvMapper.save(newProject);  
+        newProject.setManager(manager);
+        ProjectCsvMapper.save(newProject);
+    
         System.out.println("✅ Project created and saved successfully!");
     }
     
+    
     private static void editProject(HDBManager manager, Scanner sc) {
-        List<Project> allProjects = ProjectCsvMapper.loadAll();
-        List<Project> myProjects = allProjects.stream()
+        List<Project> myProjects = ProjectCsvMapper.loadAll().stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
             .toList();
     
@@ -243,23 +254,20 @@ public class ManagerMenu {
                 }
             }
     
-            // Ensure manager is retained
             if (p.getManager() == null) {
                 p.setManager(manager);
             }
     
-            ProjectCsvMapper.saveAll(allProjects);
+            ProjectCsvMapper.updateProject(p);
             System.out.println("✅ Project updated successfully.");
     
         } catch (Exception e) {
             System.out.println("❌ Invalid input. Edit aborted.");
         }
-    } 
+    }
     
-
     private static void deleteProject(HDBManager manager, Scanner sc) {
-        List<Project> allProjects = ProjectCsvMapper.loadAll();
-        List<Project> myProjects = allProjects.stream()
+        List<Project> myProjects = ProjectCsvMapper.loadAll().stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
             .toList();
     
@@ -297,10 +305,10 @@ public class ManagerMenu {
             return;
         }
     
-        allProjects.remove(selected);
-        ProjectCsvMapper.saveAll(allProjects);
+        ProjectCsvMapper.deleteProjectByName(selected.getProjectName());
         System.out.println("✅ Project deleted successfully.");
     }
+    
     
     
     private static void toggleVisibility(HDBManager manager, Scanner sc) {

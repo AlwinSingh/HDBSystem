@@ -166,6 +166,12 @@ public class ProjectCsvMapper {
         }
         saveAll(all);
     }
-    
+
+    public static void deleteProjectByName(String name) {
+        List<Project> all = loadAll().stream()
+            .filter(p -> !p.getProjectName().equalsIgnoreCase(name))
+            .toList();
+        saveAll(all);
+    }   
 
 }

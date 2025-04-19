@@ -111,9 +111,10 @@ public class AuthService {
             ApplicantCsvMapper.updateApplicant((Applicant) user);
         }
     
-        System.out.println("✅ Password changed successfully.");
+        System.out.println("✅ Password changed successfully. You will be logged out.");
         return true;
     }
+    
 
     public static void logout() {
         System.out.println("👋 Logging out...");

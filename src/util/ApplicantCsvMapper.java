@@ -16,18 +16,17 @@ public class ApplicantCsvMapper {
 
         Applicant applicant = new Applicant(nric, password, name, age, maritalStatus);
 
-        // Optional: Load application status and details if present
         String appStatus = row.getOrDefault("ApplicationStatus", "").trim();
         String appliedProject = row.getOrDefault("AppliedProjectName", "").trim();
         String flatType = row.getOrDefault("FlatTypeApplied", "").trim();
 
         if (!appStatus.isEmpty() && !appliedProject.isEmpty() && !flatType.isEmpty()) {
-            Project dummyProject = new Project(); // Just need project name for now
+            Project dummyProject = new Project();
             dummyProject.setProjectName(appliedProject);
-
             Application app = new Application(applicant, dummyProject, appStatus, flatType);
             applicant.setApplication(app);
         }
+
         return applicant;
     }
 
@@ -60,7 +59,7 @@ public class ApplicantCsvMapper {
         }
         return applicants;
     }
-    
+
     public static void updateApplicant(Applicant updatedApplicant) {
         List<Applicant> all = loadAll();
         for (int i = 0; i < all.size(); i++) {
@@ -71,7 +70,7 @@ public class ApplicantCsvMapper {
         }
         saveAll(all);
     }
-    
+
     public static void saveAll(List<Applicant> applicants) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (Applicant a : applicants) {
@@ -79,15 +78,14 @@ public class ApplicantCsvMapper {
         }
         CsvUtil.write(FilePath.APPLICANT_LIST_FILE, rows);
     }
+
     public static boolean exists(String nric) {
         return loadAll().stream()
             .anyMatch(a -> a.getNric().equalsIgnoreCase(nric));
     }
-    
+
     public static void save(Applicant applicant) {
-        List<Applicant> all = loadAll();
-        all.add(applicant);
-        saveAll(all);
+        Map<String, String> row = toCsvRow(applicant);
+        CsvUtil.append(FilePath.APPLICANT_LIST_FILE, row);
     }
-    
 }

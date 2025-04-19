@@ -16,8 +16,14 @@ public class EnquireService {
     }
 
     public static void submitEnquiry(Applicant applicant, Scanner sc) {
-        List<Project> projects = ProjectLoader.loadProjects()
-                .stream().filter(Project::isVisible).toList();
+        Set<String> appliedProjectNames = new HashSet<>();
+        if (applicant.getApplication() != null && applicant.getApplication().getProject() != null) {
+            appliedProjectNames.add(applicant.getApplication().getProject().getProjectName());
+        }
+
+        List<Project> projects = ProjectLoader.loadProjects().stream()
+            .filter(p -> p.isVisible() || appliedProjectNames.contains(p.getProjectName()))
+            .toList();
 
         if (projects.isEmpty()) {
             System.out.println("❌ No visible projects available.");
@@ -43,8 +49,13 @@ public class EnquireService {
 
         Project selected = projects.get(choice - 1);
 
-        System.out.print("Enter your enquiry: ");
+        System.out.print("Enter your enquiry (or type 'cancel' to go back): ");
         String content = sc.nextLine().trim();
+        if (content.equalsIgnoreCase("cancel") || content.equals("0")) {
+            System.out.println("🔙 Enquiry cancelled.");
+            return;
+        }
+
         if (content.isBlank() || !content.matches(".*[a-zA-Z].*")) {
             System.out.println("❌ Invalid content. Must contain alphabetic characters.");
             return;
@@ -100,33 +111,40 @@ public class EnquireService {
                 .filter(e -> e.getApplicantNric().equalsIgnoreCase(applicant.getNric()))
                 .filter(e -> Enquiry.STATUS_PENDING.equalsIgnoreCase(e.getStatus()))
                 .toList();
-
+    
         if (editable.isEmpty()) {
             System.out.println("❌ No editable enquiries.");
             return;
         }
-
+    
         for (int i = 0; i < editable.size(); i++) {
             System.out.printf("[%d] 🆔 %d — %s\n", i + 1, editable.get(i).getEnquiryId(), editable.get(i).getContent());
         }
-
+    
         System.out.print("Select enquiry to edit (0 to cancel): ");
         int choice = getValidChoice(sc, editable.size());
         if (choice == 0) return;
-
+    
         Enquiry selected = editable.get(choice - 1);
         System.out.println("Current: " + selected.getContent());
-        System.out.print("New content: ");
+        System.out.print("New content (or type 'cancel' to go back): ");
         String newContent = sc.nextLine().trim();
+    
+        if (newContent.equalsIgnoreCase("cancel")) {
+            System.out.println("🔙 Edit cancelled.");
+            return;
+        }
+    
         if (newContent.isBlank() || !newContent.matches(".*[a-zA-Z].*")) {
             System.out.println("❌ Invalid content.");
             return;
         }
-
+    
         selected.editContent(newContent);
         EnquiryCsvMapper.update(selected);
         System.out.println("✅ Enquiry updated.");
     }
+    
 
     public static void deleteOwnEnquiry(Applicant applicant, Scanner sc) {
         List<Enquiry> all = loadFromCSV();

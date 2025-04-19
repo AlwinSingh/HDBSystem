@@ -35,29 +35,33 @@ public class Main {
 
     private static void handleLogin(Scanner sc) {
         System.out.println("\n🔐 Login");
+    
         System.out.print("Enter NRIC: ");
-        String nric = sc.nextLine();
+        String nric = sc.nextLine().trim();
+        if (!nric.matches("^[ST]\\d{7}[A-Z]$")) {
+            System.out.println("❌ Invalid NRIC format. Must be like S1234567A.");
+            return;
+        }
+    
         System.out.print("Enter Password: ");
         String password = sc.nextLine();
-
+    
         User user = AuthService.authenticate(nric, password);
-
+    
         if (user == null) {
             System.out.println("❌ Invalid credentials.");
             return;
         }
-
+    
         System.out.println("\n✅ Welcome, " + user.getName());
-
+    
         if (user instanceof HDBManager manager) {
             System.out.println("🔓 Logged in as HDB Manager (" + manager.getNric() + ")");
             ManagerMenu.show(manager);
-        }
-        else if (user instanceof HDBOfficer officer) {
-            // Officer dashboard logic with dual-role access
+        } else if (user instanceof HDBOfficer officer) {
             boolean hasProject = officer.getAssignedProject() != null;
             boolean hasPendingStatus = officer.getRegistrationStatus() != null;
-
+    
             if (!hasProject && !hasPendingStatus) {
                 System.out.println("🔓 Logged in as HDB Officer (" + officer.getNric() + ")");
                 System.out.println("You are an HDB Officer and also eligible to apply as an Applicant.");
@@ -65,23 +69,23 @@ public class Main {
                 System.out.println("2. Access Applicant Dashboard");
                 System.out.println("0. Logout");
                 int roleChoice = InputValidator.getIntInRange("➡️ Enter your choice: ", 0, 2);
-
+    
                 switch (roleChoice) {
-                        case 1 -> OfficerMenu.show(officer);
-                        case 2 -> ApplicantMenu.show(officer);
-                        case 0 -> {
-                            System.out.println("👋 Logging out...");
-                            return;
-                        }
+                    case 1 -> OfficerMenu.show(officer);
+                    case 2 -> ApplicantMenu.show(officer);
+                    case 0 -> {
+                        System.out.println("👋 Logging out...");
+                        return;
+                    }
                 }
             } else {
                 OfficerMenu.show(officer);
             }
-        }
-        else if (user instanceof Applicant applicant) {
+        } else if (user instanceof Applicant applicant) {
             System.out.println("🔓 Logged in as Applicant (" + applicant.getNric() + ")");
             ApplicantMenu.show(applicant);
         }
     }
+    
 
 }

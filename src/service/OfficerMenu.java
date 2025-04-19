@@ -165,7 +165,7 @@ public class OfficerMenu {
         }
     
         List<Applicant> applicants = ApplicantCsvMapper.loadAll();
-        List<Applicant> pending = applicants.stream()
+        List<Applicant> eligible = applicants.stream()
             .filter(a -> a.getApplication() != null)
             .filter(a -> {
                 Project appProject = a.getApplication().getProject();
@@ -174,26 +174,26 @@ public class OfficerMenu {
             .filter(a -> Applicant.AppStatusType.SUCCESSFUL.name().equalsIgnoreCase(a.getApplication().getStatus()))
             .collect(Collectors.toList());
     
-        if (pending.isEmpty()) {
+        if (eligible.isEmpty()) {
             System.out.println("❌ No applicants ready for booking.");
             return;
         }
     
         System.out.println("\n📋 Eligible Applicants:");
-        for (int i = 0; i < pending.size(); i++) {
-            Applicant a = pending.get(i);
+        for (int i = 0; i < eligible.size(); i++) {
+            Applicant a = eligible.get(i);
             System.out.printf("[%d] %s (NRIC: %s)\n", i + 1, a.getName(), a.getNric());
         }
     
         System.out.print("Select applicant to book: ");
         try {
             int idx = Integer.parseInt(sc.nextLine().trim()) - 1;
-            if (idx < 0 || idx >= pending.size()) throw new IndexOutOfBoundsException();
+            if (idx < 0 || idx >= eligible.size()) throw new IndexOutOfBoundsException();
     
-            Applicant selected = pending.get(idx);
+            Applicant selected = eligible.get(idx);
             String flatType = selected.getApplication().getFlatType();
     
-            // ✅ FIX: Rebind full project with correct pricing
+            // ✅ Get full project info for accurate pricing
             Project fullProject = ProjectCsvMapper.loadAll().stream()
                 .filter(p -> p.getProjectName().equalsIgnoreCase(assigned.getProjectName()))
                 .findFirst()
@@ -204,25 +204,28 @@ public class OfficerMenu {
                 return;
             }
     
-            // Ensure application points to full project so prices are correct
+            // ✅ Update full project reference in the application
             selected.getApplication().setProject(fullProject);
     
             officer.bookFlat(selected.getApplication(), flatType);
             selected.getApplication().setStatus(Applicant.AppStatusType.BOOKED.name());
+    
             ApplicantCsvMapper.updateApplicant(selected);
     
             int nextInvoiceId = InvoiceService.getNextInvoiceId();
             Invoice invoice = InvoiceService.generateInvoiceForBooking(selected.getApplication(), nextInvoiceId);
             InvoiceService.addInvoice(invoice);
     
-            System.out.println("🧾 Invoice generated and saved (Invoice ID: " + invoice.getPaymentId() + ")");
-            ProjectCsvMapper.saveAll(ProjectCsvMapper.loadAll());
+            // ✅ Update only the project involved
+            ProjectCsvMapper.updateProject(fullProject);
     
+            System.out.println("🧾 Invoice generated and saved (Invoice ID: " + invoice.getPaymentId() + ")");
             System.out.println("✅ Booking successful.");
         } catch (Exception e) {
             System.out.println("❌ Invalid booking.");
         }
     }
+    
     
     
     private static void handleEnquiries(HDBOfficer officer, Scanner sc) {
