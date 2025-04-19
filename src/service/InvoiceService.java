@@ -2,7 +2,6 @@ package src.service;
 
 import src.model.Application;
 import src.model.Invoice;
-import src.model.PaymentMethod;
 import src.util.InvoiceCsvMapper;
 
 import java.time.LocalDate;
@@ -23,13 +22,14 @@ public class InvoiceService {
             paymentId,
             app.getFlatPrice(),
             LocalDate.now(),
-            PaymentMethod.valueOf("UNSPECIFIED"),   // Placeholder; make sure to define this enum if needed
+            null,  // ✅ No default method selected at invoice creation
             "Awaiting Payment",
             app.getApplicant().getNric(),
             app.getProject().getProjectName(),
             app.getFlatType()
         );
     }
+    
 
     // Append new invoice to file + in-memory
     public static void addInvoice(Invoice invoice) {
@@ -55,11 +55,6 @@ public class InvoiceService {
             .mapToInt(Invoice::getPaymentId)
             .max()
             .orElse(0) + 1;
-    }
-
-    // Persist full list (use cautiously; prefer `addInvoice()` and `updateInvoice()`)
-    public static void persist() {
-        InvoiceCsvMapper.saveAll(invoices);
     }
 
     // Update invoice entry (efficient overwrite of one record)

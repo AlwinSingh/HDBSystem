@@ -40,7 +40,9 @@ public class Payment {
     public double getAmount() { return amount; }
     public LocalDate getDate() { return date; }
     public PaymentMethod getMethod() { return method; }
-    public String getMethodLabel() { return method.toString(); }
+    public String getMethodLabel() {
+        return method != null ? method.name() : "";
+    }
     public String getStatus() { return status; }
 
     public void setMethod(PaymentMethod method) {

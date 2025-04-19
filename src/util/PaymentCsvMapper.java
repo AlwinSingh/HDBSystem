@@ -16,7 +16,9 @@ public class PaymentCsvMapper {
 
         for (Map<String, String> row : rows) {
             try {
-                int paymentId = Integer.parseInt(row.get("PaymentID"));
+                String idStr = row.get("PaymentID");
+                if (idStr == null || idStr.isBlank()) throw new NumberFormatException("Missing PaymentID");
+                int paymentId = Integer.parseInt(idStr.trim());
                 double amount = Double.parseDouble(row.get("Amount"));
                 LocalDate date = LocalDate.parse(row.get("Date"));
                 String methodRaw = row.get("Method");
@@ -71,9 +73,7 @@ public class PaymentCsvMapper {
                 break;
             }
         }
-        saveAll(all);
+        saveAll(all); // writes back to file
     }
-    
-    
     
 }

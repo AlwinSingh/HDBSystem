@@ -136,8 +136,10 @@ public class OfficerMenu {
         System.out.printf("🗺️ Coordinates         : %.6f, %.6f%n", loc.getLat(), loc.getLng());
     
         System.out.println("🧍 Officer Slots      : " + p.getOfficerSlots());
-        System.out.println("🏠 2‑Room Units       : " + p.getRemainingFlats("2‑Room"));
-        System.out.println("🏠 3‑Room Units       : " + p.getRemainingFlats("3‑Room"));
+        System.out.println("🏠 2-Room Units       : " + p.getRemainingFlats("2-Room"));
+        System.out.println("💰 2-Room Price       : $" + String.format("%.2f", p.getPrice2Room()));
+        System.out.println("🏠 3-Room Units       : " + p.getRemainingFlats("3-Room"));
+        System.out.println("💰 3-Room Price       : $" + String.format("%.2f", p.getPrice3Room()));
         System.out.println("📅 Application Period : " + p.getOpenDate() + " to " + p.getCloseDate());
         System.out.println("👀 Visible to Public  : " + (p.isVisible() ? "Yes ✅" : "No ❌"));
         System.out.println("📊 Your Registration  : " + officer.getRegistrationStatus());
@@ -223,6 +225,8 @@ public class OfficerMenu {
             System.out.println("✅ Booking successful.");
         } catch (Exception e) {
             System.out.println("❌ Invalid booking.");
+            e.printStackTrace(); // ADD THIS to see the real cause
+
         }
     }
     
@@ -308,7 +312,10 @@ public class OfficerMenu {
         try {
             int idx = Integer.parseInt(sc.nextLine().trim());
             if (idx == 0) return;
-            if (idx < 1 || idx > awaitingReceipts.size()) throw new Exception();
+            if (idx < 1 || idx > awaitingReceipts.size()) {
+                System.out.println("❌ Invalid selection.");
+                return;
+            }
     
             Invoice selectedInvoice = awaitingReceipts.get(idx - 1);
     
@@ -336,19 +343,16 @@ public class OfficerMenu {
                 applicant.getApplication().setProject(fullProject);
             }
     
-            // ✅ Append receipt instead of full save
             Receipt receipt = officer.generateReceipt(
                 applicant.getApplication(),
                 selectedInvoice.getPaymentId(),
                 selectedInvoice.getMethod()
             );
-            ReceiptService.addReceipt(receipt);  // uses CsvUtil.append internally
+            ReceiptService.addReceipt(receipt);
     
-            // ✅ Update invoice status only
             selectedInvoice.setStatus(Payment.PaymentStatusType.PROCESSED.name());
             InvoiceService.updateInvoice(selectedInvoice);
     
-            // ✅ Update payment status only
             Payment payment = PaymentService.getAllPayments().stream()
                 .filter(p -> p.getPaymentId() == selectedInvoice.getPaymentId())
                 .findFirst()
@@ -365,9 +369,6 @@ public class OfficerMenu {
             System.out.println("❌ Invalid input.");
         }
     }
-    
-    
-    
 
     private static void updateLocation(HDBOfficer officer, Scanner sc) {
         if (!"APPROVED".equalsIgnoreCase(officer.getRegistrationStatus())) {

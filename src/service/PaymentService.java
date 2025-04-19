@@ -43,20 +43,21 @@ public class PaymentService {
 
     // Retrieve latest payment ID for incremental generation
     public static int getNextPaymentId() {
-        return payments.stream()
-                .mapToInt(Payment::getPaymentId)
-                .max()
-                .orElse(0) + 1;
+        return PaymentCsvMapper.loadAll().stream()
+            .mapToInt(Payment::getPaymentId)
+            .max()
+            .orElse(0) + 1;
     }
 
     public static void updatePayment(Payment updated) {
+        PaymentCsvMapper.update(updated); // persist to disk
+    
         for (int i = 0; i < payments.size(); i++) {
             if (payments.get(i).getPaymentId() == updated.getPaymentId()) {
-                payments.set(i, updated);
+                payments.set(i, updated); // update in-memory
                 break;
             }
         }
-        PaymentCsvMapper.update(updated); // You’ll also need to implement this in the mapper
     }
     
 }

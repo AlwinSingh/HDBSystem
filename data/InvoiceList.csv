@@ -1,2 +1,3 @@
 InvoiceID,PaymentID,ApplicantNRIC,ProjectName,FlatType,Amount,Method,Status,GeneratedDate
-
+1,1,S1234567A,Acacia Breeze,2-Room,350000.0,PAYNOW,Awaiting Payment,2025-04-19
+2,2,T7654321B,ClementiLake,2-Room,10000.0,PAYNOW,Awaiting Receipt,2025-04-19

@@ -34,13 +34,13 @@ public class ApplicantMenu {
     
             System.out.println("\n📋 Applications");
             System.out.printf(" [1] 📄 View Eligible Projects   [2] 📝 Apply for a Project%n");
-            System.out.printf(" [3] 🔍 View My Application     [4] ❌ Request Withdrawal%n");
+            System.out.printf(" [3] 🔍 View My Application      [4] ❌ Request Withdrawal%n");
     
             System.out.println("\n💳 Payments");
-            System.out.printf(" [5] 💰 View & Pay Invoice      [6] 🧾 View Receipts%n");
+            System.out.printf(" [5] 💰 View & Pay Invoice       [6] 🧾 View Receipts%n");
     
             System.out.println("\n📬 Services");
-            System.out.printf(" [7] 💬 Enquiry Services        [8] 📝 Feedback Services%n");
+            System.out.printf(" [7] 💬 Enquiry Services         [8] 📝 Feedback Services%n");
     
             System.out.println("\n🔐 Account");
             System.out.printf(" [9] 🔑 Change Password");
@@ -49,7 +49,7 @@ public class ApplicantMenu {
                 System.out.printf("   [10] 🔁 Switch to Officer Dashboard%n");
             }
     
-            System.out.printf("   [0] 🚪 Logout%n");
+            System.out.printf("       [0] 🚪 Logout%n");
     
             System.out.print("\n➡️ Enter your choice: ");
             String choice = sc.nextLine().trim();
@@ -320,7 +320,7 @@ public class ApplicantMenu {
     }
     
     private static void viewAndPayInvoices(Applicant applicant, Scanner sc) {
-        List<Invoice> allInvoices = InvoiceService.getAllInvoices(); // ✅ Fixed
+        List<Invoice> allInvoices = InvoiceService.getAllInvoices();
         List<Invoice> myInvoices = allInvoices.stream()
             .filter(inv -> inv.getApplicantNRIC().equalsIgnoreCase(applicant.getNric()))
             .toList();
@@ -330,9 +330,9 @@ public class ApplicantMenu {
             return;
         }
     
-        // Filter unpaid invoices
         List<Invoice> unpaidInvoices = myInvoices.stream()
             .filter(inv -> !"Awaiting Receipt".equalsIgnoreCase(inv.getStatus()))
+            .sorted(Comparator.comparing(Invoice::getPaymentId))
             .toList();
     
         if (unpaidInvoices.isEmpty()) {
@@ -351,11 +351,13 @@ public class ApplicantMenu {
         try {
             int idx = Integer.parseInt(sc.nextLine().trim());
             if (idx == 0) return;
-            if (idx < 1 || idx > unpaidInvoices.size()) throw new Exception();
+            if (idx < 1 || idx > unpaidInvoices.size()) {
+                System.out.println("❌ Invalid selection.");
+                return;
+            }
     
             Invoice selected = unpaidInvoices.get(idx - 1);
     
-            // Payment method selection
             System.out.println("Choose payment method:");
             System.out.println("1. PayNow");
             System.out.println("2. Bank Transfer");
@@ -378,26 +380,27 @@ public class ApplicantMenu {
             selected.setStatus("Awaiting Receipt");
             InvoiceService.updateInvoice(selected);
     
+            int nextPaymentId = PaymentService.getNextPaymentId();
             Payment newPayment = new Payment(
-                selected.getPaymentId(),
+                nextPaymentId,
                 selected.getAmount(),
                 LocalDate.now(),
                 method,
                 selected.getStatus()
             );
             PaymentService.addPayment(newPayment);
+    
             System.out.println("💸 Payment successful via " + method + "!");
         } catch (Exception e) {
             System.out.println("❌ Invalid input.");
         }
-    }
-    
-    
+    }  
     
     private static void viewReceipts(Applicant applicant) {
         List<Receipt> allReceipts = ReceiptService.getAllReceipts();
         List<Receipt> myReceipts = allReceipts.stream()
             .filter(r -> r.getApplicantNRIC().equalsIgnoreCase(applicant.getNric()))
+            .sorted(Comparator.comparing(r -> r.getInvoice().getPaymentId()))
             .toList();
     
         if (myReceipts.isEmpty()) {
@@ -411,10 +414,12 @@ public class ApplicantMenu {
             System.out.println("📄 Receipt for Project: " + r.getProjectName());
             System.out.println("🏠 Flat Type          : " + r.getInvoice().getFlatType());
             System.out.println("💵 Amount Paid        : $" + String.format("%.2f", r.getInvoice().getAmount()));
-            System.out.println("💳 Payment Method     : " + r.getInvoice().getMethod());
+            PaymentMethod method = r.getInvoice().getMethod();
+            System.out.println("💳 Payment Method     : " + (method != null ? method : "Not selected"));
             System.out.println("📅 Date               : " + r.getInvoice().getDate());
         }
     }
+    
 
     private static class ApplicantContext {
         Applicant applicant;
