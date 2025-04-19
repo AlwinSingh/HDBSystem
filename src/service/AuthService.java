@@ -112,8 +112,10 @@ public class AuthService {
         }
     
         System.out.println("✅ Password changed successfully. You will be logged out.");
+        AuthService.logout();  // ✅ Force logout immediately
         return true;
     }
+    
     
 
     public static void logout() {

@@ -394,6 +394,8 @@ public class ApplicantMenu {
         }
     }
     private static void changePassword(ApplicantContext ctx) {
-        AuthService.changePassword(ctx.applicant, ctx.scanner);
-    }   
+        if (AuthService.changePassword(ctx.applicant, ctx.scanner)) {
+            System.exit(0); // or simply return to break loop if you handle it elsewhere
+        }
+    } 
 }
