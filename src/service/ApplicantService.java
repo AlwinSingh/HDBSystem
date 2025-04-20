@@ -3,7 +3,6 @@ package src.service;
 import src.model.*;
 import src.repository.ApplicantRepository;
 import src.util.ApplicantCsvMapper;
-import src.util.OfficerCsvMapper;
 import src.util.ProjectCsvMapper;
 
 import java.time.LocalDate;
