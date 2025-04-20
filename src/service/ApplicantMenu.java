@@ -281,7 +281,18 @@ public class ApplicantMenu {
      * Shows a list of unpaid invoices and handles user selection for payment.
      */
     private static void viewAndPayInvoices(Applicant applicant, Scanner sc) {
-        List<Invoice> unpaidInvoices = ApplicantService.getUnpaidInvoices(applicant);
+        List<Invoice> allInvoices = InvoiceService.getAllInvoices().stream()
+            .filter(inv -> inv.getApplicantNRIC().equalsIgnoreCase(applicant.getNric()))
+            .toList();
+
+        if (allInvoices.isEmpty()) {
+            System.out.println("📭 You have no invoices at the moment.");
+            return;
+        }
+
+        List<Invoice> unpaidInvoices = allInvoices.stream()
+            .filter(inv -> !"Awaiting Receipt".equalsIgnoreCase(inv.getStatus()))
+            .toList();
 
         if (unpaidInvoices.isEmpty()) {
             System.out.println("✅ All your invoices have already been paid.");
@@ -329,6 +340,7 @@ public class ApplicantMenu {
             System.out.println("❌ Invalid input.");
         }
     }
+
 
     /**
      * Displays all receipts issued to the applicant.
