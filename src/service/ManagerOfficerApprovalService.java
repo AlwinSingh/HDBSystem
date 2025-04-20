@@ -9,15 +9,12 @@ import java.util.stream.Collectors;
 import src.model.HDBManager;
 import src.model.HDBOfficer;
 import src.model.Project;
-import src.repository.ApplicantRepository;
-import src.util.ApplicantCsvMapper;
 import src.util.CsvUtil;
 import src.util.FilePath;
 import src.util.OfficerCsvMapper;
 import src.util.ProjectCsvMapper;
 
 public class ManagerOfficerApprovalService {
-    private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
     /**
      * Displays all officer registration requests tied to the manager's projects.
      *

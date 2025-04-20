@@ -7,6 +7,11 @@ import java.util.*;
 
 public class ApplicantCsvMapper implements ApplicantRepository {
 
+    /**
+     * Loads all applicants from the CSV file.
+     *
+     * @return List of applicants.
+     */
     @Override
     public List<Applicant> loadAll() {
         List<Map<String, String>> rows = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
@@ -17,6 +22,11 @@ public class ApplicantCsvMapper implements ApplicantRepository {
         return result;
     }
 
+    /**
+     * Updates a specific applicant entry by NRIC in the CSV.
+     *
+     * @param updatedApplicant The updated applicant object.
+     */
     @Override
     public void update(Applicant updatedApplicant) {
         List<Applicant> all = loadAll();
@@ -29,11 +39,24 @@ public class ApplicantCsvMapper implements ApplicantRepository {
         saveAll(all);
     }
 
+    /**
+     * Saves a new applicant to the CSV file.
+     *
+     * @param applicant The applicant to add.
+     */
+
     @Override
     public void save(Applicant applicant) {
         Map<String, String> row = toCsvRow(applicant);
         CsvUtil.append(FilePath.APPLICANT_LIST_FILE, row);
     }
+
+    /**
+     * Checks if an applicant exists in the CSV file by NRIC.
+     *
+     * @param nric The NRIC to check.
+     * @return True if applicant exists, false otherwise.
+     */
 
     @Override
     public boolean exists(String nric) {
@@ -41,6 +64,11 @@ public class ApplicantCsvMapper implements ApplicantRepository {
             .anyMatch(a -> a.getNric().equalsIgnoreCase(nric));
     }
 
+     /**
+     * Saves a full list of applicants to the CSV file.
+     *
+     * @param applicants The list to save.
+     */
     private void saveAll(List<Applicant> applicants) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (Applicant a : applicants) {
@@ -49,6 +77,13 @@ public class ApplicantCsvMapper implements ApplicantRepository {
         CsvUtil.write(FilePath.APPLICANT_LIST_FILE, rows);
     }
 
+
+    /**
+     * Parsing a CSV row into an Applicant object, including application data.
+     *
+     * @param row The CSV row.
+     * @return An Applicant object.
+     */
     private Applicant fromCsvRow(Map<String, String> row) {
         String nric = row.getOrDefault("NRIC", "").trim();
         String password = row.getOrDefault("Password", "").trim();
@@ -72,6 +107,12 @@ public class ApplicantCsvMapper implements ApplicantRepository {
         return applicant;
     }
 
+    /**
+     * Converting an applicant and their application, if present to a CSV row.
+     *
+     * @param applicant The applicant.
+     * @return CSV row representation.
+     */
     private Map<String, String> toCsvRow(Applicant applicant) {
         Map<String, String> row = new LinkedHashMap<>();
         row.put("NRIC", applicant.getNric());
