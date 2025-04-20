@@ -2,10 +2,11 @@ package src.service;
 
 import java.util.Scanner;
 import src.model.Applicant;
+import src.repository.ApplicantRepository;
 import src.util.ApplicantCsvMapper;
 
 public class RegistrationService {
-
+    private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
     /**
      * Handles the full applicant registration flow.
      * Includes input validation, NRIC format check, and CSV persistence.
@@ -39,13 +40,13 @@ public class RegistrationService {
             }
         }
     
-        if (ApplicantCsvMapper.exists(nric)) {
+        if (applicantRepository.exists(nric)) {
             System.out.println("❌ An account with this NRIC already exists.");
             return;
         }
     
         Applicant applicant = new Applicant(nric, "password", name, age, maritalStatus);
-        ApplicantCsvMapper.save(applicant);
+        applicantRepository.save(applicant);
         System.out.println("✅ Applicant created. Default password is: password");
     }
 

@@ -1,6 +1,7 @@
 package src.service;
 
 import src.model.*;
+import src.repository.ApplicantRepository;
 import src.util.ApplicantCsvMapper;
 import src.util.OfficerCsvMapper;
 import src.util.ProjectCsvMapper;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
  * feedback, invoices, payments, and receipts.
  */
 public class ApplicantService {
-
+    private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
     private static String filterNeighborhood = null;
     private static String filterDistrict = null;
     private static String filterFlatType = null;
@@ -183,32 +184,25 @@ public class ApplicantService {
      * @return True if successful; false if already applied or any issues occur.
      */
     public static boolean submitApplication(Applicant applicant, Project project, String flatType) {
-        // Officer-specific conflict check BEFORE doing anything
         if (applicant instanceof HDBOfficer officer) {
-            // Add officer to ApplicantList if not already present
-            boolean exists = ApplicantCsvMapper.loadAll().stream()
+            boolean exists = applicantRepository.loadAll().stream()
                 .anyMatch(a -> a.getNric().equalsIgnoreCase(officer.getNric()));
             if (!exists) {
-                ApplicantCsvMapper.save(officer);
+                applicantRepository.save(officer);
             }
         }
     
-        // Apply application logic
         boolean success = applicant.applyForProject(project, flatType);
         if (!success) return false;
     
-        // Save updated applicant data
-        ApplicantCsvMapper.updateApplicant(applicant);
+        applicantRepository.update(applicant);
     
-        // Track in project
         project.getApplicantNRICs().add(applicant.getNric());
         ProjectCsvMapper.updateProject(project);
     
         return true;
     }
     
-    
-
     /**
      * Checks if the applicant is allowed to withdraw from their application.
      */
@@ -238,7 +232,8 @@ public class ApplicantService {
      */
     public static void submitWithdrawalRequest(Applicant applicant) {
         applicant.getApplication().setStatus(Applicant.AppStatusType.WITHDRAW_REQUESTED.name());
-        ApplicantCsvMapper.updateApplicant(applicant);
+        applicantRepository.update(applicant);
+
     }
 
     /**

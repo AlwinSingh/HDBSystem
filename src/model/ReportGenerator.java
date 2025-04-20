@@ -1,5 +1,6 @@
 package src.model;
 
+import src.repository.ApplicantRepository;
 import src.util.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,7 +10,7 @@ import java.util.stream.Collectors;
  * Supports filtering by project or manager.
  */
 public class ReportGenerator {
-
+    private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
     /**
      * Generates reports for all applicants who have successfully booked flats.
      * Each report includes invoice and optional receipt details.
@@ -17,7 +18,7 @@ public class ReportGenerator {
      * @return A list of report entries.
      */
     public List<Report> generateAllReports() {
-        List<Applicant> applicants = ApplicantCsvMapper.loadAll();
+        List<Applicant> applicants = applicantRepository.loadAll();
         List<Invoice> invoices = InvoiceCsvMapper.loadAll();
         List<Receipt> receipts = ReceiptCsvMapper.loadAll();
         List<Project> allProjects = ProjectCsvMapper.loadAll();  // 🔥 Load complete projects

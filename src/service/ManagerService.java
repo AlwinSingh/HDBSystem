@@ -14,6 +14,7 @@ import src.model.HDBManager;
 import src.model.HDBOfficer;
 import src.model.Project;
 import src.model.ProjectLocation;
+import src.repository.ApplicantRepository;
 import src.util.ApplicantCsvMapper;
 import src.util.CsvUtil;
 import src.util.FilePath;
@@ -21,7 +22,7 @@ import src.util.OfficerCsvMapper;
 import src.util.ProjectCsvMapper;
 
 public class ManagerService {
-
+    private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
     /**
      * Allows the manager to create a new project, validate inputs,
      * and save it to the system.
@@ -635,7 +636,7 @@ public class ManagerService {
      * @param sc      Scanner for user input.
      */
     public static void handleApplicantApproval(HDBManager manager, Scanner sc) {
-        List<Applicant> applicants = ApplicantCsvMapper.loadAll();
+        List<Applicant> applicants = applicantRepository.loadAll();
         List<Project> projects = ProjectCsvMapper.loadAll();
 
         Set<String> myProjectNames = projects.stream()
@@ -709,7 +710,7 @@ public class ManagerService {
             }
         }
 
-        ApplicantCsvMapper.updateApplicant(selectedApp);
+        applicantRepository.update(selectedApp);
         ProjectCsvMapper.updateProject(project);
     }
 
@@ -743,7 +744,7 @@ public class ManagerService {
      * Displays and resolves pending withdrawal requests from applicants.
      */
     public static void handleWithdrawalRequests(HDBManager manager, Scanner sc) {
-        List<Applicant> applicants = ApplicantCsvMapper.loadAll();
+        List<Applicant> applicants = applicantRepository.loadAll();
         List<Project> projects = ProjectCsvMapper.loadAll();
     
         Set<String> myProjects = projects.stream()
@@ -801,7 +802,7 @@ public class ManagerService {
             }
         }
     
-        ApplicantCsvMapper.updateApplicant(selected);
+        applicantRepository.update(selected);
     }
 
     /**

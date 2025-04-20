@@ -13,6 +13,7 @@ import src.model.Payment;
 import src.model.Project;
 import src.model.ProjectLocation;
 import src.model.Receipt;
+import src.repository.ApplicantRepository;
 import src.util.AmenitiesCsvMapper;
 import src.util.ApplicantCsvMapper;
 import src.util.EnquiryCsvMapper;
@@ -20,7 +21,7 @@ import src.util.OfficerCsvMapper;
 import src.util.ProjectCsvMapper;
 
 public class OfficerService {
-
+    private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
     /**
      * Prints the officer's registration status and basic details of the assigned project.
      */
@@ -281,7 +282,7 @@ public class OfficerService {
     
 
     public static List<Applicant> getBookableApplicants(Project assignedProject) {
-        return ApplicantCsvMapper.loadAll().stream()
+        return applicantRepository.loadAll().stream()
             .filter(a -> a.getApplication() != null)
             .filter(a -> {
                 Project appProject = a.getApplication().getProject();
@@ -362,7 +363,7 @@ public class OfficerService {
         app.setStatus(Applicant.AppStatusType.BOOKED.name());
 
         // Persist updates
-        ApplicantCsvMapper.updateApplicant(applicant);
+        applicantRepository.update(applicant);
 
         int nextInvoiceId = InvoiceService.getNextInvoiceId();
         Invoice invoice = HDBOfficer.generateInvoiceForBooking(app, nextInvoiceId);
@@ -383,7 +384,7 @@ public class OfficerService {
     }
 
     public static Applicant findApplicantByNRIC(String nric) {
-        return ApplicantCsvMapper.loadAll().stream()
+        return applicantRepository.loadAll().stream()
             .filter(a -> a.getNric().equalsIgnoreCase(nric))
             .findFirst()
             .orElse(null);

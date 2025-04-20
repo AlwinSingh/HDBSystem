@@ -3,13 +3,14 @@ package src.service;
 import java.util.Map;
 import java.util.Scanner;
 import src.model.*;
+import src.repository.ApplicantRepository;
 import src.util.*;
 
 /**
  * Handles authentication and account-related services for Applicants, Officers, and Managers.
  */
 public class AuthService {
-
+    private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
     /**
      * Authenticates a user by verifying NRIC and password across all user types.
      *
@@ -148,7 +149,7 @@ public class AuthService {
         } else if (user instanceof HDBOfficer) {
             OfficerCsvMapper.updateOfficer((HDBOfficer) user);
         } else if (user instanceof Applicant) {
-            ApplicantCsvMapper.updateApplicant((Applicant) user);
+            applicantRepository.update((Applicant) user);
         }
 
         System.out.println("✅ Password changed successfully.");
