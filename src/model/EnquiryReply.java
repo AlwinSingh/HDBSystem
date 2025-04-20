@@ -2,6 +2,9 @@ package src.model;
 
 import java.time.LocalDate;
 
+/**
+ * Represents a reply to an enquiry, including responder info, timestamp, and content.
+ */
 public class EnquiryReply {
     private int replyId;
     private String content;
@@ -17,11 +20,20 @@ public class EnquiryReply {
         this.responderRole = (responder instanceof HDBManager) ? "Manager" : "Officer";
     }
     // === Business Logic ===
+
+    /**
+     * Updates the reply content and refreshes the timestamp to now.
+     *
+     * @param newContent Updated reply text.
+     */
     public void editReply(String newContent) {
         this.content = newContent;
         this.timestamp = LocalDate.now(); // update timestamp on edit
     }
 
+    /**
+     * Marks the reply content as deleted.
+     */
     public void deleteReply() {
         this.content = "[deleted]";
     }
@@ -49,6 +61,11 @@ public class EnquiryReply {
     
 
     // === Optional: toString for CSV/debugging ===
+    /**
+     * Returns a string representation of the reply for debugging or CSV use.
+     *
+     * @return Name and content string.
+     */
     @Override
     public String toString() {
         return responder.getName() + ": " + content;

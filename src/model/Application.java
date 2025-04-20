@@ -1,5 +1,9 @@
 package src.model;
 
+/**
+ * Represents an application made by an applicant to a specific housing project.
+ * Tracks flat type, status, and pricing logic.
+ */
 public class Application {
     protected Applicant applicant;
     protected Project project;
@@ -14,14 +18,29 @@ public class Application {
         this.chosenFlatType = chosenFlatType;
     }
 
+    /**
+     * Updates the status of the application.
+     *
+     * @param status New status (e.g., PENDING, BOOKED).
+     */
     public void setStatus(String status) {
         this.status = status;
     }
 
+    /**
+     * Flags the application as a withdrawal request.
+     * Sets status to WITHDRAW_REQUESTED.
+     */
     public void withdrawRequest() {
         this.status = Applicant.AppStatusType.WITHDRAW_REQUESTED.name();
     }
 
+    /**
+     * Returns the price of the chosen flat type based on the associated project.
+     * Prints pricing debug info to the console.
+     *
+     * @return The price of the chosen flat.
+     */
     public double getFlatPrice() {
         System.out.println("🛠️ Project: " + project.getProjectName());
         System.out.println("2-Room Price: " + project.getPrice2Room());

@@ -7,6 +7,12 @@ import src.model.Project;
 
 public class ApplicantCsvMapper {
 
+    /**
+     * Parses a CSV row into an Applicant object, including application data if available.
+     *
+     * @param row The CSV row.
+     * @return An Applicant object.
+     */
     public static Applicant fromCsvRow(Map<String, String> row) {
         String nric = row.getOrDefault("NRIC", "").trim();
         String password = row.getOrDefault("Password", "").trim();
@@ -30,6 +36,12 @@ public class ApplicantCsvMapper {
         return applicant;
     }
 
+    /**
+     * Converts an applicant (and their application, if present) to a CSV row.
+     *
+     * @param applicant The applicant.
+     * @return CSV row representation.
+     */
     public static Map<String, String> toCsvRow(Applicant applicant) {
         Map<String, String> row = new LinkedHashMap<>();
         row.put("NRIC", applicant.getNric());
@@ -51,6 +63,11 @@ public class ApplicantCsvMapper {
         return row;
     }
 
+    /**
+     * Loads all applicants from the CSV file.
+     *
+     * @return List of applicants.
+     */
     public static List<Applicant> loadAll() {
         List<Map<String, String>> rawRows = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
         List<Applicant> applicants = new ArrayList<>();
@@ -60,6 +77,11 @@ public class ApplicantCsvMapper {
         return applicants;
     }
 
+    /**
+     * Updates a specific applicant entry by NRIC in the CSV.
+     *
+     * @param updatedApplicant The updated applicant object.
+     */
     public static void updateApplicant(Applicant updatedApplicant) {
         List<Applicant> all = loadAll();
         for (int i = 0; i < all.size(); i++) {
@@ -71,6 +93,11 @@ public class ApplicantCsvMapper {
         saveAll(all);
     }
 
+    /**
+     * Saves a full list of applicants to the CSV file.
+     *
+     * @param applicants The list to save.
+     */
     public static void saveAll(List<Applicant> applicants) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (Applicant a : applicants) {
@@ -79,11 +106,22 @@ public class ApplicantCsvMapper {
         CsvUtil.write(FilePath.APPLICANT_LIST_FILE, rows);
     }
 
+    /**
+     * Checks if an applicant exists in the CSV file by NRIC.
+     *
+     * @param nric The NRIC to check.
+     * @return True if applicant exists, false otherwise.
+     */
     public static boolean exists(String nric) {
         return loadAll().stream()
             .anyMatch(a -> a.getNric().equalsIgnoreCase(nric));
     }
 
+    /**
+     * Saves a new applicant to the CSV file.
+     *
+     * @param applicant The applicant to add.
+     */
     public static void save(Applicant applicant) {
         Map<String, String> row = toCsvRow(applicant);
         CsvUtil.append(FilePath.APPLICANT_LIST_FILE, row);

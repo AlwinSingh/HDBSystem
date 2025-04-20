@@ -2,6 +2,10 @@ package src.model;
 
 import java.time.LocalDate;
 
+/**
+ * Represents feedback submitted by an applicant about a project.
+ * May be resolved by a manager or officer.
+ */
 public class Feedback {
     private int feedbackId;
     private String applicantNRIC;
@@ -28,12 +32,20 @@ public class Feedback {
 }
 
     // === Business Logic ===
+    /**
+     * Marks this feedback as resolved, setting resolver and resolved date.
+     *
+     * @param resolverName Name of the admin resolving it.
+     */
     public void markResolved(String resolverName) {
         this.status = STATUS_RESOLVED;
         this.resolverName = resolverName;
         this.resolvedDate = LocalDate.now();
     }
 
+    /**
+     * Returns true if this feedback is marked as resolved.
+     */
     public boolean isResolved() {
         return STATUS_RESOLVED.equalsIgnoreCase(status);
     }
@@ -58,6 +70,9 @@ public class Feedback {
     public void setResolverName(String resolverName) { this.resolverName = resolverName; }
     public void setResolvedDate(LocalDate resolvedDate) { this.resolvedDate = resolvedDate; }
 
+    /**
+     * Displays formatted feedback details including submission, resolution, and content.
+     */
     @Override
     public String toString() {
         return "📝 Feedback #" + feedbackId + " by " + applicantNRIC + "\n"

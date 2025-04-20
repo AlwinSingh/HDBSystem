@@ -2,6 +2,10 @@ package src.model;
 
 import java.time.LocalDate;
 
+/**
+ * Represents a summary report entry for a booking and payment.
+ * Includes applicant info, project and flat details, booking/payment status, and optional metadata.
+ */
 public class Report {
     private String applicantName;
     private String applicantNRIC;
@@ -44,6 +48,9 @@ public class Report {
     public LocalDate getBookingDate() { return bookingDate; }
     public String getReceiptId() { return receiptId; }
 
+    /**
+     * Returns a concise summary string of the report for console display.
+     */
     @Override
     public String toString() {
         return "👤 " + applicantName + " (" + applicantNRIC + "), " + age + " y/o, " + maritalStatus + "\n"

@@ -6,6 +6,14 @@ public class InputValidator {
 
     private static final Scanner sc = new Scanner(System.in); // Shared static scanner
 
+    /**
+     * Prompts the user until a valid integer within the specified range is entered.
+     *
+     * @param prompt Message to display.
+     * @param min    Minimum acceptable value.
+     * @param max    Maximum acceptable value.
+     * @return Validated integer within range.
+     */
     public static int getIntInRange(String prompt, int min, int max) {
         int choice;
 
@@ -24,10 +32,22 @@ public class InputValidator {
         }
     }
 
+    /**
+     * Prompts for a positive integer (greater than 0).
+     *
+     * @param prompt Message to display.
+     * @return Validated positive integer.
+     */
     public static int getPositiveInt(String prompt) {
         return getIntInRange(prompt, 1, Integer.MAX_VALUE);
     }
 
+    /**
+     * Prompts for a positive double (greater than 0).
+     *
+     * @param prompt Message to display.
+     * @return Validated positive double.
+     */
     public static double getPositiveDouble(String prompt) {
         double value;
 
@@ -43,6 +63,12 @@ public class InputValidator {
         }
     }
 
+    /**
+     * Prompts the user until a non-empty string is entered.
+     *
+     * @param prompt Message to display.
+     * @return Non-empty trimmed string.
+     */
     public static String getNonEmptyString(String prompt) {
         while (true) {
             System.out.print(prompt);

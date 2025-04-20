@@ -1,5 +1,9 @@
 package src.model;
 
+/**
+ * Represents a nearby amenity (e.g., school, mall, MRT) associated with a project.
+ * Each amenity includes its type, name, distance from the project, and project link.
+ */
 public class Amenities {
     private int amenityId;
     private String type;

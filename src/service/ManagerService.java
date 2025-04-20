@@ -22,6 +22,13 @@ import src.util.ProjectCsvMapper;
 
 public class ManagerService {
 
+    /**
+     * Allows the manager to create a new project, validate inputs,
+     * and save it to the system.
+     *
+     * @param manager The logged-in HDB manager.
+     * @param sc      Scanner for user input.
+     */
     public static void createProject(HDBManager manager, Scanner sc) {
         System.out.println("\n📌 Create New Project");
 
@@ -114,6 +121,13 @@ public class ManagerService {
 
         System.out.println("✅ Project created and saved successfully!");
     }
+
+    /**
+     * Allows the manager to edit a project they created — including dates, pricing, and slots.
+     *
+     * @param manager The logged-in manager.
+     * @param sc      Scanner for user input.
+     */
     public static void editProject(HDBManager manager, Scanner sc) {
         List<Project> myProjects = ProjectCsvMapper.loadAll().stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
@@ -204,6 +218,12 @@ public class ManagerService {
         }
     }
 
+    /**
+     * Allows a manager to delete one of their projects, if no officers or applicants are assigned.
+     *
+     * @param manager The logged-in manager.
+     * @param sc      Scanner for user input.
+     */
     public static void deleteProject(HDBManager manager, Scanner sc) {
         List<Project> myProjects = ProjectCsvMapper.loadAll().stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
@@ -248,6 +268,12 @@ public class ManagerService {
         System.out.println("✅ Project deleted successfully.");
     }
 
+    /**
+     * Toggles the public visibility of a project managed by the current manager.
+     *
+     * @param manager The manager who owns the project.
+     * @param sc      Scanner for input.
+     */
     public static void toggleVisibility(HDBManager manager, Scanner sc) {
         List<Project> myProjects = ProjectCsvMapper.loadAll().stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
@@ -292,6 +318,12 @@ public class ManagerService {
         System.out.printf("✅ Visibility updated. New visibility: %s\n", selected.isVisible());
     }
 
+    /**
+     * Displays basic details of a project for use in other views.
+     *
+     * @param p     The project.
+     * @param index The display index (1-based).
+     */
     public static void displayProjectDetails(Project p, int index) {
         System.out.printf("\n[%d] 📌 %s (%s)\n", index, p.getProjectName(), p.getNeighborhood());
         System.out.printf("   🛏️ 2-Room Units: %d\n", p.getRemainingFlats("2-Room"));
@@ -303,8 +335,6 @@ public class ManagerService {
         System.out.printf("   🧍 Officer Slots: %d\n", p.getOfficerSlots());
         System.out.printf("   👀 Visible to public: %s\n", p.isVisible() ? "Yes" : "No");
     }
-    
- 
 
     private static class ProjectFilterCriteria {
         String name = null;
@@ -407,14 +437,25 @@ public class ManagerService {
                 default -> System.out.println("❌ Invalid input.");
             }
         }
-    }  
-    
+    }
+
+    /**
+     * Returns a list of projects managed by the specified manager.
+     *
+     * @param manager The logged-in manager.
+     * @return List of owned projects.
+     */
     public static List<Project> getProjectsByManager(HDBManager manager) {
         return ProjectCsvMapper.loadAll().stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
             .toList();
     }
 
+    /**
+     * Displays all projects created by the logged-in manager.
+     *
+     * @param manager The manager.
+     */
     public static void viewMyProjects(HDBManager manager) {
         List<Project> myProjects = getProjectsByManager(manager);
     
@@ -428,7 +469,12 @@ public class ManagerService {
             displayProjectDetails(myProjects.get(i), i + 1);
         }
     }
-    
+
+    /**
+     * Displays all officer registration requests tied to the manager's projects.
+     *
+     * @param manager The manager.
+     */
     public static void viewOfficerRegistrations(HDBManager manager) {
         List<Map<String, String>> officers = CsvUtil.read(FilePath.OFFICER_LIST_FILE);
         List<Map<String, String>> projects = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
@@ -458,6 +504,12 @@ public class ManagerService {
         }
     }
 
+    /**
+     * Allows the manager to approve or reject officer applications for their projects.
+     *
+     * @param manager The logged-in manager.
+     * @param sc      Scanner for user input.
+     */
     public static void handleOfficerApproval(HDBManager manager, Scanner sc) {
         List<Project> allProjects = ProjectCsvMapper.loadAll();
         List<HDBOfficer> allOfficers = OfficerCsvMapper.loadAll(allProjects);
@@ -536,6 +588,11 @@ public class ManagerService {
         }
     }
 
+    /**
+     * Displays all applicant submissions tied to the manager's projects.
+     *
+     * @param manager The logged-in manager.
+     */
     public static void viewApplicantApplications(HDBManager manager) {
         List<Map<String, String>> applicants = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
         List<Map<String, String>> projects = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
@@ -570,7 +627,13 @@ public class ManagerService {
             System.out.println("   💍 Marital Status: " + app.get("Marital Status"));
         }
     }
-    
+
+    /**
+     * Approves or rejects applicant submissions for the manager’s projects.
+     *
+     * @param manager The manager.
+     * @param sc      Scanner for user input.
+     */
     public static void handleApplicantApproval(HDBManager manager, Scanner sc) {
         List<Applicant> applicants = ApplicantCsvMapper.loadAll();
         List<Project> projects = ProjectCsvMapper.loadAll();
@@ -650,6 +713,11 @@ public class ManagerService {
         ProjectCsvMapper.updateProject(project);
     }
 
+    /**
+     * Approves the applicant and deducts one unit of the selected flat type.
+     *
+     * @return True if successful; false if flats are unavailable.
+     */
     private static boolean approveApplicant(Applicant applicant, Project project, String flatType) {
         int available = flatType.equalsIgnoreCase("2-Room")
             ? project.getAvailableFlats2Room()
@@ -671,6 +739,9 @@ public class ManagerService {
         return true;
     }
 
+    /**
+     * Displays and resolves pending withdrawal requests from applicants.
+     */
     public static void handleWithdrawalRequests(HDBManager manager, Scanner sc) {
         List<Applicant> applicants = ApplicantCsvMapper.loadAll();
         List<Project> projects = ProjectCsvMapper.loadAll();
@@ -733,6 +804,12 @@ public class ManagerService {
         ApplicantCsvMapper.updateApplicant(selected);
     }
 
+    /**
+     * Allows managers to generate and view booking reports based on filters.
+     *
+     * @param manager The manager.
+     * @param sc      Scanner for input.
+     */
     public static void generateReports(HDBManager manager, Scanner sc) {
         while (true) {
             System.out.println("\n📊 Generate Applicant Booking Reports");
@@ -832,6 +909,10 @@ public class ManagerService {
             }
         }
     }
+
+    /**
+     * Shows the enquiry options available to managers, allowing them to respond.
+     */
     public static void showEnquiryOptions(HDBManager manager, Scanner sc) {
         while (true) {
             System.out.println("\n📨 Enquiry Options");
@@ -852,6 +933,11 @@ public class ManagerService {
             }
         }
     }
+
+    /**
+     * Provides full feedback management options to managers:
+     * viewing, filtering, and resolving feedback.
+     */
     public static void viewAndResolveFeedback(HDBManager manager, Scanner sc) {
         while (true) {
             System.out.println("\n📝 Feedback Management");

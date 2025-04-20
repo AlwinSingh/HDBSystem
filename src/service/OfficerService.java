@@ -66,6 +66,11 @@ public class OfficerService {
         return sb.toString();
     }
 
+    /**
+     * Displays open projects and allows filtering by neighborhood, district, or flat type.
+     *
+     * @param sc Scanner to receive user input.
+     */
     public static void browseAndFilterProjects(Scanner sc) {
         System.out.println("\n🔍 Browse & Filter Available Projects (for reference only)");
     
@@ -153,6 +158,13 @@ public class OfficerService {
         }
     }
 
+    /**
+     * Allows an officer to register interest in a project.
+     * Registration status will be marked as PENDING and saved to CSV.
+     *
+     * @param officer The officer attempting to register.
+     * @param sc      Scanner for input.
+     */
     public static void registerForProject(HDBOfficer officer, Scanner sc) {
         if (officer.getAssignedProject() != null) {
             System.out.println("✅ You are already registered to project: " +
@@ -190,6 +202,11 @@ public class OfficerService {
         }
     }
 
+    /**
+     * Displays full details of the project the officer is assigned to.
+     *
+     * @param officer The logged-in officer.
+     */
     public static void viewAssignedProjectDetails(HDBOfficer officer) {
         Project p = officer.getAssignedProject();
         if (p == null) {
@@ -222,6 +239,13 @@ public class OfficerService {
             .toList();
     }
 
+    /**
+     * Books a flat for an applicant by selecting their NRIC and desired flat type.
+     * This updates the applicant’s status and project flat count.
+     *
+     * @param officer The logged-in officer.
+     * @param sc      Scanner for input.
+     */
     public static void bookFlat(HDBOfficer officer, Scanner sc) {
         Project assigned = officer.getAssignedProject();
         if (assigned == null) {
@@ -319,6 +343,12 @@ public class OfficerService {
             .orElse(null);
     }
 
+    /**
+     * Opens the enquiry handling interface for the officer, allowing them to view and respond to enquiries.
+     *
+     * @param officer The logged-in officer.
+     * @param sc      Scanner for input.
+     */
     public static void handleEnquiries(HDBOfficer officer, Scanner sc) {
         List<Enquiry> projectEnquiries = OfficerService.getPendingEnquiriesForProject(officer);
     
@@ -371,6 +401,13 @@ public class OfficerService {
         return true;
     }
 
+    /**
+     * Generates a receipt for a payment made by an applicant within the officer’s project.
+     * Requires an existing invoice marked as "Awaiting Receipt".
+     *
+     * @param officer The logged-in officer.
+     * @param sc      Scanner for input.
+     */
     public static void generateReceipt(HDBOfficer officer, Scanner sc) {
         if (!"APPROVED".equalsIgnoreCase(officer.getRegistrationStatus())) {
             System.out.println("❌ Access denied. Officer registration status must be APPROVED to generate receipts.");
@@ -454,6 +491,12 @@ public class OfficerService {
         return true;
     }
 
+    /**
+     * Allows the officer to update the physical address and geolocation of their assigned project.
+     *
+     * @param officer The logged-in officer.
+     * @param sc      Scanner for input.
+     */
     public static void updateLocation(HDBOfficer officer, Scanner sc) {
         if (!OfficerService.canUpdateLocation(officer)) {
             System.out.println("❌ Access denied. Officer registration must be APPROVED and a project must be assigned.");
@@ -506,6 +549,12 @@ public class OfficerService {
         return true;
     }
 
+    /**
+     * Adds a new amenity to the officer’s assigned project or updates an existing one.
+     *
+     * @param officer The logged-in officer.
+     * @param sc      Scanner for input.
+     */
     public static void addOrUpdateAmenity(HDBOfficer officer, Scanner sc) {
         if (!OfficerService.canManageAmenities(officer)) {
             System.out.println("❌ Access denied. Officer registration status must be APPROVED to manage amenities.");

@@ -1,4 +1,4 @@
-package src;
+package src.test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -8,9 +8,17 @@ import src.service.AuthService;
 import src.service.OfficerMenu;
 
 /**
- * Automated functional test for Officer menu.
+ * Standalone test script to simulate a full officer interaction flow.
+ * Covers project registration, updating location, booking flats,
+ * handling enquiries, and generating receipts.
  */
 public class OfficerTest {
+    /**
+     * Runs an automated officer test by injecting simulated console inputs.
+     * Exercises key functionalities in the Officer dashboard.
+     *
+     * @param args Not used.
+     */
     public static void main(String[] args) {
         InputStream originalIn = System.in;
 

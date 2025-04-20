@@ -2,6 +2,10 @@ package src.model;
 
 import java.time.LocalDate;
 
+/**
+ * Represents a general payment in the system.
+ * Includes core payment metadata like ID, amount, date, method, and status.
+ */
 public class Payment {
     protected int paymentId;
     protected double amount;
@@ -23,12 +27,22 @@ public class Payment {
         this.status = status;
     }
 
+    /**
+     * Attempts to mark the payment as processed.
+     *
+     * @return True if payment was pending and is now processed; false otherwise.
+     */
     public boolean processPayment() {
         if (!PaymentStatusType.PENDING.name().equalsIgnoreCase(status)) return false;
         this.status = PaymentStatusType.PROCESSED.name();
         return true;
     }
 
+    /**
+     * Attempts to refund the payment if it was already processed.
+     *
+     * @return True if refund was successful; false otherwise.
+     */
     public boolean refundPayment() {
         if (!PaymentStatusType.PROCESSED.name().equalsIgnoreCase(status)) return false;
         this.status = PaymentStatusType.REFUNDED.name();
@@ -53,6 +67,11 @@ public class Payment {
         this.status = status;
     }
 
+    /**
+     * Returns a concise string summary of this payment's details.
+     *
+     * @return A line summarising this payment.
+     */
     public String toSummary() {
         return "Payment #" + paymentId + " | $" + amount + " | " + date + " | " + method + " | Status: " + status;
     }

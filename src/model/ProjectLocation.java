@@ -3,6 +3,10 @@ package src.model;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Represents the geographical location of a project, including district, town,
+ * address, and coordinates.
+ */
 public class ProjectLocation {
     private int locationId;
     private String district;
@@ -20,10 +24,20 @@ public class ProjectLocation {
         this.lng = lng;
     }
 
+    /**
+     * Returns a formatted address combining street, town, and district.
+     *
+     * @return Full address as a string.
+     */
     public String getFullAddress() {
         return address + ", " + town + ", " + district;
     }
 
+    /**
+     * Stub for future integration — returns a list of nearby transport nodes.
+     *
+     * @return Currently returns an empty list.
+     */
     public List<String> getNearbyTransport() {
         // Stub - future implementation
         return new ArrayList<>();

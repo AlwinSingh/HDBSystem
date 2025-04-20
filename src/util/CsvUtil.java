@@ -5,6 +5,12 @@ import java.util.*;
 
 public class CsvUtil {
 
+    /**
+     * Reads a CSV file and returns a list of rows, where each row is a map of column names to values.
+     *
+     * @param path The file path.
+     * @return Parsed list of rows.
+     */
     public static List<Map<String, String>> read(String path) {
         List<Map<String, String>> result = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
@@ -27,8 +33,13 @@ public class CsvUtil {
         }
         return result;
     }
-    
 
+    /**
+     * Writes a list of CSV rows to the specified file path.
+     *
+     * @param path The file path.
+     * @param rows The list of rows to write.
+     */
     public static void write(String path, List<Map<String, String>> rows) {
         if (rows == null || rows.isEmpty()) return;
 
@@ -50,6 +61,12 @@ public class CsvUtil {
         }
     }
 
+    /**
+     * Appends a single row to an existing CSV file.
+     *
+     * @param path   The file path.
+     * @param newRow The row to append.
+     */
     public static void append(String path, Map<String, String> newRow) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(path, true))) {
             List<String> headers = new ArrayList<>(newRow.keySet());

@@ -8,6 +8,12 @@ import static src.util.CsvUtil.*;
 public class ReportCsvMapper {
     private static final String CSV_PATH = FilePath.REPORT_LIST_FILE;
 
+    /**
+     * Loads all report entries from the CSV file and parses them into Report objects.
+     * Ignores rows with parsing issues silently.
+     *
+     * @return List of reports.
+     */
     public static List<Report> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);
         List<Report> list = new ArrayList<>();
@@ -38,6 +44,11 @@ public class ReportCsvMapper {
         return list;
     }
 
+    /**
+     * Saves a complete list of reports to the CSV file, overwriting previous entries.
+     *
+     * @param reports The reports to save.
+     */
     public static void saveAll(List<Report> reports) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (Report r : reports) {

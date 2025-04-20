@@ -1,4 +1,4 @@
-package src;
+package src.test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -8,9 +8,18 @@ import src.service.ApplicantMenu;
 import src.service.AuthService;
 
 /**
- * Standalone test for full Applicant flow.
+ * Standalone test script to simulate a full applicant interaction flow.
+ * Includes applying for a project, managing applications, paying invoices,
+ * viewing receipts, submitting enquiries/feedback, and changing password.
  */
 public class ApplicantTest {
+
+    /**
+     * Runs a full test scenario for an applicant using input stream simulation.
+     * Automatically walks through the dashboard options and prints status updates.
+     *
+     * @param args Not used.
+     */
     public static void main(String[] args) {
         InputStream originalIn = System.in;
 

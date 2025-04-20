@@ -10,6 +10,11 @@ import static src.util.CsvUtil.*;
 public class PaymentCsvMapper {
     private static final String CSV_PATH = FilePath.PAYMENT_LIST_FILE;
 
+    /**
+     * Loads all payments from the CSV file and converts them to Payment objects.
+     *
+     * @return List of payments.
+     */
     public static List<Payment> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);
         List<Payment> list = new ArrayList<>();
@@ -39,6 +44,11 @@ public class PaymentCsvMapper {
         return list;
     }
 
+    /**
+     * Saves the full list of payments to the CSV file, overwriting existing data.
+     *
+     * @param payments List of Payment objects.
+     */
     public static void saveAll(List<Payment> payments) {
         List<Map<String, String>> rows = payments.stream()
             .map(PaymentCsvMapper::toCsvRow)
@@ -47,10 +57,20 @@ public class PaymentCsvMapper {
         write(CSV_PATH, rows);
     }
 
+    /**
+     * Appends a new payment record to the CSV.
+     *
+     * @param payment Payment object to append.
+     */
     public static void append(Payment payment) {
         CsvUtil.append(CSV_PATH, toCsvRow(payment));
     }
 
+    /**
+     * Updates an existing payment by ID and persists the change to CSV.
+     *
+     * @param updated The updated Payment object.
+     */
     public static void update(Payment updated) {
         List<Payment> all = loadAll();
         for (int i = 0; i < all.size(); i++) {
@@ -61,10 +81,13 @@ public class PaymentCsvMapper {
         }
         saveAll(all);  // Persist the updated list
     }
-    
-    
-    
 
+    /**
+     * Converts a Payment object into a CSV-compatible row.
+     *
+     * @param p The payment object.
+     * @return Map representing a single CSV row.
+     */
     private static Map<String, String> toCsvRow(Payment p) {
         Map<String, String> row = new LinkedHashMap<>();
         row.put("PaymentID", String.valueOf(p.getPaymentId()));

@@ -2,6 +2,10 @@ package src.model;
 
 import java.time.LocalDate;
 
+/**
+ * Extends Payment to include invoice-specific details such as project name, flat type,
+ * and the applicant's NRIC.
+ */
 public class Invoice extends Payment {
     private String applicantNRIC;  // For tracking
     private String projectName;
@@ -15,6 +19,11 @@ public class Invoice extends Payment {
         this.flatType = flatType;
     }
 
+    /**
+     * Generates a formatted invoice string showing all relevant fields.
+     *
+     * @return Invoice details as a string.
+     */
     public String generateInvoice() {
         return String.format(
             "🧾 Invoice #%d\nApplicant: %s\nProject: %s\nFlat Type: %s\nAmount: $%.2f\nDate: %s\nMethod: %s\nStatus: %s",

@@ -7,6 +7,11 @@ import java.util.List;
 
 public class ProjectLoader {
 
+    /**
+     * Loads all projects from the CSV file and attaches related amenities.
+     *
+     * @return List of all loaded Project objects.
+     */
     public static List<Project> loadProjects() {
         List<Project> projects = ProjectCsvMapper.loadAll();
 

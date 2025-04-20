@@ -4,8 +4,18 @@ import src.util.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Generates booking reports based on applications, invoices, and receipts.
+ * Supports filtering by project or manager.
+ */
 public class ReportGenerator {
 
+    /**
+     * Generates reports for all applicants who have successfully booked flats.
+     * Each report includes invoice and optional receipt details.
+     *
+     * @return A list of report entries.
+     */
     public List<Report> generateAllReports() {
         List<Applicant> applicants = ApplicantCsvMapper.loadAll();
         List<Invoice> invoices = InvoiceCsvMapper.loadAll();
@@ -56,14 +66,25 @@ public class ReportGenerator {
     
         return reports;
     }
-    
 
+    /**
+     * Filters reports for a specific project name.
+     *
+     * @param projectName The project to filter by.
+     * @return A list of reports belonging to the specified project.
+     */
     public List<Report> generateReportsByProject(String projectName) {
         return generateAllReports().stream()
             .filter(r -> r.getProjectName().equalsIgnoreCase(projectName))
             .collect(Collectors.toList());
     }
 
+    /**
+     * Filters reports based on projects assigned to a specific HDB manager.
+     *
+     * @param manager The manager whose projects should be included.
+     * @return A list of reports across the manager's projects.
+     */
     public List<Report> generateReportsByManager(HDBManager manager) {
         List<Project> allProjects = ProjectCsvMapper.loadAll();
 

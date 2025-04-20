@@ -3,6 +3,10 @@ package src.model;
 import java.time.LocalDate;
 import java.util.UUID;
 
+/**
+ * Represents a receipt issued for a completed payment.
+ * Contains applicant info, project details, and an embedded invoice.
+ */
 public class Receipt {
     private final String applicantName;
     private final String applicantNRIC;
@@ -30,14 +34,25 @@ public class Receipt {
         this.issuedDate = LocalDate.now();
     }
 
+    /**
+     * Generates a unique receipt ID using UUID.
+     *
+     * @return A formatted receipt ID string.
+     */
     private String generateReceiptId() {
         return "R-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
+    /**
+     * Simulates the generation of a PDF receipt (placeholder).
+     */
     public void generatePDF() {
         System.out.println("🧾 PDF receipt generated for " + applicantName);
     }
 
+    /**
+     * Returns a formatted string displaying all receipt and payment details.
+     */
     @Override
     public String toString() {
         return "📄 RECEIPT #" + receiptId + "\n" +
@@ -86,10 +101,18 @@ public class Receipt {
     }
 
     // === Setters for deserialization ===
+
+    /**
+     * Sets the date this receipt was issued.
+     * Used during deserialization or CSV loading.
+     */
     public void setIssuedDate(LocalDate issuedDate) {
         this.issuedDate = issuedDate;
     }
 
+    /**
+     * Sets the receipt ID manually — typically used during CSV deserialization.
+     */
     public void setReceiptId(String receiptId) {
         this.receiptId = receiptId;
     }

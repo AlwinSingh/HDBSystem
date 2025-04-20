@@ -10,6 +10,11 @@ import static src.util.CsvUtil.*;
 public class InvoiceCsvMapper {
     private static final String CSV_PATH = FilePath.INVOICE_LIST_FILE;
 
+    /**
+     * Loads all invoices from the CSV file and parses them into Invoice objects.
+     *
+     * @return List of invoices.
+     */
     public static List<Invoice> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);
         List<Invoice> list = new ArrayList<>();
@@ -47,6 +52,11 @@ public class InvoiceCsvMapper {
         return list;
     }
 
+    /**
+     * Saves a list of invoices to the CSV file, overwriting all existing records.
+     *
+     * @param invoices The invoices to write.
+     */
     public static void saveAll(List<Invoice> invoices) {
         List<Map<String, String>> rows = new ArrayList<>();
 
@@ -67,6 +77,11 @@ public class InvoiceCsvMapper {
         write(CSV_PATH, rows);
     }
 
+    /**
+     * Appends a new invoice record to the CSV file.
+     *
+     * @param invoice The invoice to add.
+     */
     public static void append(Invoice invoice) {
         Map<String, String> row = new LinkedHashMap<>();
         row.put("InvoiceID", String.valueOf(invoice.getPaymentId()));
@@ -81,7 +96,12 @@ public class InvoiceCsvMapper {
     
         CsvUtil.append(CSV_PATH, row);
     }
-    
+
+    /**
+     * Updates an invoice in the CSV file by replacing the matching PaymentID.
+     *
+     * @param updated The updated invoice to save.
+     */
     public static void update(Invoice updated) {
         List<Invoice> all = loadAll();
         for (int i = 0; i < all.size(); i++) {

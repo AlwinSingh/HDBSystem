@@ -3,6 +3,10 @@ package src.model;
 import java.time.LocalDate;
 import java.util.*;
 
+/**
+ * Represents an HDB housing project, including configuration of flats, officers, manager,
+ * pricing, dates, and amenities.
+ */
 public class Project {
     private String projectName;
     private String neighborhood;
@@ -78,6 +82,12 @@ public class Project {
         return officerSlots;
     }
 
+    /**
+     * Returns remaining units for the specified flat type.
+     *
+     * @param flatType "2-Room" or "3-Room".
+     * @return Number of units available.
+     */
     public int getRemainingFlats(String flatType) {
         return switch (flatType) {
             case "2-Room" -> availableFlats2Room;
@@ -194,24 +204,42 @@ public class Project {
     }
 
     // Helper methods
+
+    /**
+     * Marks the project as open (visible to public).
+     */
     public void openProject() {
         this.isVisible = true;
     }
 
+    /**
+     * Marks the project as closed (hidden from public view).
+     */
     public void closeProject() {
         this.isVisible = false;
     }
 
+    /**
+     * Adds an officer to the project if slots are available.
+     */
     public void addOfficer(HDBOfficer o) {
         if (officers.size() < officerSlots) {
             officers.add(o);
         }
     }
 
+    /**
+     * Removes an officer from the project.
+     */
     public void removeOfficer(HDBOfficer o) {
         officers.remove(o);
     }
 
+    /**
+     * Decreases the flat count for the given type, if not already 0.
+     *
+     * @param flatType "2-Room" or "3-Room"
+     */
     public void decrementFlatCount(String flatType) {
         if (flatType.equals("2-Room")) {
             availableFlats2Room = Math.max(0, availableFlats2Room - 1);
@@ -220,18 +248,38 @@ public class Project {
         }
     }
 
+    /**
+     * Adds an officer's NRIC to the project.
+     *
+     * @param nric Officer's NRIC.
+     */
     public void addOfficerNric(String nric) {
         officerNRICs.add(nric);
     }
 
+    /**
+     * Removes an officer's NRIC from the project.
+     *
+     * @param nric Officer's NRIC.
+     */
     public void removeOfficerNric(String nric) {
         officerNRICs.remove(nric);
     }
 
+    /**
+     * Adds an applicant's NRIC to the project.
+     *
+     * @param nric Applicant's NRIC.
+     */
     public void addApplicantNric(String nric) {
         applicantNRICs.add(nric);
     }
 
+    /**
+     * Removes an applicant's NRIC from the project.
+     *
+     * @param nric Applicant's NRIC.
+     */
     public void removeApplicantNric(String nric) {
         applicantNRICs.remove(nric);
     }

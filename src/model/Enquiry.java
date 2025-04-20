@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Represents an enquiry made by an applicant about a project.
+ * Includes content, status, project info, and reply history.
+ */
 public class Enquiry {
     public static final String STATUS_PENDING = "PENDING";
     public static final String STATUS_OPEN = "OPEN";
@@ -30,12 +34,23 @@ public class Enquiry {
 
     // === Business Logic ===
 
+    /**
+     * Adds a reply to the enquiry and closes the enquiry automatically.
+     *
+     * @param content   The reply message.
+     * @param responder The user responding (officer or manager).
+     */
     public void addReply(String content, User responder) {
         int nextId = replies.size() + 1;
         replies.add(new EnquiryReply(nextId, content, responder)); 
         close();
     }
-    
+
+    /**
+     * Adds an already-created reply and closes the enquiry.
+     *
+     * @param reply A reply object.
+     */
     public void addReply(EnquiryReply reply) {
         replies.add(reply);
         close(); // Auto-close on reply
@@ -45,12 +60,18 @@ public class Enquiry {
         this.content = newContent;
     }
 
+    /**
+     * Marks the enquiry as deleted, clears content and replies.
+     */
     public void delete() {
         this.content = "[deleted]";
         this.status = STATUS_DELETED;
         this.replies.clear();
     }
 
+    /**
+     * Marks the enquiry as closed.
+     */
     public void close() {
         this.status = STATUS_CLOSED;
     }
@@ -105,16 +126,27 @@ public class Enquiry {
 
     // === Compatibility Methods ===
 
+    /**
+     * Returns a mock Project object using the project name field (for backward compatibility).
+     */
     public Project getProject() {
         return new Project(projectName, "", null, null, 0, 0, 0, null);
     }
 
+    /**
+     * Returns a mock Applicant object using the applicant NRIC and name (for compatibility).
+     */
     public Applicant getApplicant() {
         return new Applicant(applicantNric, "", applicantName, 0, "");
     }
 
     // === CSV / Debug Formatting ===
 
+    /**
+     * Returns a pipe-delimited string of all replies in formatted text.
+     *
+     * @return Combined replies for display or export.
+     */
     public String getFormattedReplies() {
         return replies.stream()
             .map(r -> r.getResponder().getName() + ": " + r.getContent())

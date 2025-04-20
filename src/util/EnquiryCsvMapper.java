@@ -5,12 +5,26 @@ import src.model.*;
 import java.util.*;
 
 public class EnquiryCsvMapper {
+
+    /**
+     * Parses a string safely into an integer, returning a default value if it fails.
+     *
+     * @param s   The string input.
+     * @param def The default value.
+     * @return Parsed integer or default.
+     */
     private static int safeParseInt(String s, int def) {
         if (s == null || s.trim().isEmpty()) return def;
         try { return Integer.parseInt(s.trim()); }
         catch (NumberFormatException e) { return def; }
     }
 
+    /**
+     * Converts a CSV row into an Enquiry object, including all replies.
+     *
+     * @param row The CSV row.
+     * @return An Enquiry object.
+     */
     public static Enquiry fromCsvRow(Map<String, String> row) {
         int id = safeParseInt(row.get("EnquiryId"), 0);
         String content = row.getOrDefault("Content", "").trim();
@@ -41,6 +55,12 @@ public class EnquiryCsvMapper {
         return enquiry;
     }
 
+    /**
+     * Converts an Enquiry object into a CSV row map.
+     *
+     * @param e The enquiry.
+     * @return The CSV row representation.
+     */
     public static Map<String, String> toCsvRow(Enquiry e) {
         Map<String, String> row = new LinkedHashMap<>();
         row.put("EnquiryId", String.valueOf(e.getEnquiryId()));
@@ -59,6 +79,11 @@ public class EnquiryCsvMapper {
         return row;
     }
 
+    /**
+     * Loads all enquiries from the CSV file, skipping rows with missing IDs and handling reply parsing.
+     *
+     * @return List of enquiries.
+     */
     public static List<Enquiry> loadAll() {
         List<Map<String, String>> rawRows = CsvUtil.read(FilePath.ENQUIRY_LIST_FILE);
         List<Enquiry> enquiries = new ArrayList<>();
@@ -79,6 +104,11 @@ public class EnquiryCsvMapper {
         return enquiries;
     }
 
+    /**
+     * Saves a full list of enquiries to the CSV file.
+     *
+     * @param enquiries The list to save.
+     */
     public static void saveAll(List<Enquiry> enquiries) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (Enquiry e : enquiries) {
@@ -87,10 +117,20 @@ public class EnquiryCsvMapper {
         CsvUtil.write(FilePath.ENQUIRY_LIST_FILE, rows);
     }
 
+    /**
+     * Appends a new enquiry to the CSV file.
+     *
+     * @param newEnquiry The enquiry to add.
+     */
     public static void add(Enquiry newEnquiry) {
         CsvUtil.append(FilePath.ENQUIRY_LIST_FILE, toCsvRow(newEnquiry));
     }
-    
+
+    /**
+     * Updates an existing enquiry by ID and saves the new list to CSV.
+     *
+     * @param updatedEnquiry The updated enquiry.
+     */
     public static void update(Enquiry updatedEnquiry) {
         List<Enquiry> all = loadAll();
         for (int i = 0; i < all.size(); i++) {

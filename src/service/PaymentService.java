@@ -15,17 +15,30 @@ public class PaymentService {
     }
 
     // Append new payment to disk and in-memory list
+    /**
+     * Adds a new payment to both in-memory list and CSV storage.
+     *
+     * @param payment The payment to be added.
+     */
     public static void addPayment(Payment payment) {
         payments.add(payment);
         PaymentCsvMapper.append(payment);
     }
 
-    // Retrieve latest in-memory list
+    /**
+     * Retrieves the full list of payments currently loaded in memory.
+     *
+     * @return List of all payments.
+     */
     public static List<Payment> getAllPayments() {
         return payments;
     }
 
-    // Get next ID from memory (or fallback to reload if needed)
+    /**
+     * Generates the next unique payment ID based on the highest existing one.
+     *
+     * @return A new unique payment ID.
+     */
     public static int getNextPaymentId() {
         return payments.stream()
             .mapToInt(Payment::getPaymentId)
@@ -33,7 +46,13 @@ public class PaymentService {
             .orElse(0) + 1;
     }
 
-    // Get payments by NRIC if method exists
+    /**
+     * Retrieves all payments associated with a specific applicant's NRIC.
+     * Uses reflection to invoke getApplicantNRIC() if present.
+     *
+     * @param nric The applicant's NRIC.
+     * @return List of matching payments.
+     */
     public static List<Payment> getPaymentsByNRIC(String nric) {
         return payments.stream()
                 .filter(p -> {
@@ -47,7 +66,11 @@ public class PaymentService {
                 .collect(Collectors.toList());
     }
 
-    // Update payment in both CSV and memory
+    /**
+     * Updates an existing payment in both memory and persistent CSV.
+     *
+     * @param updated The updated Payment object.
+     */
     public static void updatePayment(Payment updated) {
         PaymentCsvMapper.update(updated);  // Write to CSV
         for (int i = 0; i < payments.size(); i++) {

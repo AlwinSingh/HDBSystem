@@ -8,6 +8,11 @@ import static src.util.CsvUtil.*;
 public class FeedbackCsvMapper {
     private static final String CSV_PATH = FilePath.FEEDBACK_LIST_FILE;
 
+    /**
+     * Loads all feedback records from the CSV file and parses them into Feedback objects.
+     *
+     * @return List of Feedback entries.
+     */
     public static List<Feedback> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);
         List<Feedback> list = new ArrayList<>();
@@ -44,6 +49,11 @@ public class FeedbackCsvMapper {
         return list;
     }
 
+    /**
+     * Saves a complete list of feedback entries to the CSV, overwriting existing data.
+     *
+     * @param feedbacks List of Feedback objects to save.
+     */
     public static void saveAll(List<Feedback> feedbacks) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (Feedback fb : feedbacks) {

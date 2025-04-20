@@ -6,6 +6,11 @@ import java.util.*;
 public class AmenitiesCsvMapper {
     private static final String CSV = FilePath.AMENITIES_LIST_FILE;
 
+    /**
+     * Loads all amenities from the CSV file into a list of Amenities objects.
+     *
+     * @return List of amenities.
+     */
     public static List<Amenities> loadAll() {
         List<Map<String,String>> rows = CsvUtil.read(CSV);
         List<Amenities> out = new ArrayList<>();
@@ -22,6 +27,11 @@ public class AmenitiesCsvMapper {
         return out;
     }
 
+    /**
+     * Saves a full list of amenities to the CSV, overwriting existing data.
+     *
+     * @param all The list of amenities to save.
+     */
     public static void saveAll(List<Amenities> all) {
         List<Map<String,String>> rows = new ArrayList<>();
         for (Amenities a : all) {
@@ -36,10 +46,21 @@ public class AmenitiesCsvMapper {
         CsvUtil.write(CSV, rows);
     }
 
+    /**
+     * Appends a new amenity to the CSV file.
+     *
+     * @param amenity The amenity to add.
+     */
     public static void add(Amenities amenity) {
         CsvUtil.append(CSV, toCsvRow(amenity));
     }
 
+    /**
+     * Converts an Amenity object to a CSV row format.
+     *
+     * @param a The amenity.
+     * @return Map representing the CSV row.
+     */
     private static Map<String, String> toCsvRow(Amenities a) {
         Map<String, String> m = new LinkedHashMap<>();
         m.put("Project Name", a.getProjectName());
@@ -50,6 +71,11 @@ public class AmenitiesCsvMapper {
         return m;
     }
 
+    /**
+     * Updates an existing amenity by matching its ID and replacing its data.
+     *
+     * @param updatedAmenity The updated amenity object.
+     */
     public static void update(Amenities updatedAmenity) {
         List<Amenities> all = loadAll();
         for (int i = 0; i < all.size(); i++) {

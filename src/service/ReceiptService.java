@@ -14,33 +14,57 @@ public class ReceiptService {
         receipts = ReceiptCsvMapper.loadAll();
     }
 
-    // Add a new receipt and persist it
+    /**
+     * Adds a new receipt to the in-memory list and appends it to the CSV.
+     *
+     * @param receipt The receipt to be added.
+     */
     public static void addReceipt(Receipt receipt) {
         receipts.add(receipt);
         ReceiptCsvMapper.append(receipt); // Efficient: Append only the new one
     }
-    
 
-    // Get all receipts
+
+    /**
+     * Retrieves all receipts from the CSV file.
+     *
+     * @return List of all receipts in the system.
+     */
     public static List<Receipt> getAllReceipts() {
         return ReceiptCsvMapper.loadAll(); // or your in-memory list
     }
-    
 
-    // Get receipts by applicant NRIC
+
+    /**
+     * Retrieves receipts submitted by a specific applicant.
+     *
+     * @param nric Applicant's NRIC.
+     * @return List of matching receipts.
+     */
     public static List<Receipt> getReceiptsByNRIC(String nric) {
         return receipts.stream()
                 .filter(r -> r.getApplicantNRIC().equalsIgnoreCase(nric))
                 .collect(Collectors.toList());
     }
 
-    // Get receipts by project name
+    /**
+     * Retrieves receipts associated with a given project.
+     *
+     * @param projectName The name of the project.
+     * @return List of receipts for the project.
+     */
     public static List<Receipt> getReceiptsByProject(String projectName) {
         return receipts.stream()
                 .filter(r -> r.getProjectName().equalsIgnoreCase(projectName))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Finds a receipt based on a given invoice ID.
+     *
+     * @param invoiceId The ID of the invoice.
+     * @return Matching receipt or null if not found.
+     */
     public static Receipt findByInvoiceId(int invoiceId) {
         return ReceiptCsvMapper.loadAll().stream()
             .filter(r -> r.getInvoice().getPaymentId() == invoiceId)

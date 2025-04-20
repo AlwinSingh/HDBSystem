@@ -11,6 +11,12 @@ import static src.util.CsvUtil.*;
 public class ReceiptCsvMapper {
     private static final String CSV_PATH = FilePath.RECEIPT_LIST_FILE;
 
+    /**
+     * Loads all receipt records from the CSV file and constructs Receipt objects.
+     * Skips rows with missing or malformed fields.
+     *
+     * @return List of valid Receipt objects.
+     */
     public static List<Receipt> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);
         List<Receipt> list = new ArrayList<>();
@@ -56,6 +62,11 @@ public class ReceiptCsvMapper {
         return list;
     }
 
+    /**
+     * Writes the full list of receipts to the CSV file, replacing all existing records.
+     *
+     * @param receipts The receipts to write.
+     */
     public static void saveAll(List<Receipt> receipts) {
         List<Map<String, String>> rows = new ArrayList<>();
 
@@ -77,6 +88,11 @@ public class ReceiptCsvMapper {
         write(CSV_PATH, rows);
     }
 
+    /**
+     * Appends a single receipt record to the CSV file.
+     *
+     * @param r The Receipt object to append.
+     */
     public static void append(Receipt r) {
         Map<String, String> row = new LinkedHashMap<>();
         row.put("ReceiptID", r.getReceiptId());
@@ -90,6 +106,5 @@ public class ReceiptCsvMapper {
         row.put("Method", r.getInvoice().getMethodLabel());
         row.put("Status", r.getInvoice().getStatus());
         CsvUtil.append(FilePath.RECEIPT_LIST_FILE, row);
-    }   
-    
+    }
 }

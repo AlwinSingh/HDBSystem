@@ -1,3 +1,4 @@
+
 package src.service;
 
 import java.util.List;
@@ -6,8 +7,18 @@ import java.util.Scanner;
 import src.model.*;
 import src.util.*;
 
+/**
+ * Handles authentication and account-related services for Applicants, Officers, and Managers.
+ */
 public class AuthService {
 
+    /**
+     * Authenticates a user by verifying NRIC and password across all user types.
+     *
+     * @param nric     The user's NRIC.
+     * @param password The user's password.
+     * @return A matching User object if credentials are valid, or null if not.
+     */
     public static User authenticate(String nric, String password) {
         // 1. Try ApplicantList
         List<Map<String, String>> applicants = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
@@ -86,6 +97,14 @@ public class AuthService {
 
         return null;
     }
+
+    /**
+     * Allows the user to change their password after verifying the current one.
+     *
+     * @param user The logged-in user.
+     * @param sc   Scanner for input.
+     * @return True if password was changed successfully; false otherwise.
+     */
     public static boolean changePassword(User user, Scanner sc) {
         System.out.print("Enter current password: ");
         String current = sc.nextLine().trim();
@@ -93,16 +112,16 @@ public class AuthService {
             System.out.println("❌ Incorrect current password.");
             return false;
         }
-    
+
         System.out.print("Enter new password: ");
         String newPass = sc.nextLine().trim();
         if (newPass.isEmpty()) {
             System.out.println("❌ Password cannot be empty.");
             return false;
         }
-    
+
         user.setPassword(newPass);
-    
+
         if (user instanceof HDBManager) {
             ManagerCsvMapper.updateManager((HDBManager) user);
         } else if (user instanceof HDBOfficer) {
@@ -110,14 +129,15 @@ public class AuthService {
         } else if (user instanceof Applicant) {
             ApplicantCsvMapper.updateApplicant((Applicant) user);
         }
-    
+
         System.out.println("✅ Password changed successfully. You will be logged out.");
         AuthService.logout();  // ✅ Force logout immediately
         return true;
     }
-    
-    
 
+    /**
+     * Logs out the current user session.
+     */
     public static void logout() {
         System.out.println("👋 Logging out...");
     }

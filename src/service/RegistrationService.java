@@ -6,6 +6,12 @@ import src.util.ApplicantCsvMapper;
 
 public class RegistrationService {
 
+    /**
+     * Handles the full applicant registration flow.
+     * Includes input validation, NRIC format check, and CSV persistence.
+     *
+     * @param sc Scanner for user input.
+     */
     public static void registerApplicant(Scanner sc) {
         String nric = promptValidNric(sc);
         if (nric == null) return;
@@ -42,13 +48,27 @@ public class RegistrationService {
         ApplicantCsvMapper.save(applicant);
         System.out.println("✅ Applicant created. Default password is: password");
     }
-    
 
+
+    /**
+     * Prompts the user for input using a message and returns trimmed text.
+     *
+     * @param sc Scanner for input.
+     * @param message Message to display.
+     * @return User input as trimmed string.
+     */
     private static String prompt(Scanner sc, String message) {
         System.out.print(message);
         return sc.nextLine().trim();
     }
 
+    /**
+     * Prompts the user to enter a valid integer.
+     *
+     * @param sc Scanner for input.
+     * @param message Message to display.
+     * @return Parsed integer from user.
+     */
     private static int promptInt(Scanner sc, String message) {
         while (true) {
             System.out.print(message);
@@ -60,6 +80,12 @@ public class RegistrationService {
         }
     }
 
+    /**
+     * Prompts for an NRIC and checks if it matches the expected Singapore NRIC format.
+     *
+     * @param sc Scanner for input.
+     * @return A valid NRIC string or null if invalid.
+     */
     private static String promptValidNric(Scanner sc) {
         System.out.print("Enter NRIC: ");
         String nric = sc.nextLine().trim().toUpperCase();

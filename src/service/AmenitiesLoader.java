@@ -8,8 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Loads and filters amenities based on a given project name.
+ */
 public class AmenitiesLoader {
 
+    /**
+     * Returns a list of amenities that belong to the specified project.
+     *
+     * @param projectName The name of the project to search for.
+     * @return A list of matching amenities.
+     */
     public static List<Amenities> loadAmenitiesByProject(String projectName) {
         List<Amenities> result = new ArrayList<>();
         List<Map<String, String>> rows = CsvUtil.read(FilePath.AMENITIES_LIST_FILE);

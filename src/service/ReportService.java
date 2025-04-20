@@ -11,7 +11,10 @@ public class ReportService {
 
     private static List<Report> reports = ReportCsvMapper.loadAll();
 
-    // Generate reports and persist them
+    /**
+     * Generates reports for all bookings and saves them to the CSV.
+     * Overwrites existing report data in memory and file.
+     */
     public static void generateAndSaveReports() {
         ReportGenerator generator = new ReportGenerator();
         reports = generator.generateAllReports();
@@ -19,33 +22,58 @@ public class ReportService {
         System.out.println("✅ Reports generated and saved.");
     }
 
-    // Get all reports
+    /**
+     * Returns all generated reports currently stored in memory.
+     *
+     * @return List of all reports.
+     */
     public static List<Report> getAllReports() {
         return reports;
     }
 
-    // Optional: filter by project
+    /**
+     * Filters reports by project name.
+     *
+     * @param projectName The project name to search for.
+     * @return List of reports for that project.
+     */
     public static List<Report> getReportsByProject(String projectName) {
         return reports.stream()
                 .filter(r -> r.getProjectName().equalsIgnoreCase(projectName))
                 .toList();
     }
 
-    // Filter by flat type (e.g., 2-Room, 3-Room)
+    /**
+     * Filters reports by flat type (e.g., 2-Room, 3-Room).
+     *
+     * @param flatType The flat type to filter by.
+     * @return List of matching reports.
+     */
     public static List<Report> getReportsByFlatType(String flatType) {
         return reports.stream()
             .filter(r -> r.getFlatTypeBooked().equalsIgnoreCase(flatType))
             .toList();
     }
 
-    // Filter by payment status (e.g., Processed, Awaiting Payment)
+    /**
+     * Filters reports by payment status (e.g., Processed, Awaiting Payment).
+     *
+     * @param status Payment status to filter by.
+     * @return List of matching reports.
+     */
     public static List<Report> getReportsByPaymentStatus(String status) {
         return reports.stream()
             .filter(r -> r.getPaymentStatus().equalsIgnoreCase(status))
             .toList();
     }
 
-    // Filter by booking date range
+    /**
+     * Filters reports within a booking date range.
+     *
+     * @param start Start date (inclusive).
+     * @param end   End date (inclusive).
+     * @return List of matching reports.
+     */
     public static List<Report> getReportsByBookingDateRange(LocalDate start, LocalDate end) {
         return reports.stream()
             .filter(r -> r.getBookingDate() != null)
@@ -53,7 +81,10 @@ public class ReportService {
             .toList();
     }
 
-    // Optional: pretty print
+    /**
+     * Prints all available reports to the console.
+     * If no reports exist, shows a message.
+     */
     public static void printAllReports() {
         if (reports.isEmpty()) {
             System.out.println("📭 No reports available.");
@@ -65,6 +96,11 @@ public class ReportService {
         }
     }
 
+    /**
+     * Prints a list of filtered reports to the console.
+     *
+     * @param filteredReports The list of reports to display.
+     */
     public static void printReports(List<Report> filteredReports) {
         if (filteredReports == null || filteredReports.isEmpty()) {
             System.out.println("📭 No reports matched the selected filter.");

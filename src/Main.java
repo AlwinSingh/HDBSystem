@@ -9,9 +9,19 @@ import src.service.OfficerMenu;
 import src.service.RegistrationService;
 import src.util.InputValidator;
 
+/**
+ * Entry point of the BTO Application System.
+ * Presents login and registration options and routes users based on their role.
+ */
 public class Main {
     public static final Scanner sc = new Scanner(System.in);
 
+    /**
+     * Starts the main menu loop for the BTO system.
+     * Allows login, registration, or exit.
+     *
+     * @param args Not used.
+     */
     public static void main(String[] args) {
         while (true) {
             System.out.println("\n===== BTO Application System =====");
@@ -33,6 +43,12 @@ public class Main {
         }
     }
 
+    /**
+     * Handles login flow for all user roles (Applicant, Officer, Manager).
+     * Verifies credentials and navigates to the appropriate dashboard.
+     *
+     * @param sc Scanner for user input.
+     */
     private static void handleLogin(Scanner sc) {
         System.out.println("\n🔐 Login");
     
