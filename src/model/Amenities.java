@@ -36,11 +36,6 @@ public class Amenities {
         return distance;
     }
 
-    // Optional: helpful for displaying amenity information
-    public String getAmenityDetails() {
-        return type + ": " + name + " (" + distance + " km away)";
-    }
-
     public String getProjectName() {
         return projectName;
     }
@@ -59,5 +54,9 @@ public class Amenities {
     public void setDistance(double distance) {
         this.distance = distance;
     }
-    
+
+    @Override
+    public String toString() {
+        return String.format("🏞️ Amenity Details:\n - Type    : %s\n - Name    : %s\n - Distance: %.2f km", type, name, distance);
+    }
 }

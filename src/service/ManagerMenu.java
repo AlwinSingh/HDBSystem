@@ -69,8 +69,8 @@ public class ManagerMenu {
                 case "16" -> {
                     if (AuthService.changePassword(manager, sc)) return;
                 }
-                case "0"  -> {
-                    AuthService.logout();
+                case "0" -> {
+                    manager.logout();
                     return;
                 }
                 default -> System.out.println("❌ Invalid input. Please try again.");

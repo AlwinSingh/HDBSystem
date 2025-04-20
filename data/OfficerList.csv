@@ -1,4 +1,4 @@
 RegistrationStatus,NRIC,AssignedProject,Marital Status,Age,Password,Name
 APPROVED,T2109876H,ClementiLake,Single,36,password,Daniel
 APPROVED,S6543210I,Acacia Breeze,Single,28,password,Emily
-,T1234567J,,Married,29,password,David
+PENDING,T1234567J,Acacia Breeze,Married,29,password,David

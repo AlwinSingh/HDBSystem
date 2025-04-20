@@ -44,13 +44,6 @@ public class Receipt {
     }
 
     /**
-     * Simulates the generation of a PDF receipt (placeholder).
-     */
-    public void generatePDF() {
-        System.out.println("🧾 PDF receipt generated for " + applicantName);
-    }
-
-    /**
      * Returns a formatted string displaying all receipt and payment details.
      */
     @Override

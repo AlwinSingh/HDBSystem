@@ -46,32 +46,13 @@ public class Applicant extends User {
     }
 
     /**
-     * Requests withdrawal from the current application.
-     * Updates status to WITHDRAW_REQUESTED.
-     */
-    public void requestWithdrawal() {
-        if (application != null) {
-            application.withdrawRequest();
-        }
-    }
-
-    /**
-     * Prints the current application status to the console, if available.
-     */
-    public void viewApplicationStatus() {
-        if (application != null) {
-            System.out.println("Application status: " + application.getStatus());
-        }
-    }
-
-    /**
      * Indicates whether this user is an HDB officer.
      * Always returns false for applicants.
      *
      * @return false
      */
     public boolean isOfficer() {
-        return false;
+        return (this instanceof HDBOfficer) && this.application == null;
     }
-    
+  
 }

@@ -34,29 +34,6 @@ public class HDBOfficer extends Applicant {
         }
         return false;
     }
-
-    /**
-     * Prints the officer's registration status and details of the assigned project.
-     */
-    public void viewOfficerRegistrationStatus() {
-        System.out.println("🔍 Officer Registration Overview");
-        System.out.println("   📄 Registration Status : " + (registrationStatus != null ? registrationStatus : "N/A"));
-    
-        if (assignedProject != null) {
-            System.out.println("   🏢 Assigned Project     : " + assignedProject.getProjectName());
-            System.out.println("   📍 Neighborhood        : " + assignedProject.getNeighborhood());
-            System.out.println("   🗓️ Application Period  : " + assignedProject.getOpenDate() + " to " + assignedProject.getCloseDate());
-            System.out.println("   🧍 Officer Slots       : " + assignedProject.getOfficerSlots());
-            System.out.println("   🏠 2-Room Units Left   : " + assignedProject.getRemainingFlats("2-Room"));
-            System.out.println("   💰 2-Room Price        : $" + String.format("%.2f", assignedProject.getPrice2Room()));
-            System.out.println("   🏠 3-Room Units Left   : " + assignedProject.getRemainingFlats("3-Room"));
-            System.out.println("   💰 3-Room Price        : $" + String.format("%.2f", assignedProject.getPrice3Room()));
-            System.out.println("   👀 Public Visibility   : " + (assignedProject.isVisible() ? "Yes ✅" : "No ❌"));
-        } else {
-            System.out.println("   🛑 No assigned project.");
-        }
-    }
-
     /**
      * Books a flat for an applicant if assigned to the same project and already approved.
      */

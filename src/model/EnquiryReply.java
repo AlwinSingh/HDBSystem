@@ -19,24 +19,6 @@ public class EnquiryReply {
         this.timestamp = LocalDate.now();
         this.responderRole = (responder instanceof HDBManager) ? "Manager" : "Officer";
     }
-    // === Business Logic ===
-
-    /**
-     * Updates the reply content and refreshes the timestamp to now.
-     *
-     * @param newContent Updated reply text.
-     */
-    public void editReply(String newContent) {
-        this.content = newContent;
-        this.timestamp = LocalDate.now(); // update timestamp on edit
-    }
-
-    /**
-     * Marks the reply content as deleted.
-     */
-    public void deleteReply() {
-        this.content = "[deleted]";
-    }
 
     // === Getters ===
     public int getReplyId() {

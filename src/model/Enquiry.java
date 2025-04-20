@@ -120,26 +120,6 @@ public class Enquiry {
         this.status = status;
     }
 
-    public void setClosed(boolean closed) {
-        this.status = closed ? STATUS_CLOSED : STATUS_OPEN;
-    }
-
-    // === Compatibility Methods ===
-
-    /**
-     * Returns a mock Project object using the project name field (for backward compatibility).
-     */
-    public Project getProject() {
-        return new Project(projectName, "", null, null, 0, 0, 0, null);
-    }
-
-    /**
-     * Returns a mock Applicant object using the applicant NRIC and name (for compatibility).
-     */
-    public Applicant getApplicant() {
-        return new Applicant(applicantNric, "", applicantName, 0, "");
-    }
-
     // === CSV / Debug Formatting ===
 
     /**

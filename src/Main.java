@@ -101,7 +101,6 @@ public class Main {
             System.out.println("🔓 Logged in as Applicant (" + applicant.getNric() + ")");
             ApplicantMenu.show(applicant);
         }
-    }
-    
+    }   
 
 }

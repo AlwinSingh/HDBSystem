@@ -46,7 +46,7 @@ public class OfficerMenu {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1" -> viewRegistrationStatus(officer);
+                case "1" -> OfficerService.viewOfficerRegistrationStatus(officer);
                 case "2" -> OfficerService.browseAndFilterProjects(sc);
                 case "3" -> OfficerService.registerForProject(officer, sc);
                 case "4" -> OfficerService.viewAssignedProjectDetails(officer);
@@ -69,20 +69,11 @@ public class OfficerMenu {
                     }
                 }
                 case "0" -> {
-                    AuthService.logout();
+                    officer.logout();
                     return;
                 }
                 default -> System.out.println("❌ Invalid input. Please try again.");
             }
         }
-    }
-
-    /**
-     * Displays the officer's registration status for their current assigned project.
-     *
-     * @param officer The logged-in officer.
-     */
-    private static void viewRegistrationStatus(HDBOfficer officer) {
-        officer.viewOfficerRegistrationStatus();
     }
 }

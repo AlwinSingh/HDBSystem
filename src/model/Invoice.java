@@ -33,7 +33,7 @@ public class Invoice extends Payment {
             flatType,
             amount,
             date,
-            method.toString(),  // 💡 Ensure label is shown nicely
+            (method != null ? method.toString() : "N/A"),
             status
         );
     }

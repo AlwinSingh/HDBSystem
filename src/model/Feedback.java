@@ -64,8 +64,7 @@ public class Feedback {
     public LocalDate getResolvedDate() { return resolvedDate; }
     public String getProjectName() {return projectName;}
 
-    // === Setters (optional for editing) ===
-    public void setContent(String content) { this.content = content; }
+    // === Setters ===
     public void setStatus(String status) { this.status = status; }
     public void setResolverName(String resolverName) { this.resolverName = resolverName; }
     public void setResolvedDate(LocalDate resolvedDate) { this.resolvedDate = resolvedDate; }

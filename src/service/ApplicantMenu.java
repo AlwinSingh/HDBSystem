@@ -16,9 +16,9 @@ public class ApplicantMenu {
      */
     public static void show(Applicant applicant) {
         Scanner sc = new Scanner(System.in);
-        boolean isOfficer = applicant.isOfficer();
 
         while (true) {
+            boolean isOfficer = applicant.isOfficer();
             System.out.println("\n===== 🏠 Applicant Dashboard =====");
             System.out.println("Welcome, " + applicant.getName());
 
@@ -47,7 +47,7 @@ public class ApplicantMenu {
             switch (choice) {
                 case "1" -> ApplicantService.handleViewEligibleProjects(applicant, sc);
                 case "2" -> applyForProject(new ApplicantContext(applicant, sc));
-                case "3" -> viewApplication(new ApplicantContext(applicant, sc));
+                case "3" -> viewingApplication(new ApplicantContext(applicant, sc));
                 case "4" -> requestWithdrawal(new ApplicantContext(applicant, sc));
                 case "5" -> viewAndPayInvoices(applicant, sc);
                 case "6" -> viewReceipts(applicant);
@@ -64,7 +64,7 @@ public class ApplicantMenu {
                     }
                 }
                 case "0" -> {
-                    AuthService.logout();
+                    applicant.logout();
                     return;
                 }
                 default -> System.out.println("❌ Invalid input. Please try again.");
@@ -130,7 +130,7 @@ public class ApplicantMenu {
     /**
      * Shows detailed information about the applicant's current application.
      */
-    private static void viewApplication(ApplicantContext ctx) {
+    private static void viewingApplication(ApplicantContext ctx) {
         Application app = ctx.applicant.getApplication();
         if (app == null) {
             System.out.println("❌ No application submitted.");
@@ -158,7 +158,7 @@ public class ApplicantMenu {
         if (!p.getAmenities().isEmpty()) {
             System.out.println("\n🏞️ Nearby Amenities:");
             for (Amenities a : p.getAmenities()) {
-                System.out.println("   - " + a.getAmenityDetails());
+                System.out.println("   - " + a.toString());
             }
         }
 

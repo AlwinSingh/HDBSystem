@@ -66,13 +66,4 @@ public class Payment {
     public void setStatus(String status) {
         this.status = status;
     }
-
-    /**
-     * Returns a concise string summary of this payment's details.
-     *
-     * @return A line summarising this payment.
-     */
-    public String toSummary() {
-        return "Payment #" + paymentId + " | $" + amount + " | " + date + " | " + method + " | Status: " + status;
-    }
 }

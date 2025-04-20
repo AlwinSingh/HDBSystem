@@ -1,7 +1,5 @@
-
 package src.service;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import src.model.*;
@@ -21,78 +19,70 @@ public class AuthService {
      */
     public static User authenticate(String nric, String password) {
         // 1. Try ApplicantList
-        List<Map<String, String>> applicants = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
-        for (Map<String, String> row : applicants) {
-            if (row.get("NRIC").equalsIgnoreCase(nric) && row.get("Password").equals(password)) {
-                Applicant applicant = new Applicant(
-                        row.get("NRIC"),
-                        row.get("Password"),
-                        row.get("Name"),
-                        Integer.parseInt(row.get("Age")),
-                        row.get("Marital Status")
-                );
+        for (Map<String, String> row : CsvUtil.read(FilePath.APPLICANT_LIST_FILE)) {
+            Applicant applicant = new Applicant(
+                    row.get("NRIC"),
+                    row.get("Password"),
+                    row.get("Name"),
+                    Integer.parseInt(row.get("Age")),
+                    row.get("Marital Status")
+            );
 
-                // Load application if exists
-                String projectName = row.get("AppliedProjectName");
-                String flatType = row.get("FlatTypeApplied");
-                String status = row.get("ApplicationStatus");
+            if (!applicant.login(password)) continue;
 
-                if (projectName != null && !projectName.isBlank() && status != null && !status.isBlank()) {
-                    List<Project> allProjects = ProjectLoader.loadProjects();
-                    Project matched = allProjects.stream()
-                            .filter(p -> p.getProjectName().equalsIgnoreCase(projectName))
-                            .findFirst()
-                            .orElse(null);
+            String projectName = row.get("AppliedProjectName");
+            String flatType    = row.get("FlatTypeApplied");
+            String status      = row.get("ApplicationStatus");
 
-                    if (matched != null) {
-                        Application app = new Application(applicant, matched, status, flatType);
-                        applicant.setApplication(app);
-                    }
+            if (projectName != null && !projectName.isBlank() && status != null && !status.isBlank()) {
+                Project matched = ProjectLoader.loadProjects().stream()
+                        .filter(p -> p.getProjectName().equalsIgnoreCase(projectName))
+                        .findFirst()
+                        .orElse(null);
+
+                if (matched != null) {
+                    applicant.setApplication(new Application(applicant, matched, status, flatType));
                 }
-
-                return applicant;
             }
+
+            return applicant;
         }
 
         // 2. Try OfficerList
-        List<Map<String, String>> officers = CsvUtil.read(FilePath.OFFICER_LIST_FILE);
-        for (Map<String, String> row : officers) {
-            if (row.get("NRIC").equalsIgnoreCase(nric) && row.get("Password").equals(password)) {
-                HDBOfficer officer = new HDBOfficer(
-                        row.get("NRIC"),
-                        row.get("Password"),
-                        row.get("Name"),
-                        Integer.parseInt(row.get("Age")),
-                        row.get("Marital Status")
-                );
+        for (Map<String, String> row : CsvUtil.read(FilePath.OFFICER_LIST_FILE)) {
+            HDBOfficer officer = new HDBOfficer(
+                    row.get("NRIC"),
+                    row.get("Password"),
+                    row.get("Name"),
+                    Integer.parseInt(row.get("Age")),
+                    row.get("Marital Status")
+            );
 
-                // Load registration details
-                String regStatus = row.get("RegistrationStatus");
-                String assignedProject = row.get("AssignedProject");
+            if (!officer.login(password)) continue;
 
-                officer.setRegistrationStatus((regStatus != null && !regStatus.isBlank()) ? regStatus : null);
+            String regStatus = row.get("RegistrationStatus");
+            String project   = row.get("AssignedProject");
 
-                if (assignedProject != null && !assignedProject.isBlank()) {
-                    List<Project> allProjects = ProjectLoader.loadProjects();
-                    officer.setAssignedProjectByName(assignedProject, allProjects);
-                }
+            officer.setRegistrationStatus(regStatus != null && !regStatus.isBlank() ? regStatus : null);
 
-                return officer;
+            if (project != null && !project.isBlank()) {
+                officer.setAssignedProjectByName(project, ProjectLoader.loadProjects());
             }
+
+            return officer;
         }
 
         // 3. Try ManagerList
-        List<Map<String, String>> managers = CsvUtil.read(FilePath.MANAGER_LIST_FILE);
-        for (Map<String, String> row : managers) {
-            if (row.get("NRIC").equalsIgnoreCase(nric) && row.get("Password").equals(password)) {
-                return new HDBManager(
-                        row.get("NRIC"),
-                        row.get("Password"),
-                        row.get("Name"),
-                        Integer.parseInt(row.get("Age")),
-                        row.get("Marital Status")
-                );
-            }
+        for (Map<String, String> row : CsvUtil.read(FilePath.MANAGER_LIST_FILE)) {
+            HDBManager manager = new HDBManager(
+                    row.get("NRIC"),
+                    row.get("Password"),
+                    row.get("Name"),
+                    Integer.parseInt(row.get("Age")),
+                    row.get("Marital Status")
+            );
+
+            if (manager.login(password)) return manager;
         }
 
         return null;
@@ -108,7 +98,7 @@ public class AuthService {
     public static boolean changePassword(User user, Scanner sc) {
         System.out.print("Enter current password: ");
         String current = sc.nextLine().trim();
-        if (!user.getPassword().equals(current)) {
+        if (!user.login(current)) {
             System.out.println("❌ Incorrect current password.");
             return false;
         }
@@ -130,15 +120,8 @@ public class AuthService {
             ApplicantCsvMapper.updateApplicant((Applicant) user);
         }
 
-        System.out.println("✅ Password changed successfully. You will be logged out.");
-        AuthService.logout();  // ✅ Force logout immediately
+        System.out.println("✅ Password changed successfully.");
+        user.logout(); // use instance method
         return true;
-    }
-
-    /**
-     * Logs out the current user session.
-     */
-    public static void logout() {
-        System.out.println("👋 Logging out...");
     }
 }

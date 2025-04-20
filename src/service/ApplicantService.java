@@ -62,7 +62,7 @@ public class ApplicantService {
         if (!p.getAmenities().isEmpty()) {
             System.out.println("🏞️ Nearby Amenities:");
             for (Amenities a : p.getAmenities()) {
-                System.out.println("   - " + a.getAmenityDetails());
+                System.out.println("   - " + a.toString());
             }
         }
         System.out.println();
@@ -184,13 +184,28 @@ public class ApplicantService {
     public static boolean submitApplication(Applicant applicant, Project project, String flatType) {
         boolean success = applicant.applyForProject(project, flatType);
         if (!success) return false;
-
+    
         ApplicantCsvMapper.updateApplicant(applicant);
+    
+        // If officer is applying, ensure they are added as an applicant 
+        if (applicant instanceof HDBOfficer) {
+            HDBOfficer officer = (HDBOfficer) applicant;
+            List<Applicant> existingApplicants = ApplicantCsvMapper.loadAll();
+    
+            boolean alreadyExists = existingApplicants.stream()
+                .anyMatch(a -> a.getNric().equalsIgnoreCase(officer.getNric()));
+    
+            if (!alreadyExists) {
+                ApplicantCsvMapper.save((Applicant) officer);
+            }
+        }
+    
         project.getApplicantNRICs().add(applicant.getNric());
         ProjectCsvMapper.updateProject(project);
-
+    
         return true;
     }
+    
 
     /**
      * Checks if the applicant is allowed to withdraw from their application.

@@ -9,7 +9,6 @@ public class Application {
     protected Project project;
     protected String status; // PENDING, SUCCESSFUL, etc.
     protected String chosenFlatType;
-    private int applicationId;
 
     public Application(Applicant applicant, Project project, String status, String chosenFlatType) {
         this.applicant = applicant;
@@ -45,12 +44,12 @@ public class Application {
         System.out.println("🛠️ Project: " + project.getProjectName());
         System.out.println("2-Room Price: " + project.getPrice2Room());
         System.out.println("3-Room Price: " + project.getPrice3Room());
-    
+        
         return chosenFlatType.equalsIgnoreCase("2-Room")
                ? project.getPrice2Room()
                : project.getPrice3Room();
     }
-    
+
 
     public String getStatus() {
         return status;
@@ -68,9 +67,6 @@ public class Application {
         return applicant;
     }
 
-    public int getApplicationId() {
-        return applicationId;
-    }
     public void setProject(Project project) {
         this.project = project;
     }

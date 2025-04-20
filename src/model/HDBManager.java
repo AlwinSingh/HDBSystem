@@ -121,8 +121,4 @@ public class HDBManager extends User {
     public Project getAssignedProject() {
         return assignedProject;
     }
-
-    public void setAssignedProject(Project assignedProject) {
-        this.assignedProject = assignedProject;
-    }
 }
