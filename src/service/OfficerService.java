@@ -22,42 +22,64 @@ import src.util.ProjectCsvMapper;
 public class OfficerService {
 
     /**
-     * Prints the officer's registration status and details of the assigned project.
+     * Prints the officer's registration status and basic details of the assigned project.
      */
     public static void viewOfficerRegistrationStatus(HDBOfficer officer) {
         System.out.println("🔍 Officer Registration Overview");
-        System.out.println("   📄 Registration Status : " + 
-            (officer.getRegistrationStatus() != null ? officer.getRegistrationStatus() : "N/A"));
-    
-        Project assignedProject = officer.getAssignedProject();
-        if (assignedProject != null) {
-            System.out.println("   🏢 Assigned Project     : " + assignedProject.getProjectName());
-            System.out.println("   📍 Neighborhood        : " + assignedProject.getNeighborhood());
-            System.out.println("   🗓️ Application Period  : " + assignedProject.getOpenDate() + " to " + assignedProject.getCloseDate());
-            System.out.println("   🧍 Officer Slots       : " + assignedProject.getOfficerSlots());
-            System.out.println("   🏠 2-Room Units Left   : " + assignedProject.getRemainingFlats("2-Room"));
-            System.out.println("   💰 2-Room Price        : $" + String.format("%.2f", assignedProject.getPrice2Room()));
-            System.out.println("   🏠 3-Room Units Left   : " + assignedProject.getRemainingFlats("3-Room"));
-            System.out.println("   💰 3-Room Price        : $" + String.format("%.2f", assignedProject.getPrice3Room()));
-            System.out.println("   👀 Public Visibility   : " + (assignedProject.isVisible() ? "Yes ✅" : "No ❌"));
-        } else {
+        String status = officer.getRegistrationStatus();
+        System.out.println("   📄 Registration Status : " + (status != null ? status : "N/A"));
+
+        Project p = officer.getAssignedProject();
+        if (p == null) {
             System.out.println("   🛑 No assigned project.");
+            return;
         }
+
+        System.out.printf("""
+            \s  🏢 Project Name        : %s
+            \s  📍 Neighborhood        : %s
+            \s  🗓️  Application Period : %s to %s
+            \s  🧍 Officer Slots       : %d
+            \s  🏠 2-Room Units Left   : %d  ($%.2f)
+            \s  🏠 3-Room Units Left   : %d  ($%.2f)
+            \s  👀 Public Visibility   : %s
+            """,
+            p.getProjectName(),
+            p.getNeighborhood(),
+            p.getOpenDate(), p.getCloseDate(),
+            p.getOfficerSlots(),
+            p.getRemainingFlats("2-Room"), p.getPrice2Room(),
+            p.getRemainingFlats("3-Room"), p.getPrice3Room(),
+            p.isVisible() ? "Yes ✅" : "No ❌"
+        );
     }
-    
+
 
     public static boolean registerForProject(HDBOfficer officer, Project selectedProject) {
+        // Officer is already assigned to a project
         if (officer.getAssignedProject() != null) {
+            System.out.println("❌ You are already registered to handle a project.");
             return false;
         }
-
+    
+        Application app = officer.getApplication();
+        if (app != null) {
+            String appliedProjectName = app.getProject().getProjectName();
+            if (appliedProjectName.equalsIgnoreCase(selectedProject.getProjectName())) {
+                System.out.println("❌ You have already applied to this project as an applicant.");
+                return false;
+            }
+        }
+    
         boolean registered = officer.registerToHandleProject(selectedProject);
         if (registered) {
             OfficerCsvMapper.updateOfficer(officer);
+            System.out.println("✅ Registration submitted for project: " + selectedProject.getProjectName());
         }
-
+    
         return registered;
     }
+    
 
     public static List<Project> getAvailableProjectsForOfficer(HDBOfficer officer) {
         return ProjectCsvMapper.loadAll().stream()
@@ -238,18 +260,24 @@ public class OfficerService {
             System.out.println("❌ No assigned project.");
             return;
         }
-    
+
+        // 🔄 Force-load amenities if not already set
+        if (p.getAmenities() == null || p.getAmenities().isEmpty()) {
+            p.setAmenities(AmenitiesLoader.loadAmenitiesByProject(p.getProjectName()));
+        }
+
         System.out.println("\n📌 Assigned Project Details:");
         System.out.println(OfficerService.getProjectSummary(p, officer));
-    
-        List<Amenities> amenities = OfficerService.getProjectAmenities(p);
+
+        List<Amenities> amenities = p.getAmenities();
         if (!amenities.isEmpty()) {
             System.out.println("\n🏞️ Nearby Amenities:");
             for (Amenities a : amenities) {
                 System.out.println("   - " + a.toString());
             }
         }
-    } 
+    }
+
     
 
     public static List<Applicant> getBookableApplicants(Project assignedProject) {

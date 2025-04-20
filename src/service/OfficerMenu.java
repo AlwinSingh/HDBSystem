@@ -33,14 +33,8 @@ public class OfficerMenu {
             System.out.printf(" [9] 💬 View & Reply to Enquiries%n");
 
             System.out.println("\n🔐 Account");
-            System.out.printf(" [10] 🔑 Change Password");
-
-            if (officer.getRegistrationStatus() == null ||
-                    officer.getRegistrationStatus().equalsIgnoreCase("REJECTED")) {
-                System.out.printf("   [11] 🔁 Switch to Applicant Dashboard%n");
-            }
-
-            System.out.printf("   [0] 🚪 Logout%n");
+            System.out.printf(" [10] 🔑 Change Password   [11] 🔁 Switch to Applicant Dashboard%n");
+            System.out.printf(" [0] 🚪 Logout%n");
 
             System.out.print("\n➡️ Enter your choice: ");
             String choice = sc.nextLine().trim();
@@ -59,15 +53,10 @@ public class OfficerMenu {
                     if (AuthService.changePassword(officer, sc)) return;
                 }
                 case "11" -> {
-                    if (officer.getRegistrationStatus() == null ||
-                            officer.getRegistrationStatus().equalsIgnoreCase("REJECTED")) {
-                        System.out.println("🔁 Switching to Applicant Dashboard...");
-                        ApplicantMenu.show(officer);
-                        return;
-                    } else {
-                        System.out.println("❌ You are not eligible to access the Applicant dashboard.");
-                    }
-                }
+                    System.out.println("🔁 Switching to Applicant Dashboard...");
+                    ApplicantMenu.show(officer);
+                    return;
+                }                         
                 case "0" -> {
                     officer.logout();
                     return;

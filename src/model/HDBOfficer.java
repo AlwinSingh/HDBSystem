@@ -27,13 +27,18 @@ public class HDBOfficer extends Applicant {
      * @return True if registration is successful; false if already registered or has an application.
      */
     public boolean registerToHandleProject(Project project) {
-        if (assignedProject == null && application == null) {
-            assignedProject = project;
-            registrationStatus = RegistrationStatusType.PENDING.name();
-            return true;
+        if (assignedProject != null) return false;
+    
+        if (application != null &&
+            application.getProject().getProjectName().equalsIgnoreCase(project.getProjectName())) {
+            return false; 
         }
-        return false;
+    
+        this.assignedProject = project;
+        this.registrationStatus = RegistrationStatusType.PENDING.name();
+        return true;
     }
+    
     /**
      * Books a flat for an applicant if assigned to the same project and already approved.
      */

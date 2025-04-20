@@ -2,6 +2,7 @@ package src.service;
 
 import src.model.*;
 import src.util.ApplicantCsvMapper;
+import src.util.OfficerCsvMapper;
 import src.util.ProjectCsvMapper;
 
 import java.time.LocalDate;
@@ -182,29 +183,30 @@ public class ApplicantService {
      * @return True if successful; false if already applied or any issues occur.
      */
     public static boolean submitApplication(Applicant applicant, Project project, String flatType) {
-        boolean success = applicant.applyForProject(project, flatType);
-        if (!success) return false;
-    
-        ApplicantCsvMapper.updateApplicant(applicant);
-    
-        // If officer is applying, ensure they are added as an applicant 
-        if (applicant instanceof HDBOfficer) {
-            HDBOfficer officer = (HDBOfficer) applicant;
-            List<Applicant> existingApplicants = ApplicantCsvMapper.loadAll();
-    
-            boolean alreadyExists = existingApplicants.stream()
+        // Officer-specific conflict check BEFORE doing anything
+        if (applicant instanceof HDBOfficer officer) {
+            // Add officer to ApplicantList if not already present
+            boolean exists = ApplicantCsvMapper.loadAll().stream()
                 .anyMatch(a -> a.getNric().equalsIgnoreCase(officer.getNric()));
-    
-            if (!alreadyExists) {
-                ApplicantCsvMapper.save((Applicant) officer);
+            if (!exists) {
+                ApplicantCsvMapper.save(officer);
             }
         }
     
+        // Apply application logic
+        boolean success = applicant.applyForProject(project, flatType);
+        if (!success) return false;
+    
+        // Save updated applicant data
+        ApplicantCsvMapper.updateApplicant(applicant);
+    
+        // Track in project
         project.getApplicantNRICs().add(applicant.getNric());
         ProjectCsvMapper.updateProject(project);
     
         return true;
     }
+    
     
 
     /**

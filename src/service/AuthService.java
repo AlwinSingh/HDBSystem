@@ -18,38 +18,10 @@ public class AuthService {
      * @return A matching User object if credentials are valid, or null if not.
      */
     public static User authenticate(String nric, String password) {
-        // 1. Try ApplicantList
-        for (Map<String, String> row : CsvUtil.read(FilePath.APPLICANT_LIST_FILE)) {
-            Applicant applicant = new Applicant(
-                    row.get("NRIC"),
-                    row.get("Password"),
-                    row.get("Name"),
-                    Integer.parseInt(row.get("Age")),
-                    row.get("Marital Status")
-            );
-
-            if (!applicant.login(password)) continue;
-
-            String projectName = row.get("AppliedProjectName");
-            String flatType    = row.get("FlatTypeApplied");
-            String status      = row.get("ApplicationStatus");
-
-            if (projectName != null && !projectName.isBlank() && status != null && !status.isBlank()) {
-                Project matched = ProjectLoader.loadProjects().stream()
-                        .filter(p -> p.getProjectName().equalsIgnoreCase(projectName))
-                        .findFirst()
-                        .orElse(null);
-
-                if (matched != null) {
-                    applicant.setApplication(new Application(applicant, matched, status, flatType));
-                }
-            }
-
-            return applicant;
-        }
-
-        // 2. Try OfficerList
+        // 1. Try OfficerList FIRST to avoid officer being mistaken as applicant
         for (Map<String, String> row : CsvUtil.read(FilePath.OFFICER_LIST_FILE)) {
+            if (!row.get("NRIC").equalsIgnoreCase(nric)) continue;
+    
             HDBOfficer officer = new HDBOfficer(
                     row.get("NRIC"),
                     row.get("Password"),
@@ -57,23 +29,47 @@ public class AuthService {
                     Integer.parseInt(row.get("Age")),
                     row.get("Marital Status")
             );
-
-            if (!officer.login(password)) continue;
-
+    
+            if (!officer.login(password)) return null;
+    
+            // Load registration data
             String regStatus = row.get("RegistrationStatus");
-            String project   = row.get("AssignedProject");
-
-            officer.setRegistrationStatus(regStatus != null && !regStatus.isBlank() ? regStatus : null);
-
+            String project = row.get("AssignedProject");
+    
+            officer.setRegistrationStatus((regStatus != null && !regStatus.isBlank()) ? regStatus : null);
             if (project != null && !project.isBlank()) {
                 officer.setAssignedProjectByName(project, ProjectLoader.loadProjects());
             }
-
+    
+            // 💡 Check if officer has application from ApplicantList.csv
+            for (Map<String, String> appRow : CsvUtil.read(FilePath.APPLICANT_LIST_FILE)) {
+                if (!appRow.get("NRIC").equalsIgnoreCase(nric)) continue;
+    
+                String projectName = appRow.get("AppliedProjectName");
+                String flatType    = appRow.get("FlatTypeApplied");
+                String status      = appRow.get("ApplicationStatus");
+    
+                if (projectName != null && !projectName.isBlank() && status != null && !status.isBlank()) {
+                    Project matched = ProjectLoader.loadProjects().stream()
+                            .filter(p -> p.getProjectName().equalsIgnoreCase(projectName))
+                            .findFirst()
+                            .orElse(null);
+    
+                    if (matched != null) {
+                        Application app = new Application(officer, matched, status, flatType);
+                        officer.setApplication(app);
+                    }
+                }
+                break;
+            }
+    
             return officer;
         }
-
-        // 3. Try ManagerList
+    
+        // 2. Try ManagerList
         for (Map<String, String> row : CsvUtil.read(FilePath.MANAGER_LIST_FILE)) {
+            if (!row.get("NRIC").equalsIgnoreCase(nric)) continue;
+    
             HDBManager manager = new HDBManager(
                     row.get("NRIC"),
                     row.get("Password"),
@@ -81,12 +77,47 @@ public class AuthService {
                     Integer.parseInt(row.get("Age")),
                     row.get("Marital Status")
             );
-
+    
             if (manager.login(password)) return manager;
+            return null;
         }
-
-        return null;
+    
+        // 3. Try ApplicantList LAST
+        for (Map<String, String> row : CsvUtil.read(FilePath.APPLICANT_LIST_FILE)) {
+            if (!row.get("NRIC").equalsIgnoreCase(nric)) continue;
+    
+            Applicant applicant = new Applicant(
+                    row.get("NRIC"),
+                    row.get("Password"),
+                    row.get("Name"),
+                    Integer.parseInt(row.get("Age")),
+                    row.get("Marital Status")
+            );
+    
+            if (!applicant.login(password)) return null;
+    
+            String projectName = row.get("AppliedProjectName");
+            String flatType    = row.get("FlatTypeApplied");
+            String status      = row.get("ApplicationStatus");
+    
+            if (projectName != null && !projectName.isBlank() && status != null && !status.isBlank()) {
+                Project matched = ProjectLoader.loadProjects().stream()
+                        .filter(p -> p.getProjectName().equalsIgnoreCase(projectName))
+                        .findFirst()
+                        .orElse(null);
+    
+                if (matched != null) {
+                    Application app = new Application(applicant, matched, status, flatType);
+                    applicant.setApplication(app);
+                }
+            }
+    
+            return applicant;
+        }
+    
+        return null; // no match found
     }
+    
 
     /**
      * Allows the user to change their password after verifying the current one.

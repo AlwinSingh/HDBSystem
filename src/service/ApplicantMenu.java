@@ -10,40 +10,42 @@ import src.model.*;
 public class ApplicantMenu {
 
     /**
-     * Shows the main dashboard menu for the applicant and routes input to the correct actions.
+     * Shows the main dashboard menu for the applicant and  and routes input to the correct actions.
      *
      * @param applicant The currently logged-in applicant.
      */
     public static void show(Applicant applicant) {
         Scanner sc = new Scanner(System.in);
-
+    
         while (true) {
-            boolean isOfficer = applicant.isOfficer();
+            boolean isOfficer = applicant instanceof HDBOfficer;
+    
             System.out.println("\n===== 🏠 Applicant Dashboard =====");
             System.out.println("Welcome, " + applicant.getName());
-
+    
             System.out.println("\n📋 Applications");
             System.out.printf(" [1] 📄 View Eligible Projects   [2] 📝 Apply for a Project%n");
             System.out.printf(" [3] 🔍 View My Application      [4] ❌ Request Withdrawal%n");
-
+    
             System.out.println("\n💳 Payments");
             System.out.printf(" [5] 💰 View & Pay Invoice       [6] 🧾 View Receipts%n");
-
+    
             System.out.println("\n📬 Services");
             System.out.printf(" [7] 💬 Enquiry Services         [8] 📝 Feedback Services%n");
-
+    
             System.out.println("\n🔐 Account");
             System.out.printf(" [9] 🔑 Change Password");
-
+    
+            // ✅ Always show Officer Dashboard switch if user is an officer
             if (isOfficer) {
                 System.out.printf("   [10] 🔁 Switch to Officer Dashboard%n");
             }
-
+    
             System.out.printf("%n[0] 🚪 Logout%n");
-
+    
             System.out.print("\n➡️ Enter your choice: ");
             String choice = sc.nextLine().trim();
-
+    
             switch (choice) {
                 case "1" -> ApplicantService.handleViewEligibleProjects(applicant, sc);
                 case "2" -> applyForProject(new ApplicantContext(applicant, sc));
@@ -71,6 +73,8 @@ public class ApplicantMenu {
             }
         }
     }
+    
+    
 
     /**
      * Guides the applicant through applying to a project and selecting a flat type.
@@ -78,47 +82,60 @@ public class ApplicantMenu {
     private static void applyForProject(ApplicantContext ctx) {
         Applicant applicant = ctx.applicant;
         Scanner sc = ctx.scanner;
-
+    
         if (applicant.getApplication() != null) {
             System.out.println("⚠️ You already have an active application for: "
                     + applicant.getApplication().getProject().getProjectName()
                     + " (Status: " + applicant.getApplication().getStatus() + ")");
             return;
         }
-
+    
         List<Project> eligible = ApplicantService.getEligibleProjects(applicant);
         if (eligible.isEmpty()) {
             System.out.println("❌ No eligible projects available.");
             return;
         }
-
+    
         for (int i = 0; i < eligible.size(); i++) {
             Project p = eligible.get(i);
             System.out.printf("[%d] %s (%s)\n", i + 1, p.getProjectName(), p.getNeighborhood());
         }
-
+    
         System.out.print("Enter project number to apply: ");
         int choice = Integer.parseInt(sc.nextLine().trim()) - 1;
         if (choice < 0 || choice >= eligible.size()) {
             System.out.println("❌ Invalid selection.");
             return;
         }
-
+    
         Project selected = eligible.get(choice);
-
+    
+        // 🧠 Officer conflict check (moved here)
+        if (applicant instanceof HDBOfficer officer) {
+            Project assigned = officer.getAssignedProject();
+            String status = officer.getRegistrationStatus();
+    
+            if (assigned != null &&
+                assigned.getProjectName().equalsIgnoreCase(selected.getProjectName()) &&
+                "PENDING".equalsIgnoreCase(status)) {
+                System.out.println("❌ You are already registering to this project as an officer.");
+                return;
+            }
+        }
+    
         String flatType = "2-Room";
         if ("Married".equalsIgnoreCase(applicant.getMaritalStatus())) {
             System.out.print("Choose flat type (2-Room/3-Room): ");
             flatType = sc.nextLine().trim();
         }
-
+    
         System.out.print("Submit application for " + selected.getProjectName()
                 + " (" + flatType + ")? (Y/N): ");
         if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
             System.out.println("🔁 Application cancelled.");
             return;
         }
-
+    
         boolean ok = ApplicantService.submitApplication(applicant, selected, flatType);
         if (ok) {
             System.out.println("✅ Application submitted. Status: " + Applicant.AppStatusType.PENDING.name() + ".");
@@ -126,6 +143,7 @@ public class ApplicantMenu {
             System.out.println("❌ Application failed.");
         }
     }
+    
 
     /**
      * Shows detailed information about the applicant's current application.
