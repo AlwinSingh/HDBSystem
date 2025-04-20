@@ -51,20 +51,20 @@ public class ManagerMenu {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1" -> ManagerService.createProject(manager, sc);
-                case "2" -> ManagerService.editProject(manager, sc);
-                case "3" -> ManagerService.deleteProject(manager, sc);
-                case "4" -> ManagerService.toggleVisibility(manager, sc);
-                case "5" -> ManagerService.viewAllProjectsWithFilter(sc);
-                case "6" -> ManagerService.viewMyProjects(manager);
-                case "7" -> ManagerService.viewOfficerRegistrations(manager);
-                case "8" -> ManagerService.handleOfficerApproval(manager, sc);
-                case "9" -> ManagerService.viewApplicantApplications(manager);
-                case "10" -> ManagerService.handleApplicantApproval(manager, sc);
-                case "11" -> ManagerService.handleWithdrawalRequests(manager, sc);
-                case "12" -> ManagerService.generateReports(manager, sc);
-                case "13" -> ManagerService.showEnquiryOptions(manager, sc);
-                case "14" -> ManagerService.viewAndResolveFeedback(manager, sc);
+                case "1" -> ManagerProjectService.createProject(manager, sc);
+                case "2" -> ManagerProjectService.editProject(manager, sc);
+                case "3" -> ManagerProjectService.deleteProject(manager, sc);
+                case "4" -> ManagerProjectService.toggleVisibility(manager, sc);
+                case "5" -> ManagerProjectService.viewAllProjectsWithFilter(sc);
+                case "6" -> ManagerProjectService.viewMyProjects(manager);
+                case "7" -> ManagerOfficerApprovalService.viewOfficerRegistrations(manager);
+                case "8" -> ManagerOfficerApprovalService.handleOfficerApproval(manager, sc);
+                case "9" -> ManagerApplicantApprovalService.viewApplicantApplications(manager);
+                case "10" -> ManagerApplicantApprovalService.handleApplicantApproval(manager, sc);
+                case "11" -> ManagerApplicantApprovalService.handleWithdrawalRequests(manager, sc);
+                case "12" -> ManagerReportService.generateReports(manager, sc);
+                case "13" -> ManagerEnquiryService.showEnquiryOptions(manager, sc);
+                case "14" -> ManagerFeedbackService.viewAndResolveFeedback(manager, sc);
                 case "15" -> FeedbackAnalyticsService.generateManagerAnalytics(manager);
                 case "16" -> {
                     if (AuthService.changePassword(manager, sc)) return;
