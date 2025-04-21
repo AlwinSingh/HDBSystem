@@ -1,10 +1,23 @@
 package src;
 
 import java.util.Scanner;
+
+import src.interfaces.IManagerApplicantApprovalService;
+import src.interfaces.IManagerEnquiryService;
+import src.interfaces.IManagerFeedbackService;
+import src.interfaces.IManagerOfficerApprovalService;
+import src.interfaces.IManagerProjectService;
+import src.interfaces.IManagerReportService;
 import src.model.*;
 import src.service.ApplicantMenu;
 import src.service.AuthService;
+import src.service.ManagerApplicantApprovalService;
+import src.service.ManagerEnquiryService;
+import src.service.ManagerFeedbackService;
 import src.service.ManagerMenu;
+import src.service.ManagerOfficerApprovalService;
+import src.service.ManagerProjectService;
+import src.service.ManagerReportService;
 import src.service.OfficerMenu;
 import src.service.RegistrationService;
 import src.util.InputValidator;
@@ -84,7 +97,23 @@ public class Main {
     
         if (user instanceof HDBManager manager) {
             System.out.println("🔓 Logged in as HDB Manager (" + manager.getNric() + ")");
-            ManagerMenu.show(manager);
+            IManagerProjectService projectService = new ManagerProjectService();
+            IManagerOfficerApprovalService officerService = new ManagerOfficerApprovalService();
+            IManagerApplicantApprovalService applicantService = new ManagerApplicantApprovalService();
+            IManagerReportService reportService = new ManagerReportService();
+            IManagerEnquiryService enquiryService = new ManagerEnquiryService();
+            IManagerFeedbackService feedbackService = new ManagerFeedbackService();
+
+            ManagerMenu menu = new ManagerMenu(
+                projectService,
+                officerService,
+                applicantService,
+                reportService,
+                enquiryService,
+                feedbackService
+            );
+            menu.show(manager);
+
         } else if (user instanceof HDBOfficer officer) {
             boolean hasProject = officer.getAssignedProject() != null;
             boolean hasPendingStatus = officer.getRegistrationStatus() != null;

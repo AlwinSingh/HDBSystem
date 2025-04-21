@@ -1,34 +1,42 @@
 package src.service;
 
 import java.util.*;
-
-import src.interfaces.IManagerApplicantApprovalService;
-import src.interfaces.IManagerEnquiryService;
-import src.interfaces.IManagerFeedbackService;
-import src.interfaces.IManagerOfficerApprovalService;
-import src.interfaces.IManagerProjectService;
-import src.interfaces.IManagerReportService;
+import src.interfaces.*;
 import src.model.*;
 
 /**
  * Displays the CLI dashboard for HDB managers and handles routing to various services.
  */
 public class ManagerMenu {
+    private final IManagerProjectService projectService;
+    private final IManagerOfficerApprovalService officerService;
+    private final IManagerApplicantApprovalService applicantService;
+    private final IManagerReportService reportService;
+    private final IManagerEnquiryService enquiryService;
+    private final IManagerFeedbackService feedbackService;
 
-    private static final IManagerProjectService projectService = new ManagerProjectService();
-    private static final IManagerOfficerApprovalService officerService = new ManagerOfficerApprovalService();
-    private static final IManagerApplicantApprovalService applicantService = new ManagerApplicantApprovalService();
-    private static final IManagerReportService reportService = new ManagerReportService();
-    private static final IManagerEnquiryService enquiryService = new ManagerEnquiryService();
-    private static final IManagerFeedbackService feedbackService = new ManagerFeedbackService();
-
+    public ManagerMenu(
+        IManagerProjectService projectService,
+        IManagerOfficerApprovalService officerService,
+        IManagerApplicantApprovalService applicantService,
+        IManagerReportService reportService,
+        IManagerEnquiryService enquiryService,
+        IManagerFeedbackService feedbackService
+    ) {
+        this.projectService = projectService;
+        this.officerService = officerService;
+        this.applicantService = applicantService;
+        this.reportService = reportService;
+        this.enquiryService = enquiryService;
+        this.feedbackService = feedbackService;
+    }
 
     /**
      * Launches the manager dashboard and routes user input to the appropriate service methods.
      *
      * @param manager The logged-in HDBManager.
      */
-    public static void show(HDBManager manager) {
+    public void show(HDBManager manager) {
         Scanner sc = new Scanner(System.in);
 
         while (true) {

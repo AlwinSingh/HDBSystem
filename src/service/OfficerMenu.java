@@ -41,7 +41,6 @@ public class OfficerMenu {
     public static void show(HDBOfficer officer) {
         Scanner sc = new Scanner(System.in);
 
-        // Interface-based service declarations
         IOfficerAmenityService amenityService = new OfficerAmenityService(new AmenitiesCsvMapper());
         IOfficerEnquiryService enquiryService = new OfficerEnquiryService();
         IOfficerLocationService locationService = new OfficerLocationService();

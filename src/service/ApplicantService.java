@@ -24,26 +24,6 @@ public class ApplicantService {
     private static String filterFlatType = null;
 
     /**
-     * Checks if an applicant is eligible to apply for a given project.
-     *
-     * @param applicant The applicant in question.
-     * @param project   The project being considered.
-     * @return True if the applicant meets the age and marital criteria; false otherwise.
-     */
-    public static boolean isEligible(Applicant applicant, Project project) {
-        String status = applicant.getMaritalStatus();
-        int age = applicant.getAge();
-
-        boolean withinDateRange = !LocalDate.now().isBefore(project.getOpenDate())
-                && !LocalDate.now().isAfter(project.getCloseDate());
-
-        if (status == null || !withinDateRange) return false;
-
-        return (status.equalsIgnoreCase("Single") && age >= 35)
-                || (status.equalsIgnoreCase("Married") && age >= 21);
-    }
-
-    /**
      * Displays key information about the selected project in a user-friendly format.
      *
      * @param p         The project to display.
@@ -155,7 +135,7 @@ public class ApplicantService {
         return ProjectLoader.loadProjects().stream()
                 .filter(p -> p != null && p.getProjectName() != null)
                 .filter(Project::isVisible)
-                .filter(p -> isEligible(applicant, p))
+                .filter(p -> ApplicantEligibilityService.isEligible(applicant, p))
                 .collect(Collectors.toList());
     }
 
@@ -171,7 +151,7 @@ public class ApplicantService {
         return ProjectLoader.loadProjects().stream()
                 .filter(p -> p != null && p.getProjectName() != null)
                 .filter(Project::isVisible)
-                .filter(p -> isEligible(applicant, p))
+                .filter(p -> ApplicantEligibilityService.isEligible(applicant, p))
                 .filter(p -> neighborhood == null || p.getNeighborhood().equalsIgnoreCase(neighborhood))
                 .filter(p -> district == null || p.getLocation().getDistrict().equalsIgnoreCase(district))
                 .filter(p -> flatType == null || p.getRemainingFlats(flatType) > 0)
