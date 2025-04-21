@@ -16,12 +16,12 @@ import src.service.AuthService;
  * 4. Press 2 to clear filters.
  * 5. Press 0 to go back to the main menu.
  */
-public class ApplicantTest {
+public class ApplicantTestForSingle {
 
     public static void main(String[] args) {
         InputStream originalIn = System.in;
 
-        String applicantNRIC = "T7654321B";
+        String applicantNRIC = "S1234567A";
         String password      = "password";
 
         System.out.println("=== 🧪 Running Applicant Filter Test ===\n");
@@ -32,55 +32,22 @@ public class ApplicantTest {
             return;
         }
 
-        // Simulate input sequence:
-        // 1 - View eligible projects
-        // 1 - Apply filter
-        // Clementi (filter by neighborhood)
-        // <Enter> twice to skip optional filters
-        // 2 - Clear filters
-        // 0 - Return to previous menu
+        
         String inputSequence = String.join("\n",
         "1",            // View eligible projects
-        "1",            // Filter by Neighborhood
-        "Clementi",     // Enter neighborhood filter
-        "",             // Skip district price
-        "",             // Skip 2room/3room price
-        "2",            // Clear filters
-        "0",             // Return to main menu
-        //
-        "2",
-        "2",
+        "1",
+        "Clementi",
+        " ",
         "2-Room",
-        "Y",
-        "3",
-        "4",
-        "Y",
-        "5",
-        "6",
-        //enquiry service
-        "7",
-        "1",
-        "1",
-        "How many floors are there",
-        "2",
-        "3",
-        "1",
-        "What are the prices?",
-        "4",
-        "1",
-        "Y",
         "2",
         "0",
-        //Feedback service
-        "8",
-        "1",
-        "Great Job",
+        //apply for a project
         "2",
-        "0",
-        //Change password
-        "9",
-        "password",
-        "superhero");
+        "1", //apply for clementi
+        "Y",
+        "3"
+
+        );
 
         System.setIn(new ByteArrayInputStream(inputSequence.getBytes()));
         ApplicantMenu.show(a);
@@ -89,3 +56,4 @@ public class ApplicantTest {
         System.out.println("\n=== ✅ Applicant Filter Test Complete ===");
     }
 }
+
