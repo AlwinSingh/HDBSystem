@@ -40,15 +40,60 @@ public class ApplicantTest {
         // 2 - Clear filters
         // 0 - Return to previous menu
         String inputSequence = String.join("\n",
-            "1",            // View eligible projects
-            "1",            // Filter by Neighborhood
-            "Clementi",     // Enter neighborhood filter
-            "",             // Skip min price
-            "",             // Skip max price
-            "2",            // Clear filters
-            "0",             // Return to main menu
-            "2",
-            "2"
+        "1",            // View eligible projects
+        "1",            // Filter by Neighborhood
+        "Clementi",     // Enter neighborhood filter
+        "",             // Skip min price
+        "",             // Skip max price
+        "2",            // Clear filters
+        "0",             // Return to main menu
+        //
+        "2",
+        "2",
+        "2",
+        "2-Room",
+        "Y",
+        "3",
+        "4",
+        "Y",
+        "5",
+        "6",
+        //enquiry service
+        "7",
+        "1",
+        "1",
+        "How many floors are there",
+        "2",
+        "3",
+        "1",
+        "What are the prices?",
+        "4",
+        "1",
+        "Y",
+        "2",
+        "0",
+        //Feedback service
+        "8",
+        "1",
+        "Great Job",
+        "2",
+        "0",
+        //Change password
+        "9",
+        "password",
+        "superhero"
+            
+            
+
+
+
+
+
+
+
+
+
+
         );
 
         System.setIn(new ByteArrayInputStream(inputSequence.getBytes()));
