@@ -12,6 +12,12 @@ public class FeedbackAnalytics {
 
     private List<Feedback> feedbackList;
 
+    /**
+     * Constructs a new FeedbackAnalytics instance.
+     *
+     * @param feedbackList The list of feedback entries to analyze.
+     */
+
     public FeedbackAnalytics(List<Feedback> feedbackList) {
         this.feedbackList = feedbackList;
     }
@@ -54,15 +60,20 @@ public class FeedbackAnalytics {
     }
 
     /**
-     * Groups feedback by status and returns counts per status.
+     * Groups feedback by their status (e.g., PENDING, RESOLVED).
+     *
+     * @return Map of status strings to their corresponding count.
      */
+
     public Map<String, Long> groupByStatus() {
         return feedbackList.stream()
                 .collect(Collectors.groupingBy(Feedback::getStatus, Collectors.counting()));
     }
 
     /**
-     * Groups feedback by applicant NRIC and returns counts per applicant.
+     * Groups feedback by applicant NRIC and returns the number of submissions per applicant.
+     *
+     * @return Map where key is applicant NRIC, value is number of feedbacks.
      */
     public Map<String, Long> groupByApplicant() {
         return feedbackList.stream()

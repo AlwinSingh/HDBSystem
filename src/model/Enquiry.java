@@ -22,6 +22,17 @@ public class Enquiry {
     private String projectName;
     private final List<EnquiryReply> replies;
 
+    /**
+     * Constructs a new enquiry.
+     *
+     * @param enquiryId     Unique ID for the enquiry.
+     * @param content       Initial enquiry message.
+     * @param status        Status of the enquiry (e.g., "OPEN", "CLOSED").
+     * @param applicantNric NRIC of the applicant.
+     * @param applicantName Full name of the applicant.
+     * @param projectName   Project the enquiry is related to.
+     */
+
     public Enquiry(int enquiryId, String content, String status, String applicantNric, String applicantName, String projectName) {
         this.enquiryId = enquiryId;
         this.content = content;
@@ -41,6 +52,7 @@ public class Enquiry {
      * @param responder The user responding (officer or manager).
      */
     public void addReply(String content, User responder) {
+        if (content == null || responder == null) throw new IllegalArgumentException("Reply content or responder cannot be null.");
         int nextId = replies.size() + 1;
         replies.add(new EnquiryReply(nextId, content, responder)); 
         close();
@@ -52,10 +64,16 @@ public class Enquiry {
      * @param reply A reply object.
      */
     public void addReply(EnquiryReply reply) {
+        
         replies.add(reply);
         close(); // Auto-close on reply
     }
 
+    /**
+     * Edits the enquiry content.
+     *
+     * @param newContent The updated enquiry text.
+     */
     public void editContent(String newContent) {
         this.content = newContent;
     }

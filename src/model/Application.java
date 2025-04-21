@@ -1,14 +1,24 @@
 package src.model;
 
 /**
- * Represents an application made by an applicant to a specific housing project.
- * Tracks flat type, status, and pricing logic.
+ * Represents an application submitted by an applicant for a specific BTO housing project.
+ * Stores flat type, application status, and supports logic for flat pricing and withdrawal.
  */
+
 public class Application {
     protected Applicant applicant;
     protected Project project;
     protected String status; // PENDING, SUCCESSFUL, etc.
     protected String chosenFlatType;
+
+    /**
+     * Creates a new application for a specific project and flat type.
+     *
+     * @param applicant       The applicant who submitted the application.
+     * @param project         The project applied to.
+     * @param status          The current application status.
+     * @param chosenFlatType  The flat type applied for (e.g., "2-Room", "3-Room").
+     */
 
     public Application(Applicant applicant, Project project, String status, String chosenFlatType) {
         this.applicant = applicant;
@@ -35,11 +45,11 @@ public class Application {
     }
 
     /**
-     * Returns the price of the chosen flat type based on the associated project.
-     * Prints pricing debug info to the console.
+     * Calculates the price of the flat based on the chosen type and associated project.
      *
-     * @return The price of the chosen flat.
+     * @return Price of the choosen flat type.
      */
+
     public double getFlatPrice() {
         System.out.println("🛠️ Project: " + project.getProjectName());
         System.out.println("2-Room Price: " + project.getPrice2Room());

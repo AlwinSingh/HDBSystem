@@ -1,9 +1,10 @@
 package src.model;
 
 /**
- * Represents an applicant in the HDB system.
- * Extends the User class and includes application-related state and actions.
+ * Represents a user who applies for BTO projects in the HDB system.
+ * Inherits from {@link User} and contains application-related data and behavior.
  */
+
 public class Applicant extends User {
     protected Application application;
 
@@ -21,13 +22,13 @@ public class Applicant extends User {
     }
 
     /**
-     * Constructs a new applicant with the specified user details.
+     * Constructs a new applicant with the specified personal and login details.
      *
-     * @param nric           Applicant's NRIC.
-     * @param password       Login password.
-     * @param name           Full name of the applicant.
-     * @param age            Age of the applicant.
-     * @param maritalStatus  Marital status of the applicant.
+     * @param nric          Applicant's NRIC.
+     * @param password      Login password.
+     * @param name          Full name of the applicant.
+     * @param age           Age of the applicant.
+     * @param maritalStatus Marital status (e.g., Single, Married).
      */
     public Applicant(String nric, String password, String name, int age, String maritalStatus) {
         super(nric, password, name, age, maritalStatus);
@@ -69,11 +70,9 @@ public class Applicant extends User {
     }
 
     /**
-     * Indicates whether this user is currently acting as an HDB officer.
-     * This will return true only if the applicant is an instance of {@link HDBOfficer}
-     * and has not yet applied as an applicant.
+     * Indicates whether this applicant is also an HDB officer who has not yet applied for a project.
      *
-     * @return True if this user is a non-applicant HDB officer and false otherwise.
+     * @return True if the user is a registered officer without an active application.
      */
     public boolean isOfficer() {
         return (this instanceof HDBOfficer) && this.application == null;

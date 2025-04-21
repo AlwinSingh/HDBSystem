@@ -19,17 +19,29 @@ public class Feedback {
     public static final String STATUS_PENDING = "PENDING";
     public static final String STATUS_RESOLVED = "RESOLVED";
 
-    public Feedback(int feedbackId, String applicantNRIC, String content, String status,
-                LocalDate submittedDate, String resolverName, LocalDate resolvedDate, String projectName) {
-    this.feedbackId = feedbackId;
-    this.applicantNRIC = applicantNRIC;
-    this.content = content;
-    this.status = status;
-    this.submittedDate = submittedDate;
-    this.resolverName = resolverName;
-    this.resolvedDate = resolvedDate;
-    this.projectName = projectName; // NEW
-}
+    /**
+     * Constructs a new Feedback entry.
+     *
+     * @param feedbackId     Unique id for the feedback.
+     * @param applicantNRIC  NRIC of the applicant who submitted it.
+     * @param content        Feedback message content.
+     * @param status         Current feedback status (PENDING or RESOLVED).
+     * @param submittedDate  Date the feedback was submitted.
+     * @param resolverName   Name of the officer/manager who resolved it (optional).
+     * @param resolvedDate   Date the feedback was resolved (optional).
+     * @param projectName    Project associated with the feedback.
+     */
+
+    public Feedback(int feedbackId, String applicantNRIC, String content, String status,LocalDate submittedDate, String resolverName, LocalDate resolvedDate, String projectName) {
+        this.feedbackId = feedbackId;
+        this.applicantNRIC = applicantNRIC;
+        this.content = content;
+        this.status = status;
+        this.submittedDate = submittedDate;
+        this.resolverName = resolverName;
+        this.resolvedDate = resolvedDate;
+        this.projectName = projectName; 
+    }
 
     // === Business Logic ===
     /**
@@ -44,11 +56,21 @@ public class Feedback {
     }
 
     /**
-     * Returns true if this feedback is marked as resolved.
+     * Checks whether the feedback is resolved.
+     *
+     * @return True if the status is RESOLVED.
      */
+
     public boolean isResolved() {
         return STATUS_RESOLVED.equalsIgnoreCase(status);
     }
+
+
+    /**
+     * Checks whether the feedback is still pending.
+     *
+     * @return True if the status is PENDING.
+     */
 
     public boolean isPending() {
         return STATUS_PENDING.equalsIgnoreCase(status);

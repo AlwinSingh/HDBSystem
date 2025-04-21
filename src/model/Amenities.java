@@ -1,9 +1,10 @@
 package src.model;
 
 /**
- * Represents a nearby amenity (e.g., school, mall, MRT) associated with a project.
- * Each amenity includes its type, name, distance from the project, and project link.
+ * Represents a nearby amenity (e.g., MRT station, school, mall) associated with an HDB project.
+ * Contains attributes such as amenity type, name, distance from the project, and project linkage.
  */
+
 public class Amenities {
     private int amenityId;
     private String type;
@@ -67,10 +68,10 @@ public class Amenities {
 
 
     /**
-     * Gets the name of the associated project.
-     *
-     * @return Project name.
+     * Updates the project name associated with the amenity.
+     * @param projectName The project name to link this amenity to.
      */
+
     public String getProjectName() {
         return projectName;
     }
@@ -87,6 +88,9 @@ public class Amenities {
     }
     
     public void setDistance(double distance) {
+        if (distance < 0) {
+            throw new IllegalArgumentException("Distance cannot be negative.");
+        }
         this.distance = distance;
     }
 
