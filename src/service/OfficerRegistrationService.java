@@ -3,6 +3,8 @@ package src.service;
 import java.util.List;
 import java.util.Scanner;
 
+import src.interfaces.IOfficerReceiptService;
+import src.interfaces.IOfficerRegistrationService;
 import src.model.Application;
 import src.model.HDBOfficer;
 import src.model.Project;
@@ -14,14 +16,14 @@ import src.util.ProjectCsvMapper;
  * Provides functionality for HDB Officers to handle registration-related tasks.
  * This includes checking registration status, browsing available projects, and registering for one.
  */
-public class OfficerRegistrationService {
+public class OfficerRegistrationService implements IOfficerRegistrationService {
 
     /**
      * Displays the officer's current registration status and their assigned project's details.
      *
      * @param officer The logged-in HDB officer.
      */
-    public static void viewOfficerRegistrationStatus(HDBOfficer officer) {
+    public void viewOfficerRegistrationStatus(HDBOfficer officer) {
         System.out.println("🔍 Officer Registration Overview");
         String status = officer.getRegistrationStatus();
         System.out.println("   📄 Registration Status : " + (status != null ? status : "N/A"));
@@ -59,7 +61,7 @@ public class OfficerRegistrationService {
      * @param selectedProject The project to register for.
      * @return True if registration succeeds, false otherwise.
      */
-    public static boolean registerForProject(HDBOfficer officer, Project selectedProject) {
+    public boolean registerForProject(HDBOfficer officer, Project selectedProject) {
         // Officer is already assigned to a project
         if (officer.getAssignedProject() != null) {
             System.out.println("❌ You are already registered to handle a project.");
@@ -90,7 +92,7 @@ public class OfficerRegistrationService {
      * @param officer The officer browsing projects.
      * @return A list of available projects.
      */
-    public static List<Project> getAvailableProjectsForOfficer(HDBOfficer officer) {
+    public List<Project> getAvailableProjectsForOfficer(HDBOfficer officer) {
         return ProjectCsvMapper.loadAll().stream()
             .filter(Project::isVisible)
             .filter(p -> !p.getOfficerNRICs().contains(officer.getNric()))
@@ -102,7 +104,7 @@ public class OfficerRegistrationService {
      *
      * @param sc Scanner to receive user input.
      */
-    public static void browseAndFilterProjects(Scanner sc) {
+    public void browseAndFilterProjects(Scanner sc) {
         System.out.println("\n🔍 Browse & Filter Available Projects (for reference only)");
     
         List<Project> all = ProjectCsvMapper.loadAll();
@@ -196,7 +198,7 @@ public class OfficerRegistrationService {
      * @param officer The officer attempting to register.
      * @param sc      Scanner for input.
      */
-    public static void registerForProject(HDBOfficer officer, Scanner sc) {
+    public void registerForProject(HDBOfficer officer, Scanner sc) {
         if (officer.getAssignedProject() != null) {
             System.out.println("✅ You are already registered to project: " +
                 officer.getAssignedProject().getProjectName());

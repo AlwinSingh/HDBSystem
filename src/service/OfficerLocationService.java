@@ -2,6 +2,7 @@ package src.service;
 
 import java.util.Scanner;
 
+import src.interfaces.IOfficerLocationService;
 import src.model.HDBOfficer;
 import src.model.Project;
 import src.util.ProjectCsvMapper;
@@ -11,7 +12,7 @@ import src.util.ProjectCsvMapper;
  * Provides functionality for officers to update the location details
  * of their assigned HDB project, including address and geolocation.
  */
-public class OfficerLocationService {
+public class OfficerLocationService implements IOfficerLocationService {
 
     /**
      * Allows the officer to update the physical address and geolocation of their assigned project.
@@ -19,7 +20,7 @@ public class OfficerLocationService {
      * @param officer The logged-in officer.
      * @param sc      Scanner for input.
      */
-    public static void updateLocation(HDBOfficer officer, Scanner sc) {
+    public void updateLocation(HDBOfficer officer, Scanner sc) {
         if (!canUpdateLocation(officer)) {
             System.out.println("❌ Access denied. Officer registration must be APPROVED and a project must be assigned.");
             return;
@@ -38,7 +39,7 @@ public class OfficerLocationService {
      * @param officer The HDB officer.
      * @return True if officer is approved and has a project assigned.
      */
-    public static boolean canUpdateLocation(HDBOfficer officer) {
+    public boolean canUpdateLocation(HDBOfficer officer) {
         return "APPROVED".equalsIgnoreCase(officer.getRegistrationStatus())
             && officer.getAssignedProject() != null;
     }
@@ -50,7 +51,7 @@ public class OfficerLocationService {
      * @param sc Scanner to capture input.
      * @return True if update succeeds; false on coordinate parsing error.
      */
-    public static boolean updateProjectLocation(Project p, Scanner sc) {
+    public boolean updateProjectLocation(Project p, Scanner sc) {
         if (p == null) return false;
 
         System.out.println("\n✏️  Update location for " + p.getProjectName());

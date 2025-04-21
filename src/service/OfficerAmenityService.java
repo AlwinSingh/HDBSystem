@@ -3,6 +3,7 @@ package src.service;
 import java.util.List;
 import java.util.Scanner;
 
+import src.interfaces.IOfficerAmenityService;
 import src.model.Amenities;
 import src.model.HDBOfficer;
 import src.model.Project;
@@ -15,7 +16,7 @@ import src.util.InputValidator;
  * Includes functionality for adding and updating amenities for their assigned project.
  * Officer must be registered and approved to perform these operations.
  */
-public class OfficerAmenityService {
+public class OfficerAmenityService implements IOfficerAmenityService {
 
     /**
      * Adds a new amenity to the officer’s assigned project or updates an existing one.
@@ -23,7 +24,7 @@ public class OfficerAmenityService {
      * @param officer The logged-in officer.
      * @param sc      Scanner for input.
      */
-    public static void addOrUpdateAmenity(HDBOfficer officer, Scanner sc) {
+    public void addOrUpdateAmenity(HDBOfficer officer, Scanner sc) {
         if (!canManageAmenities(officer)) {
             System.out.println("❌ Access denied. Officer registration status must be APPROVED to manage amenities.");
             return;
@@ -39,7 +40,7 @@ public class OfficerAmenityService {
      * @param officer The officer attempting to manage amenities.
      * @return True if allowed; false otherwise.
      */
-    public static boolean canManageAmenities(HDBOfficer officer) {
+    public boolean canManageAmenities(HDBOfficer officer) {
         return "APPROVED".equalsIgnoreCase(officer.getRegistrationStatus())
             && officer.getAssignedProject() != null;
     }
@@ -50,7 +51,7 @@ public class OfficerAmenityService {
      * @param project The project to which the amenity is tied.
      * @param sc      Scanner for user input.
      */
-    public static void manageAmenityInteraction(Project project, Scanner sc) {
+    public void manageAmenityInteraction(Project project, Scanner sc) {
         System.out.println("\n🏗️ Managing amenities for " + project.getProjectName());
         System.out.print("Would you like to (A)dd or (U)pdate an amenity? ");
         String action = sc.nextLine().trim().toUpperCase();
@@ -68,7 +69,7 @@ public class OfficerAmenityService {
      * @param project The project to add the amenity to.
      * @param sc      Scanner for input.
      */
-    private static void addAmenity(Project project, Scanner sc) {
+    private void addAmenity(Project project, Scanner sc) {
         int nextId = AmenitiesCsvMapper.loadAll().stream()
             .map(Amenities::getAmenityId)
             .max(Integer::compareTo)
@@ -94,7 +95,7 @@ public class OfficerAmenityService {
      * @param project The project whose amenities are being modified.
      * @param sc      Scanner for user input.
      */
-    private static void updateAmenity(Project project, Scanner sc) {
+    private void updateAmenity(Project project, Scanner sc) {
         List<Amenities> amenities = AmenitiesCsvMapper.loadAll().stream()
             .filter(a -> a.getProjectName().equalsIgnoreCase(project.getProjectName()))
             .toList();

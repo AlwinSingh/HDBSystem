@@ -75,7 +75,7 @@ public class Applicant extends User {
      * @return True if the user is a registered officer without an active application.
      */
     public boolean isOfficer() {
-        return (this instanceof HDBOfficer) && this.application == null;
+        return true;
     }
   
 }

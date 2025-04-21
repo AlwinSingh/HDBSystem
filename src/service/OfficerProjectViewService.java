@@ -2,6 +2,7 @@ package src.service;
 
 import java.util.List;
 
+import src.interfaces.IOfficerProjectViewService;
 import src.model.Amenities;
 import src.model.HDBOfficer;
 import src.model.Project;
@@ -12,7 +13,7 @@ import src.model.ProjectLocation;
  * about their assigned HDB project.
  * strictly related to project viewing and summary generation.
  */
-public class OfficerProjectViewService {
+public class OfficerProjectViewService implements IOfficerProjectViewService {
 
     /**
      * Generates a formatted string summarizing all key project information 
@@ -23,7 +24,7 @@ public class OfficerProjectViewService {
      * @param officer  The logged-in officer viewing the project.
      * @return A human-readable summary string of the project.
      */
-    public static String getProjectSummary(Project p, HDBOfficer officer) {
+    public String getProjectSummary(Project p, HDBOfficer officer) {
         StringBuilder sb = new StringBuilder();
         ProjectLocation loc = p.getLocation();
 
@@ -49,7 +50,7 @@ public class OfficerProjectViewService {
      *
      * @param officer The logged-in officer.
      */
-    public static void viewAssignedProjectDetails(HDBOfficer officer) {
+    public void viewAssignedProjectDetails(HDBOfficer officer) {
         Project p = officer.getAssignedProject();
         if (p == null) {
             System.out.println("❌ No assigned project.");
