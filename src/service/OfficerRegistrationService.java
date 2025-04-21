@@ -6,6 +6,7 @@ import src.interfaces.IOfficerRegistrationService;
 import src.model.Application;
 import src.model.HDBOfficer;
 import src.model.Project;
+import src.repository.OfficerRepository;
 import src.util.OfficerCsvMapper;
 import src.util.ProjectCsvMapper;
 
@@ -15,7 +16,7 @@ import src.util.ProjectCsvMapper;
  * This includes checking registration status, browsing available projects, and registering for one.
  */
 public class OfficerRegistrationService implements IOfficerRegistrationService {
-
+    private static final OfficerRepository officerRepository = new OfficerCsvMapper();
     /**
      * Displays the officer's current registration status and their assigned project's details.
      *
@@ -77,7 +78,7 @@ public class OfficerRegistrationService implements IOfficerRegistrationService {
     
         boolean registered = officer.registerToHandleProject(selectedProject);
         if (registered) {
-            OfficerCsvMapper.updateOfficer(officer);
+            officerRepository.updateOfficer(officer);
             System.out.println("✅ Registration submitted for project: " + selectedProject.getProjectName());
         }
     

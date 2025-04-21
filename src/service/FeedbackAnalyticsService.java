@@ -4,6 +4,7 @@ import src.model.Feedback;
 import src.model.FeedbackAnalytics;
 import src.model.HDBManager;
 import src.model.Project;
+import src.repository.FeedbackRepository;
 import src.util.FeedbackCsvMapper;
 import src.util.ProjectCsvMapper;
 
@@ -16,13 +17,14 @@ import java.util.stream.Collectors;
  */
 public class FeedbackAnalyticsService {
 
+    private static final FeedbackRepository feedbackRepository = new FeedbackCsvMapper();
     /**
      * Loads all feedback entries from the CSV file.
      *
      * @return A list of all feedback submitted in the system.
      */
     public static List<Feedback> getAllFeedback() {
-        return FeedbackCsvMapper.loadAll();
+        return feedbackRepository.loadAll();
     }
 
     /**

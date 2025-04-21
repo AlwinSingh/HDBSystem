@@ -2,6 +2,7 @@ package src.util;
 
 import src.model.Payment;
 import src.model.PaymentMethod;
+import src.repository.PaymentRepository;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -11,7 +12,8 @@ import static src.util.CsvUtil.*;
  * Utility class for reading and writing {@link Payment} objects to a CSV file.
  * Supports full operations on payment records.
  */
-public class PaymentCsvMapper {
+public class PaymentCsvMapper implements PaymentRepository {
+
     private static final String CSV_PATH = FilePath.PAYMENT_LIST_FILE;
 
     /**
@@ -19,7 +21,7 @@ public class PaymentCsvMapper {
      *
      * @return List of {@link Payment} objects
      */
-    public static List<Payment> loadAll() {
+    public List<Payment> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);
         List<Payment> list = new ArrayList<>();
 
@@ -53,7 +55,7 @@ public class PaymentCsvMapper {
      *
      * @param payments List of Payment objects.
      */
-    public static void saveAll(List<Payment> payments) {
+    public void saveAll(List<Payment> payments) {
         List<Map<String, String>> rows = payments.stream()
             .map(PaymentCsvMapper::toCsvRow)
             .toList();
@@ -66,7 +68,7 @@ public class PaymentCsvMapper {
      *
      * @param payment Payment object to append.
      */
-    public static void append(Payment payment) {
+    public void append(Payment payment) {
         CsvUtil.append(CSV_PATH, toCsvRow(payment));
     }
 
@@ -75,7 +77,7 @@ public class PaymentCsvMapper {
      *
      * @param updated The updated {@link Payment} object.
      */
-    public static void update(Payment updated) {
+    public void update(Payment updated) {
         List<Payment> all = loadAll();
         for (int i = 0; i < all.size(); i++) {
             if (all.get(i).getPaymentId() == updated.getPaymentId()) {
@@ -101,4 +103,5 @@ public class PaymentCsvMapper {
         row.put("Status", p.getStatus());
         return row;
     }
+
 }

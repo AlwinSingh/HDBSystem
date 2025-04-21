@@ -1,6 +1,7 @@
 package src.model;
 
 import src.repository.ApplicantRepository;
+import src.repository.InvoiceRepository;
 import src.util.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
  */
 public class ReportGenerator {
     private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
+    private static final InvoiceRepository invoiceRepository = new InvoiceCsvMapper();
     /**
      * Generates reports for all applicants who have successfully booked flats.
      * Each report includes invoice and optional receipt details.
@@ -19,7 +21,7 @@ public class ReportGenerator {
      */
     public List<Report> generateAllReports() {
         List<Applicant> applicants = applicantRepository.loadAll();
-        List<Invoice> invoices = InvoiceCsvMapper.loadAll();
+        List<Invoice> invoices = invoiceRepository.loadAll();
         List<Receipt> receipts = ReceiptCsvMapper.loadAll();
         List<Project> allProjects = ProjectCsvMapper.loadAll();  // 🔥 Load complete projects
         List<Report> reports = new ArrayList<>();

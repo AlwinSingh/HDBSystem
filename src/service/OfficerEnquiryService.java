@@ -7,6 +7,7 @@ import src.interfaces.IOfficerEnquiryService;
 import src.model.Enquiry;
 import src.model.HDBOfficer;
 import src.model.Project;
+import src.repository.EnquiryRepository;
 import src.util.EnquiryCsvMapper;
 
 /**
@@ -15,6 +16,7 @@ import src.util.EnquiryCsvMapper;
  */
 public class OfficerEnquiryService implements IOfficerEnquiryService {
 
+    private static final EnquiryRepository enquiryRepository = new EnquiryCsvMapper();
     /**
      * Opens the enquiry handling interface for the officer, allowing them to view and respond to enquiries.
      *
@@ -68,7 +70,7 @@ public class OfficerEnquiryService implements IOfficerEnquiryService {
         Project assigned = officer.getAssignedProject();
         if (assigned == null || !"APPROVED".equalsIgnoreCase(officer.getRegistrationStatus())) return List.of();
 
-        return EnquiryCsvMapper.loadAll().stream()
+        return enquiryRepository.loadAll().stream()
             .filter(e -> e.getProjectName().equalsIgnoreCase(assigned.getProjectName()))
             .filter(e -> Enquiry.STATUS_PENDING.equalsIgnoreCase(e.getStatus()))
             .toList();
@@ -85,7 +87,7 @@ public class OfficerEnquiryService implements IOfficerEnquiryService {
      */
     public boolean replyToEnquiry(Enquiry enquiry, HDBOfficer officer, String reply) {
         enquiry.addReply(reply, officer);
-        EnquiryCsvMapper.update(enquiry); // Efficient single-row update
+        enquiryRepository.update(enquiry); // Efficient single-row update
         return true;
     }
 

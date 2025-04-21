@@ -3,6 +3,7 @@ package src.service;
 import src.model.Feedback;
 import src.model.HDBManager;
 import src.model.Project;
+import src.repository.FeedbackRepository;
 import src.util.FeedbackCsvMapper;
 
 import java.time.LocalDate;
@@ -15,7 +16,8 @@ import java.util.stream.Collectors;
  */
 public class FeedbackService {
 
-    private static List<Feedback> feedbackList = FeedbackCsvMapper.loadAll();
+    private static final FeedbackRepository feedbackRepository = new FeedbackCsvMapper();
+    private static List<Feedback> feedbackList = feedbackRepository.loadAll();
 
     /**
      * Submits new feedback from an applicant for a specific project.
@@ -38,7 +40,7 @@ public class FeedbackService {
                 projectName
         );
         feedbackList.add(newFeedback);
-        FeedbackCsvMapper.saveAll(feedbackList);
+        feedbackRepository.saveAll(feedbackList);
         System.out.println("✅ Feedback submitted successfully!");
     }
 
@@ -156,7 +158,7 @@ public class FeedbackService {
                 f.setStatus(Feedback.STATUS_RESOLVED);
                 f.setResolverName(adminName);
                 f.setResolvedDate(LocalDate.now());
-                FeedbackCsvMapper.saveAll(feedbackList);
+                feedbackRepository.saveAll(feedbackList);
                 System.out.println("✅ Feedback #" + id + " marked as resolved by " + adminName);
                 return true;
             }
@@ -169,13 +171,13 @@ public class FeedbackService {
      * Saves the in-memory feedback list to the CSV file.
      */
     public static void saveAll() {
-        FeedbackCsvMapper.saveAll(feedbackList);
+        feedbackRepository.saveAll(feedbackList);
     }
 
     /**
      * Reloads the feedback list from CSV to ensure it's up to date.
      */
     public static void refresh() {
-        feedbackList = FeedbackCsvMapper.loadAll();
+        feedbackList = feedbackRepository.loadAll();
     }
 }

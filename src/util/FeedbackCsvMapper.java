@@ -1,6 +1,8 @@
 package src.util;
 
 import src.model.Feedback;
+import src.repository.FeedbackRepository;
+
 import java.util.*;
 import java.time.LocalDate;
 import static src.util.CsvUtil.*;
@@ -10,7 +12,7 @@ import static src.util.CsvUtil.*;
  * Utility class for reading and writing Feedback data to and from a CSV file.
  * Handles parsing, serialization, and persistence of {@link Feedback} objects.
  */
-public class FeedbackCsvMapper {
+public class FeedbackCsvMapper implements FeedbackRepository {
     private static final String CSV_PATH = FilePath.FEEDBACK_LIST_FILE;
 
     /**
@@ -18,7 +20,7 @@ public class FeedbackCsvMapper {
      *
      * @return List of {@link Feedback} objects.
      */
-    public static List<Feedback> loadAll() {
+    public List<Feedback> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);
         List<Feedback> list = new ArrayList<>();
 
@@ -59,7 +61,7 @@ public class FeedbackCsvMapper {
      *
      * @param feedbacks List of {@link Feedback} objects to save.
      */
-    public static void saveAll(List<Feedback> feedbacks) {
+    public void saveAll(List<Feedback> feedbacks) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (Feedback fb : feedbacks) {
             Map<String, String> row = new LinkedHashMap<>();

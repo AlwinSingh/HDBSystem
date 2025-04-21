@@ -1,6 +1,7 @@
 package src.service;
 
 import src.model.*;
+import src.repository.EnquiryRepository;
 import src.util.EnquiryCsvMapper;
 import src.util.CsvUtil;
 import java.util.*;
@@ -15,14 +16,14 @@ import src.util.ProjectCsvMapper;
  * editing, deleting, and responding to enquiries for applicants and HDB personnel.
  */
 public class EnquireService {
-
+    private static final EnquiryRepository enquiryRepository = new EnquiryCsvMapper();
     /**
      * Loads all enquiries from the CSV file.
      *
      * @return A list of all enquiries in the system.
      */
     public static List<Enquiry> loadFromCSV() {
-        return EnquiryCsvMapper.loadAll();
+        return enquiryRepository.loadAll();
     }
 
 
@@ -86,7 +87,7 @@ public class EnquireService {
         Enquiry newEntry = new Enquiry(newId, content, Enquiry.STATUS_PENDING,
                 applicant.getNric(), applicant.getName(), selected.getProjectName());
 
-        EnquiryCsvMapper.add(newEntry);
+        enquiryRepository.add(newEntry);
         System.out.println("✅ Enquiry submitted.");
     }
 
@@ -171,7 +172,7 @@ public class EnquireService {
         }
 
         selected.editContent(newContent);
-        EnquiryCsvMapper.update(selected);
+        enquiryRepository.update(selected);
         System.out.println("✅ Enquiry updated.");
     }
 
@@ -211,7 +212,7 @@ public class EnquireService {
         }
 
         selected.delete();
-        EnquiryCsvMapper.saveAll(all);  // acceptable as deletion is rare
+        enquiryRepository.saveAll(all);  // acceptable as deletion is rare
         System.out.println("✅ Enquiry deleted.");
     }
 
@@ -262,7 +263,7 @@ public class EnquireService {
         }
 
         selected.addReply(reply, user);
-        EnquiryCsvMapper.update(selected);
+        enquiryRepository.update(selected);
 
         System.out.println("✅ Reply submitted and enquiry marked as CLOSED.");
     }
@@ -423,7 +424,7 @@ public class EnquireService {
             String reply = sc.nextLine().trim();
 
             selected.addReply(reply, manager);
-            EnquiryCsvMapper.update(selected);
+            enquiryRepository.update(selected);
             System.out.println("✅ Reply sent and enquiry marked as CLOSED.");
 
         } catch (Exception e) {

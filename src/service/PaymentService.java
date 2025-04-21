@@ -1,6 +1,8 @@
 package src.service;
 
 import src.model.Payment;
+import src.repository.PaymentRepository;
+import src.util.OfficerCsvMapper;
 import src.util.PaymentCsvMapper;
 
 import java.util.ArrayList;
@@ -15,10 +17,11 @@ import java.util.stream.Collectors;
  * This class supports loading, saving, updating, and retrieving payments.
  */
 public class PaymentService {
+    private static final PaymentRepository paymentRepository = new PaymentCsvMapper();
     private static List<Payment> payments = new ArrayList<>();
 
     static {
-        payments = PaymentCsvMapper.loadAll();
+        payments = paymentRepository.loadAll();
     }
 
     // Append new payment to disk and in-memory list
@@ -29,7 +32,7 @@ public class PaymentService {
      */
     public static void addPayment(Payment payment) {
         payments.add(payment);
-        PaymentCsvMapper.append(payment);
+        paymentRepository.append(payment);
     }
 
     /**
@@ -79,7 +82,7 @@ public class PaymentService {
      * @param updated The updated Payment object.
      */
     public static void updatePayment(Payment updated) {
-        PaymentCsvMapper.update(updated);  // Write to CSV
+        paymentRepository.update(updated);  // Write to CSV
         for (int i = 0; i < payments.size(); i++) {
             if (payments.get(i).getPaymentId() == updated.getPaymentId()) {
                 payments.set(i, updated);  // Update cache

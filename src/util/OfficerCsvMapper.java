@@ -3,12 +3,14 @@ package src.util;
 import java.util.*;
 import src.model.HDBOfficer;
 import src.model.Project;
+import src.repository.OfficerRepository;
 
 /**
  * Utility class for mapping {@link HDBOfficer} records to and from CSV.
  * Handles registration status, project assignment, and persistence operations.
  */
-public class OfficerCsvMapper {
+public class OfficerCsvMapper implements OfficerRepository {
+
 
     /**
      * Converts a CSV row to an HDBOfficer, assigning project and registration status if present.
@@ -17,7 +19,7 @@ public class OfficerCsvMapper {
      * @param allProjects All known projects for matching.
      * @return The constructed officer object.
      */
-    public static HDBOfficer fromCsvRow(Map<String, String> row, List<Project> allProjects) {
+    public HDBOfficer fromCsvRow(Map<String, String> row, List<Project> allProjects) {
         String nric = row.getOrDefault("NRIC", "").trim();
         String password = row.getOrDefault("Password", "").trim();
         String name = row.getOrDefault("Name", "").trim();
@@ -47,7 +49,7 @@ public class OfficerCsvMapper {
      * @param officer The officer.
      * @return CSV row map.
      */
-    public static Map<String, String> toCsvRow(HDBOfficer officer) {
+    public Map<String, String> toCsvRow(HDBOfficer officer) {
         Map<String, String> row = new LinkedHashMap<>();
         row.put("NRIC", officer.getNric());
         row.put("Password", officer.getPassword());
@@ -67,7 +69,7 @@ public class OfficerCsvMapper {
      * @param allProjects The full list of projects.
      * @return List of officers.
      */
-    public static List<HDBOfficer> loadAll(List<Project> allProjects) {
+    public List<HDBOfficer> loadAll(List<Project> allProjects) {
         List<Map<String, String>> rows = CsvUtil.read(FilePath.OFFICER_LIST_FILE);
         List<HDBOfficer> officers = new ArrayList<>();
         for (Map<String, String> row : rows) {
@@ -81,7 +83,7 @@ public class OfficerCsvMapper {
      *
      * @param updatedOfficer The officer with updated fields.
      */
-    public static void updateOfficer(HDBOfficer updatedOfficer) {
+    public void updateOfficer(HDBOfficer updatedOfficer) {
         List<Map<String, String>> rows = CsvUtil.read(FilePath.OFFICER_LIST_FILE);
     
         for (Map<String, String> row : rows) {
@@ -102,7 +104,7 @@ public class OfficerCsvMapper {
      *
      * @param officers List of officers to save.
      */
-    public static void saveAll(List<HDBOfficer> officers) {
+    public void saveAll(List<HDBOfficer> officers) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (HDBOfficer o : officers) {
             rows.add(toCsvRow(o));

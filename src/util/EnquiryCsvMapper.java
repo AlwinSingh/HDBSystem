@@ -1,6 +1,7 @@
 package src.util;
 
 import src.model.*;
+import src.repository.EnquiryRepository;
 
 import java.util.*;
 
@@ -10,7 +11,7 @@ import java.util.*;
  * Supports operations like load, save, update, and append.
  * Also handles parsing of embedded {@link EnquiryReply} data.
  */
-public class EnquiryCsvMapper {
+public class EnquiryCsvMapper implements EnquiryRepository {
 
     /**
      * Parses a string safely into an integer, returning a default value if it fails.
@@ -19,7 +20,7 @@ public class EnquiryCsvMapper {
      * @param def The default value.
      * @return Parsed integer or default.
      */
-    private static int safeParseInt(String s, int def) {
+    private int safeParseInt(String s, int def) {
         if (s == null || s.trim().isEmpty()) return def;
         try { return Integer.parseInt(s.trim()); }
         catch (NumberFormatException e) { return def; }
@@ -31,7 +32,7 @@ public class EnquiryCsvMapper {
      * @param row The CSV row.
      * @return The reconstructed {@link Enquiry} object.
      */
-    public static Enquiry fromCsvRow(Map<String, String> row) {
+    public Enquiry fromCsvRow(Map<String, String> row) {
         int id = safeParseInt(row.get("EnquiryId"), 0);
         String content = row.getOrDefault("Content", "").trim();
         String status = row.getOrDefault("Status", Enquiry.STATUS_OPEN).trim();
@@ -90,7 +91,7 @@ public class EnquiryCsvMapper {
      *
      * @return List of all {@link Enquiry} objects.
      */
-    public static List<Enquiry> loadAll() {
+    public List<Enquiry> loadAll() {
         List<Map<String, String>> rawRows = CsvUtil.read(FilePath.ENQUIRY_LIST_FILE);
         List<Enquiry> enquiries = new ArrayList<>();
 
@@ -115,7 +116,7 @@ public class EnquiryCsvMapper {
      *
      * @param enquiries The list of enquiries to save.
      */
-    public static void saveAll(List<Enquiry> enquiries) {
+    public void saveAll(List<Enquiry> enquiries) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (Enquiry e : enquiries) {
             rows.add(toCsvRow(e));
@@ -128,7 +129,7 @@ public class EnquiryCsvMapper {
      *
      * @param newEnquiry The enquiry to add.
      */
-    public static void add(Enquiry newEnquiry) {
+    public void add(Enquiry newEnquiry) {
         CsvUtil.append(FilePath.ENQUIRY_LIST_FILE, toCsvRow(newEnquiry));
     }
 
@@ -137,7 +138,7 @@ public class EnquiryCsvMapper {
      *
      * @param updatedEnquiry The modified {@link Enquiry} object.
      */
-    public static void update(Enquiry updatedEnquiry) {
+    public void update(Enquiry updatedEnquiry) {
         List<Enquiry> all = loadAll();
         for (int i = 0; i < all.size(); i++) {
             if (all.get(i).getEnquiryId() == updatedEnquiry.getEnquiryId()) {

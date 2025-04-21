@@ -1,6 +1,9 @@
 package src.service;
 
 import src.model.Invoice;
+import src.repository.FeedbackRepository;
+import src.repository.InvoiceRepository;
+import src.util.FeedbackCsvMapper;
 import src.util.InvoiceCsvMapper;
 
 import java.util.ArrayList;
@@ -12,11 +15,13 @@ import java.util.stream.Collectors;
  * Maintains an in-memory cache to avoid repeated file reads.
  */
 public class InvoiceService {
+
+    private static final InvoiceRepository invoiceRepository = new InvoiceCsvMapper();
     private static List<Invoice> invoices = new ArrayList<>();
 
     // Load invoices from CSV at class load time
     static {
-        invoices = InvoiceCsvMapper.loadAll();
+        invoices = invoiceRepository.loadAll();
     }
 
     /**
@@ -25,7 +30,7 @@ public class InvoiceService {
      * @param invoice The new invoice to add.
      */
     public static void addInvoice(Invoice invoice) {
-        InvoiceCsvMapper.append(invoice);     // Write to disk
+        invoiceRepository.append(invoice);     // Write to disk
         invoices.add(invoice);                // Add to cache
     }
 
@@ -68,7 +73,7 @@ public class InvoiceService {
      * @param updated The invoice with updated details.
      */
     public static void updateInvoice(Invoice updated) {
-        InvoiceCsvMapper.update(updated); // Persist change
+        invoiceRepository.update(updated); // Persist change
 
         for (int i = 0; i < invoices.size(); i++) {
             if (invoices.get(i).getPaymentId() == updated.getPaymentId()) {

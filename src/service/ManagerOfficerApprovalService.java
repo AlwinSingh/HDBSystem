@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import src.model.HDBManager;
 import src.model.HDBOfficer;
 import src.model.Project;
+import src.repository.OfficerRepository;
 import src.util.CsvUtil;
 import src.util.FilePath;
 import src.util.OfficerCsvMapper;
@@ -19,7 +20,7 @@ import src.util.ProjectCsvMapper;
  * This includes viewing, approving, and rejecting officer registration requests.
  */
 public class ManagerOfficerApprovalService {
-    
+    private static final OfficerRepository officerRepository = new OfficerCsvMapper();
     /**
      * Displays all officer registration requests associated with the manager's projects.
      *
@@ -62,7 +63,7 @@ public class ManagerOfficerApprovalService {
      */
     public static void handleOfficerApproval(HDBManager manager, Scanner sc) {
         List<Project> allProjects = ProjectCsvMapper.loadAll();
-        List<HDBOfficer> allOfficers = OfficerCsvMapper.loadAll(allProjects);
+        List<HDBOfficer> allOfficers = officerRepository.loadAll(allProjects);
 
         List<HDBOfficer> pendingOfficers = allOfficers.stream()
             .filter(o -> HDBOfficer.RegistrationStatusType.PENDING.name().equalsIgnoreCase(o.getRegistrationStatus()))
@@ -116,7 +117,7 @@ public class ManagerOfficerApprovalService {
                 assignedProject.addOfficerNric(officer.getNric());
                 officer.setRegistrationStatus(HDBOfficer.RegistrationStatusType.APPROVED.name());
 
-                OfficerCsvMapper.updateOfficer(officer);
+                officerRepository.updateOfficer(officer);
                 ProjectCsvMapper.updateProject(assignedProject);
 
                 System.out.println("✅ Officer approved and added to project.");
@@ -130,7 +131,7 @@ public class ManagerOfficerApprovalService {
 
                 officer.setRegistrationStatus(HDBOfficer.RegistrationStatusType.REJECTED.name());
                 officer.setAssignedProject(null);
-                OfficerCsvMapper.updateOfficer(officer);
+                officerRepository.updateOfficer(officer);
 
                 System.out.println("❌ Officer registration rejected.");
             }

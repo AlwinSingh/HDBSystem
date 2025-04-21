@@ -1,6 +1,8 @@
 package src.util;
 
 import src.model.*;
+import src.repository.ManagerRepository;
+
 import java.time.LocalDate;
 import java.util.*;
 
@@ -10,7 +12,7 @@ import java.util.*;
  * Supports parsing of location, manager, officer, and applicant associations.
  */
 public class ProjectCsvMapper {
-
+    private static final ManagerRepository managerRepository = new ManagerCsvMapper();
 
     private static String safeTrim(String value) {
         return value != null ? value.trim() : "";
@@ -81,7 +83,7 @@ public class ProjectCsvMapper {
         String managerName = safeTrim(row.getOrDefault("ManagerName", ""));
 
         if (!managerNric.isEmpty()) {
-            HDBManager manager = ManagerCsvMapper.findByNric(managerNric);
+            HDBManager manager = managerRepository.findByNric(managerNric);
             if (manager == null) {
                 manager = new HDBManager(managerNric, "", managerName, 0, "");
             }

@@ -2,13 +2,14 @@ package src.util;
 
 import java.util.*;
 import src.model.HDBManager;
+import src.repository.ManagerRepository;
 
 
 /**
  * Utility class for mapping {@link HDBManager} data to and from CSV rows.
  * Handles loading, saving, and updating manager records.
  */
-public class ManagerCsvMapper {
+public class ManagerCsvMapper implements ManagerRepository {
 
     /**
      * Converts a CSV row into a HDBManager object.
@@ -16,7 +17,7 @@ public class ManagerCsvMapper {
      * @param row The CSV row.
      * @return A manager instance.
      */
-    public static HDBManager fromCsvRow(Map<String, String> row) {
+    public HDBManager fromCsvRow(Map<String, String> row) {
         String nric = row.getOrDefault("NRIC", "").trim();
         String password = row.getOrDefault("Password", "").trim();
         String name = row.getOrDefault("Name", "").trim();
@@ -32,7 +33,7 @@ public class ManagerCsvMapper {
      * @param manager The manager.
      * @return Map of column names and values.
      */
-    public static Map<String, String> toCsvRow(HDBManager manager) {
+    public Map<String, String> toCsvRow(HDBManager manager) {
         Map<String, String> row = new LinkedHashMap<>();
         row.put("NRIC", manager.getNric());
         row.put("Password", manager.getPassword());
@@ -47,7 +48,7 @@ public class ManagerCsvMapper {
      *
      * @return List of managers.
      */
-    public static List<HDBManager> loadAll() {
+    public List<HDBManager> loadAll() {
         List<Map<String, String>> raw = CsvUtil.read(FilePath.MANAGER_LIST_FILE);
         List<HDBManager> managers = new ArrayList<>();
         for (Map<String, String> row : raw) {
@@ -61,7 +62,7 @@ public class ManagerCsvMapper {
      *
      * @param managers List of manager objects.
      */
-    public static void saveAll(List<HDBManager> managers) {
+    public void saveAll(List<HDBManager> managers) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (HDBManager manager : managers) {
             rows.add(toCsvRow(manager));
@@ -75,7 +76,7 @@ public class ManagerCsvMapper {
      * @param nric The NRIC to search.
      * @return The matching manager or null.
      */
-    public static HDBManager findByNric(String nric) {
+    public HDBManager findByNric(String nric) {
         List<HDBManager> allManagers = loadAll();
         for (HDBManager manager : allManagers) {
             if (manager.getNric().equalsIgnoreCase(nric)) {
@@ -90,7 +91,7 @@ public class ManagerCsvMapper {
      *
      * @param updatedManager The new version of the manager.
      */
-    public static void updateManager(HDBManager updatedManager) {
+    public void updateManager(HDBManager updatedManager) {
         List<HDBManager> all = loadAll();
         for (int i = 0; i < all.size(); i++) {
             if (all.get(i).getNric().equalsIgnoreCase(updatedManager.getNric())) {

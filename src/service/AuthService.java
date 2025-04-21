@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.Scanner;
 import src.model.*;
 import src.repository.ApplicantRepository;
+import src.repository.ManagerRepository;
+import src.repository.OfficerRepository;
 import src.util.*;
 
 /**
@@ -11,6 +13,8 @@ import src.util.*;
  */
 public class AuthService {
     private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
+    private static final ManagerRepository managerRepository = new ManagerCsvMapper();
+    private static final OfficerRepository officerRepository = new OfficerCsvMapper();
     /**
      * Authenticates a user by verifying NRIC and password across all user types.
      *
@@ -145,9 +149,9 @@ public class AuthService {
         user.setPassword(newPass);
 
         if (user instanceof HDBManager) {
-            ManagerCsvMapper.updateManager((HDBManager) user);
+            managerRepository.updateManager((HDBManager) user);
         } else if (user instanceof HDBOfficer) {
-            OfficerCsvMapper.updateOfficer((HDBOfficer) user);
+            officerRepository.updateOfficer((HDBOfficer) user);
         } else if (user instanceof Applicant) {
             applicantRepository.update((Applicant) user);
         }
