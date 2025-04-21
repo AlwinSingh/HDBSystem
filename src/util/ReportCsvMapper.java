@@ -5,6 +5,11 @@ import java.time.LocalDate;
 import java.util.*;
 import static src.util.CsvUtil.*;
 
+
+/**
+ * Utility class for handling reading and writing of {@link Report} objects to and from the CSV file.
+ * Each row summarizes one applicant's booking outcome and payment status.
+ */
 public class ReportCsvMapper {
     private static final String CSV_PATH = FilePath.REPORT_LIST_FILE;
 

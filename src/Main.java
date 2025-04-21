@@ -10,8 +10,14 @@ import src.service.RegistrationService;
 import src.util.InputValidator;
 
 /**
- * Entry point of the BTO Application System.
- * Presents login and registration options and routes users based on their role.
+ * Main entry point for the BTO Application System.
+ * <p>
+ * Presents a console-based user interface allowing users to:
+ * - Log in as an Applicant, HDB Officer, or HDB Manager
+ * - Register as a new Applicant
+ * - Exit the application
+ * <p>
+ * Based on the login role, the system routes users to the appropriate dashboard.
  */
 public class Main {
     public static final Scanner sc = new Scanner(System.in);
@@ -44,10 +50,15 @@ public class Main {
     }
 
     /**
-     * Handles login flow for all user roles (Applicant, Officer, Manager).
-     * Verifies credentials and navigates to the appropriate dashboard.
+     * Handles the login process for all supported user roles.
+     * <p>
+     * Prompts the user for NRIC and password, authenticates the credentials,
+     * and then routes to the corresponding dashboard:
+     * - Applicants are routed to {@link ApplicantMenu}
+     * - HDB Officers are routed to {@link OfficerMenu}, or prompted to choose between Applicant/Officer view if dual-role
+     * - HDB Managers are routed to {@link ManagerMenu}
      *
-     * @param sc Scanner for user input.
+     * @param sc The {@link Scanner} instance for user input.
      */
     private static void handleLogin(Scanner sc) {
         System.out.println("\n🔐 Login");

@@ -4,6 +4,10 @@ import java.util.*;
 import src.model.HDBOfficer;
 import src.model.Project;
 
+/**
+ * Utility class for mapping {@link HDBOfficer} records to and from CSV.
+ * Handles registration status, project assignment, and persistence operations.
+ */
 public class OfficerCsvMapper {
 
     /**
@@ -38,10 +42,10 @@ public class OfficerCsvMapper {
     }
 
     /**
-     * Converts an officer object into a CSV-compatible row map.
+     * Converts an officer into a CSV-compatible row map.
      *
-     * @param officer The officer object.
-     * @return Row for CSV writing.
+     * @param officer The officer.
+     * @return CSV row map.
      */
     public static Map<String, String> toCsvRow(HDBOfficer officer) {
         Map<String, String> row = new LinkedHashMap<>();

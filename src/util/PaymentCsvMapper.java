@@ -7,13 +7,17 @@ import java.time.LocalDate;
 import java.util.*;
 import static src.util.CsvUtil.*;
 
+/**
+ * Utility class for reading and writing {@link Payment} objects to a CSV file.
+ * Supports full operations on payment records.
+ */
 public class PaymentCsvMapper {
     private static final String CSV_PATH = FilePath.PAYMENT_LIST_FILE;
 
     /**
      * Loads all payments from the CSV file and converts them to Payment objects.
      *
-     * @return List of payments.
+     * @return List of {@link Payment} objects
      */
     public static List<Payment> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);
@@ -69,7 +73,7 @@ public class PaymentCsvMapper {
     /**
      * Updates an existing payment by ID and persists the change to CSV.
      *
-     * @param updated The updated Payment object.
+     * @param updated The updated {@link Payment} object.
      */
     public static void update(Payment updated) {
         List<Payment> all = loadAll();
@@ -86,7 +90,7 @@ public class PaymentCsvMapper {
      * Converts a Payment object into a CSV-compatible row.
      *
      * @param p The payment object.
-     * @return Map representing a single CSV row.
+     * @return CSV row map.
      */
     private static Map<String, String> toCsvRow(Payment p) {
         Map<String, String> row = new LinkedHashMap<>();

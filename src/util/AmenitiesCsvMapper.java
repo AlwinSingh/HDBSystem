@@ -3,6 +3,10 @@ package src.util;
 import src.model.Amenities;
 import java.util.*;
 
+/**
+ * Utility class for loading, saving, appending, and updating amenities
+ * in the CSV file defined by {@link FilePath#AMENITIES_LIST_FILE}.
+ */
 public class AmenitiesCsvMapper {
     private static final String CSV = FilePath.AMENITIES_LIST_FILE;
 

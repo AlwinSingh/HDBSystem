@@ -4,7 +4,13 @@ import src.model.*;
 import java.time.LocalDate;
 import java.util.*;
 
+
+/**
+ * Utility class for reading and writing {@link Project} objects to and from CSV.
+ * Supports parsing of location, manager, officer, and applicant associations.
+ */
 public class ProjectCsvMapper {
+
 
     private static String safeTrim(String value) {
         return value != null ? value.trim() : "";
@@ -38,7 +44,7 @@ public class ProjectCsvMapper {
      * Converts a CSV row into a Project object, including nested manager, officers, and applicants.
      *
      * @param row A row from the CSV file.
-     * @return Parsed Project object.
+     * @return Parsed {@link Project} object.
      */
     public static Project fromCsvRow(Map<String, String> row) {
         String name = safeTrim(row.get("Project Name"));
@@ -103,7 +109,7 @@ public class ProjectCsvMapper {
      * Converts a Project object into a CSV row format, including its location and relationships.
      *
      * @param p The Project object.
-     * @return Map of project data for CSV writing.
+     * @return Map of {@link Project} data for CSV writing.
      */
     public static Map<String, String> toCsvRow(Project p) {
         Map<String, String> row = new LinkedHashMap<>();
@@ -146,7 +152,7 @@ public class ProjectCsvMapper {
      * Loads all project entries from the CSV file.
      * Skips rows that fail parsing and prints helpful debug messages.
      *
-     * @return List of valid Project objects.
+     * @return List of valid {@link Project} objects.
      */
     public static List<Project> loadAll() {
         List<Map<String, String>> raw = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
@@ -165,7 +171,7 @@ public class ProjectCsvMapper {
     /**
      * Saves a list of projects to the CSV file, replacing any existing content.
      *
-     * @param projects List of projects to save.
+     * @param projects List of {@link Project} to save.
      */
     public static void saveAll(List<Project> projects) {
         List<Map<String, String>> rows = new ArrayList<>();
@@ -178,7 +184,7 @@ public class ProjectCsvMapper {
     /**
      * Appends a single project to the CSV file.
      *
-     * @param project Project to be appended.
+     * @param project {@link Project} to be appended.
      */
     public static void save(Project project) {
         CsvUtil.append(FilePath.PROJECT_LIST_FILE, toCsvRow(project));
@@ -187,7 +193,7 @@ public class ProjectCsvMapper {
     /**
      * Updates an existing project in the CSV file by matching project name.
      *
-     * @param updated Project with updated fields.
+     * @param updated {@link Project} with updated fields.
      */
     public static void updateProject(Project updated) {
         List<Project> all = loadAll();
@@ -203,7 +209,7 @@ public class ProjectCsvMapper {
     /**
      * Deletes a project from the CSV file based on project name.
      *
-     * @param name The name of the project to remove.
+     * @param name The name of the {@link Project} to remove.
      */
     public static void deleteProjectByName(String name) {
         List<Project> all = loadAll().stream()

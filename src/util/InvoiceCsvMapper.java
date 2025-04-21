@@ -7,13 +7,17 @@ import java.time.LocalDate;
 import java.util.*;
 import static src.util.CsvUtil.*;
 
+/**
+ * Utility class for handling reading and writing {@link Invoice} objects to the CSV file.
+ * Provides methods to load, save, append, and update invoices.
+ */
 public class InvoiceCsvMapper {
     private static final String CSV_PATH = FilePath.INVOICE_LIST_FILE;
 
     /**
      * Loads all invoices from the CSV file and parses them into Invoice objects.
      *
-     * @return List of invoices.
+     * @return List of {@link Invoice}
      */
     public static List<Invoice> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);

@@ -8,6 +8,10 @@ import java.time.LocalDate;
 import java.util.*;
 import static src.util.CsvUtil.*;
 
+/**
+ * Utility class for reading and writing {@link Receipt} objects to and from the CSV file.
+ * Handles relationships with {@link Invoice} and stores complete transaction history.
+ */
 public class ReceiptCsvMapper {
     private static final String CSV_PATH = FilePath.RECEIPT_LIST_FILE;
 
@@ -15,7 +19,7 @@ public class ReceiptCsvMapper {
      * Loads all receipt records from the CSV file and constructs Receipt objects.
      * Skips rows with missing or malformed fields.
      *
-     * @return List of valid Receipt objects.
+     * @return List of valid {@link Receipt} objects.
      */
     public static List<Receipt> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);
@@ -91,7 +95,7 @@ public class ReceiptCsvMapper {
     /**
      * Appends a single receipt record to the CSV file.
      *
-     * @param r The Receipt object to append.
+     * @param r The {@link Receipt} object to append.
      */
     public static void append(Receipt r) {
         Map<String, String> row = new LinkedHashMap<>();

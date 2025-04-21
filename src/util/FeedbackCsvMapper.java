@@ -5,13 +5,18 @@ import java.util.*;
 import java.time.LocalDate;
 import static src.util.CsvUtil.*;
 
+
+/**
+ * Utility class for reading and writing Feedback data to and from a CSV file.
+ * Handles parsing, serialization, and persistence of {@link Feedback} objects.
+ */
 public class FeedbackCsvMapper {
     private static final String CSV_PATH = FilePath.FEEDBACK_LIST_FILE;
 
     /**
      * Loads all feedback records from the CSV file and parses them into Feedback objects.
      *
-     * @return List of Feedback entries.
+     * @return List of {@link Feedback} objects.
      */
     public static List<Feedback> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);
@@ -52,7 +57,7 @@ public class FeedbackCsvMapper {
     /**
      * Saves a complete list of feedback entries to the CSV, overwriting existing data.
      *
-     * @param feedbacks List of Feedback objects to save.
+     * @param feedbacks List of {@link Feedback} objects to save.
      */
     public static void saveAll(List<Feedback> feedbacks) {
         List<Map<String, String>> rows = new ArrayList<>();

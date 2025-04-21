@@ -3,6 +3,11 @@ package src.util;
 import java.util.*;
 import src.model.HDBManager;
 
+
+/**
+ * Utility class for mapping {@link HDBManager} data to and from CSV rows.
+ * Handles loading, saving, and updating manager records.
+ */
 public class ManagerCsvMapper {
 
     /**

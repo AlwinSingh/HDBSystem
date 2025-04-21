@@ -4,6 +4,12 @@ import src.model.*;
 
 import java.util.*;
 
+
+/**
+ * A CSV utility mapper for converting {@link Enquiry} objects to and from CSV rows.
+ * Supports operations like load, save, update, and append.
+ * Also handles parsing of embedded {@link EnquiryReply} data.
+ */
 public class EnquiryCsvMapper {
 
     /**
@@ -20,10 +26,10 @@ public class EnquiryCsvMapper {
     }
 
     /**
-     * Converts a CSV row into an Enquiry object, including all replies.
+     * Converts a single CSV row into an {@link Enquiry} object.
      *
      * @param row The CSV row.
-     * @return An Enquiry object.
+     * @return The reconstructed {@link Enquiry} object.
      */
     public static Enquiry fromCsvRow(Map<String, String> row) {
         int id = safeParseInt(row.get("EnquiryId"), 0);
@@ -56,7 +62,7 @@ public class EnquiryCsvMapper {
     }
 
     /**
-     * Converts an Enquiry object into a CSV row map.
+     * Converts an {@link Enquiry} object to a CSV row representation.
      *
      * @param e The enquiry.
      * @return The CSV row representation.
@@ -82,7 +88,7 @@ public class EnquiryCsvMapper {
     /**
      * Loads all enquiries from the CSV file, skipping rows with missing IDs and handling reply parsing.
      *
-     * @return List of enquiries.
+     * @return List of all {@link Enquiry} objects.
      */
     public static List<Enquiry> loadAll() {
         List<Map<String, String>> rawRows = CsvUtil.read(FilePath.ENQUIRY_LIST_FILE);
@@ -107,7 +113,7 @@ public class EnquiryCsvMapper {
     /**
      * Saves a full list of enquiries to the CSV file.
      *
-     * @param enquiries The list to save.
+     * @param enquiries The list of enquiries to save.
      */
     public static void saveAll(List<Enquiry> enquiries) {
         List<Map<String, String>> rows = new ArrayList<>();
@@ -129,7 +135,7 @@ public class EnquiryCsvMapper {
     /**
      * Updates an existing enquiry by ID and saves the new list to CSV.
      *
-     * @param updatedEnquiry The updated enquiry.
+     * @param updatedEnquiry The modified {@link Enquiry} object.
      */
     public static void update(Enquiry updatedEnquiry) {
         List<Enquiry> all = loadAll();

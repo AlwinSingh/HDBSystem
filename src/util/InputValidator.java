@@ -2,6 +2,11 @@ package src.util;
 
 import java.util.Scanner;
 
+
+/**
+ * Utility class for validating and collecting user input via the console.
+ * Provides reusable methods for ensuring correct formats for integers, doubles, and strings.
+ */
 public class InputValidator {
 
     private static final Scanner sc = new Scanner(System.in); // Shared static scanner

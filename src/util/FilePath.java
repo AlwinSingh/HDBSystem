@@ -1,10 +1,11 @@
 package src.util;
 
+
+/**
+ * Centralized constants for all file paths used in the application.
+ * These represent the relative paths to CSV files used for persistent storage.
+ */
 public class FilePath {
-    /**
-     * Holds the relative paths to all CSV data files used in the application.
-     * These constants are used for centralized access to file locations.
-     */
     public static final String APPLICANT_LIST_FILE = "data/ApplicantList.csv";
     public static final String MANAGER_LIST_FILE = "data/ManagerList.csv";
     public static final String OFFICER_LIST_FILE = "data/OfficerList.csv";

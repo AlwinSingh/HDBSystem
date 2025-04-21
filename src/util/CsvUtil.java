@@ -3,6 +3,12 @@ package src.util;
 import java.io.*;
 import java.util.*;
 
+
+/**
+ * Utility class for reading, writing, and appending CSV files.
+ * Intended for low-level general use across model mappers and CSV-based repositories.
+ */
+
 public class CsvUtil {
 
     /**
