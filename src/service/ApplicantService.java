@@ -2,6 +2,7 @@ package src.service;
 
 import src.model.*;
 import src.repository.ApplicantRepository;
+import src.repository.ProjectRepository;
 import src.util.ApplicantCsvMapper;
 import src.util.ProjectCsvMapper;
 
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
  */
 public class ApplicantService {
     private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
+    private static final ProjectRepository projectRepository = new ProjectCsvMapper();
     private static String filterNeighborhood = null;
     private static String filterDistrict = null;
     private static String filterFlatType = null;
@@ -209,7 +211,8 @@ public class ApplicantService {
     
         Project selected = eligible.get(choice);
     
-        if (applicant instanceof HDBOfficer officer) {
+        if (applicant.isOfficer()) {
+            HDBOfficer officer = (HDBOfficer) applicant;
             Project assigned = officer.getAssignedProject();
             String status = officer.getRegistrationStatus();
 
@@ -262,7 +265,7 @@ public class ApplicantService {
         applicantRepository.update(applicant);
     
         project.getApplicantNRICs().add(applicant.getNric());
-        ProjectCsvMapper.updateProject(project);
+        projectRepository.updateProject(project);
     
         return true;
     }

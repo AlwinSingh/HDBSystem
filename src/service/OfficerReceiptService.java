@@ -7,6 +7,7 @@ import src.interfaces.IOfficerInvoiceService;
 import src.interfaces.IOfficerReceiptService;
 import src.model.*;
 import src.repository.ApplicantRepository;
+import src.repository.ProjectRepository;
 import src.util.ApplicantCsvMapper;
 import src.util.ProjectCsvMapper;
 
@@ -17,7 +18,7 @@ import src.util.ProjectCsvMapper;
  * with repositories to update applicant and project information.
  */
 public class OfficerReceiptService implements IOfficerReceiptService {
-    
+    private static final ProjectRepository projectRepository = new ProjectCsvMapper();
     private final IOfficerInvoiceService invoiceService;
     private final ApplicantRepository applicantRepository;
 
@@ -143,7 +144,7 @@ public class OfficerReceiptService implements IOfficerReceiptService {
      * @return The full Project object or null if not found.
      */
     private Project findFullProjectByName(String projectName) {
-        return ProjectCsvMapper.loadAll().stream()
+        return projectRepository.loadAll().stream()
             .filter(p -> p.getProjectName().equalsIgnoreCase(projectName))
             .findFirst()
             .orElse(null);

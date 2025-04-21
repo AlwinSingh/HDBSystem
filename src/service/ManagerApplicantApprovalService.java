@@ -6,10 +6,12 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import src.interfaces.IManagerApplicantApprovalService;
 import src.model.Applicant;
 import src.model.HDBManager;
 import src.model.Project;
 import src.repository.ApplicantRepository;
+import src.repository.ProjectRepository;
 import src.util.ApplicantCsvMapper;
 import src.util.CsvUtil;
 import src.util.FilePath;
@@ -19,8 +21,8 @@ import src.util.ProjectCsvMapper;
  * Provides services for HDB managers to review, approve/reject applicant submissions,
  * and handle applicant withdrawal requests for their projects.
  */
-public class ManagerApplicantApprovalService {
-
+public class ManagerApplicantApprovalService implements IManagerApplicantApprovalService {
+    private static final ProjectRepository projectRepository = new ProjectCsvMapper();
     private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
 
     /**
@@ -28,7 +30,8 @@ public class ManagerApplicantApprovalService {
      *
      * @param manager The logged-in manager.
      */
-    public static void viewApplicantApplications(HDBManager manager) {
+    @Override
+    public void viewApplicantApplications(HDBManager manager) {
         List<Map<String, String>> applicants = CsvUtil.read(FilePath.APPLICANT_LIST_FILE);
         List<Map<String, String>> projects = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
     
@@ -69,9 +72,10 @@ public class ManagerApplicantApprovalService {
      * @param manager The manager.
      * @param sc      Scanner for user input.
      */
-    public static void handleApplicantApproval(HDBManager manager, Scanner sc) {
+    @Override
+    public void handleApplicantApproval(HDBManager manager, Scanner sc) {
         List<Applicant> applicants = applicantRepository.loadAll();
-        List<Project> projects = ProjectCsvMapper.loadAll();
+        List<Project> projects = projectRepository.loadAll();
 
         Set<String> myProjectNames = projects.stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
@@ -145,7 +149,7 @@ public class ManagerApplicantApprovalService {
         }
 
         applicantRepository.update(selectedApp);
-        ProjectCsvMapper.updateProject(project);
+        projectRepository.updateProject(project);
     }
 
     /**
@@ -157,7 +161,8 @@ public class ManagerApplicantApprovalService {
      * @param flatType  The flat type to be reserved.
      * @return True if the application was approved, false if no units are available.
      */
-    private static boolean approveApplicant(Applicant applicant, Project project, String flatType) {
+    
+    private boolean approveApplicant(Applicant applicant, Project project, String flatType) {
         int available = flatType.equalsIgnoreCase("2-Room")
             ? project.getAvailableFlats2Room()
             : project.getAvailableFlats3Room();
@@ -185,9 +190,11 @@ public class ManagerApplicantApprovalService {
      * @param manager The logged-in HDB manager.
      * @param sc      The scanner for user input.
      */
-    public static void handleWithdrawalRequests(HDBManager manager, Scanner sc) {
+
+    @Override
+    public void handleWithdrawalRequests(HDBManager manager, Scanner sc) {
         List<Applicant> applicants = applicantRepository.loadAll();
-        List<Project> projects = ProjectCsvMapper.loadAll();
+        List<Project> projects = projectRepository.loadAll();
     
         Set<String> myProjects = projects.stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))

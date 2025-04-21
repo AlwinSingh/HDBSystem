@@ -2,13 +2,14 @@ package src.service;
 
 import java.util.Scanner;
 
+import src.interfaces.IManagerEnquiryService;
 import src.model.HDBManager;
 
 /**
  * Provides services for HDB managers to handle and respond to applicant enquiries.
  * Enables managers to view all enquiries or reply only to enquiries under their assigned projects.
  */
-public class ManagerEnquiryService {
+public class ManagerEnquiryService implements IManagerEnquiryService {
 
     /**
      * Displays the enquiry options menu for the manager, and options based on input.
@@ -23,7 +24,8 @@ public class ManagerEnquiryService {
      * @param manager The currently logged-in HDB manager.
      * @param sc      Scanner object for receiving console input.
      */
-    public static void showEnquiryOptions(HDBManager manager, Scanner sc) {
+    @Override
+    public void showEnquiryOptions(HDBManager manager, Scanner sc) {
         while (true) {
             System.out.println("\n📨 Enquiry Options");
             System.out.println(" [1] View All Enquiries");

@@ -5,9 +5,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
 
+import src.interfaces.IManagerProjectService;
 import src.model.HDBManager;
 import src.model.Project;
 import src.model.ProjectLocation;
+import src.repository.ProjectRepository;
 import src.util.ProjectCsvMapper;
 
 /**
@@ -16,8 +18,8 @@ import src.util.ProjectCsvMapper;
  * Also includes advanced filtering options.
  */
 
-public class ManagerProjectService {
-    
+public class ManagerProjectService implements IManagerProjectService {
+    private static final ProjectRepository projectRepository = new ProjectCsvMapper();
     /**
      * Guides the manager through creating a new housing project.
      * Includes validation for name uniqueness, unit counts, pricing,
@@ -26,10 +28,11 @@ public class ManagerProjectService {
      * @param manager The currently logged-in HDB manager.
      * @param sc      Scanner to receive user input.
      */
-    public static void createProject(HDBManager manager, Scanner sc) {
+    @Override
+    public void createProject(HDBManager manager, Scanner sc) {
         System.out.println("\n📌 Create New Project");
 
-        List<Project> allProjects = ProjectCsvMapper.loadAll();
+        List<Project> allProjects = projectRepository.loadAll();
 
         System.out.print("Enter project name: ");
         String name = sc.nextLine().trim();
@@ -114,7 +117,7 @@ public class ManagerProjectService {
         newProject.setPrice3Room(price3);
         newProject.openProject();
         newProject.setManager(manager);
-        ProjectCsvMapper.save(newProject);
+        projectRepository.save(newProject);
 
         System.out.println("✅ Project created and saved successfully!");
     }
@@ -125,8 +128,9 @@ public class ManagerProjectService {
      * @param manager The logged-in manager.
      * @param sc      Scanner for user input.
      */
-    public static void editProject(HDBManager manager, Scanner sc) {
-        List<Project> myProjects = ProjectCsvMapper.loadAll().stream()
+    @Override
+    public void editProject(HDBManager manager, Scanner sc) {
+        List<Project> myProjects = projectRepository.loadAll().stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
             .toList();
     
@@ -207,7 +211,7 @@ public class ManagerProjectService {
                 p.setManager(manager);
             }
     
-            ProjectCsvMapper.updateProject(p);
+            projectRepository.updateProject(p);
             System.out.println("✅ Project updated successfully.");
     
         } catch (Exception e) {
@@ -223,8 +227,9 @@ public class ManagerProjectService {
      * @param sc      Scanner to receive user input.
      */
 
-    public static void deleteProject(HDBManager manager, Scanner sc) {
-        List<Project> myProjects = ProjectCsvMapper.loadAll().stream()
+    @Override
+    public void deleteProject(HDBManager manager, Scanner sc) {
+        List<Project> myProjects = projectRepository.loadAll().stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
             .toList();
     
@@ -263,7 +268,7 @@ public class ManagerProjectService {
             return;
         }
     
-        ProjectCsvMapper.deleteProjectByName(selected.getProjectName());
+        projectRepository.deleteProjectByName(selected.getProjectName());
         System.out.println("✅ Project deleted successfully.");
     }
 
@@ -273,8 +278,9 @@ public class ManagerProjectService {
      * @param manager The manager who owns the project.
      * @param sc      Scanner for input.
      */
-    public static void toggleVisibility(HDBManager manager, Scanner sc) {
-        List<Project> myProjects = ProjectCsvMapper.loadAll().stream()
+    @Override
+    public void toggleVisibility(HDBManager manager, Scanner sc) {
+        List<Project> myProjects = projectRepository.loadAll().stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
             .toList();
     
@@ -313,7 +319,7 @@ public class ManagerProjectService {
         if (toggleTo) selected.openProject();
         else selected.closeProject();
     
-        ProjectCsvMapper.updateProject(selected);
+        projectRepository.updateProject(selected);
         System.out.printf("✅ Visibility updated. New visibility: %s\n", selected.isVisible());
     }
 
@@ -354,8 +360,9 @@ public class ManagerProjectService {
      * @param sc Scanner to capture filter inputs.
      */
 
-    public static void viewAllProjectsWithFilter(Scanner sc) {
-        List<Project> allProjects = ProjectCsvMapper.loadAll();
+    @Override
+    public void viewAllProjectsWithFilter(Scanner sc) {
+        List<Project> allProjects = projectRepository.loadAll();
         if (allProjects.isEmpty()) {
             System.out.println("❌ No projects found.");
             return;
@@ -451,8 +458,9 @@ public class ManagerProjectService {
      * @param manager The logged-in manager.
      * @return List of owned projects.
      */
-    public static List<Project> getProjectsByManager(HDBManager manager) {
-        return ProjectCsvMapper.loadAll().stream()
+    @Override
+    public List<Project> getProjectsByManager(HDBManager manager) {
+        return projectRepository.loadAll().stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
             .toList();
     }
@@ -462,7 +470,8 @@ public class ManagerProjectService {
      *
      * @param manager The manager.
      */
-    public static void viewMyProjects(HDBManager manager) {
+    @Override
+    public void viewMyProjects(HDBManager manager) {
         List<Project> myProjects = getProjectsByManager(manager);
     
         if (myProjects.isEmpty()) {

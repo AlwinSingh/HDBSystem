@@ -1,12 +1,27 @@
 package src.service;
 
 import java.util.*;
+
+import src.interfaces.IManagerApplicantApprovalService;
+import src.interfaces.IManagerEnquiryService;
+import src.interfaces.IManagerFeedbackService;
+import src.interfaces.IManagerOfficerApprovalService;
+import src.interfaces.IManagerProjectService;
+import src.interfaces.IManagerReportService;
 import src.model.*;
 
 /**
  * Displays the CLI dashboard for HDB managers and handles routing to various services.
  */
 public class ManagerMenu {
+
+    private static final IManagerProjectService projectService = new ManagerProjectService();
+    private static final IManagerOfficerApprovalService officerService = new ManagerOfficerApprovalService();
+    private static final IManagerApplicantApprovalService applicantService = new ManagerApplicantApprovalService();
+    private static final IManagerReportService reportService = new ManagerReportService();
+    private static final IManagerEnquiryService enquiryService = new ManagerEnquiryService();
+    private static final IManagerFeedbackService feedbackService = new ManagerFeedbackService();
+
 
     /**
      * Launches the manager dashboard and routes user input to the appropriate service methods.
@@ -51,20 +66,20 @@ public class ManagerMenu {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1" -> ManagerProjectService.createProject(manager, sc);
-                case "2" -> ManagerProjectService.editProject(manager, sc);
-                case "3" -> ManagerProjectService.deleteProject(manager, sc);
-                case "4" -> ManagerProjectService.toggleVisibility(manager, sc);
-                case "5" -> ManagerProjectService.viewAllProjectsWithFilter(sc);
-                case "6" -> ManagerProjectService.viewMyProjects(manager);
-                case "7" -> ManagerOfficerApprovalService.viewOfficerRegistrations(manager);
-                case "8" -> ManagerOfficerApprovalService.handleOfficerApproval(manager, sc);
-                case "9" -> ManagerApplicantApprovalService.viewApplicantApplications(manager);
-                case "10" -> ManagerApplicantApprovalService.handleApplicantApproval(manager, sc);
-                case "11" -> ManagerApplicantApprovalService.handleWithdrawalRequests(manager, sc);
-                case "12" -> ManagerReportService.generateReports(manager, sc);
-                case "13" -> ManagerEnquiryService.showEnquiryOptions(manager, sc);
-                case "14" -> ManagerFeedbackService.viewAndResolveFeedback(manager, sc);
+                case "1" -> projectService.createProject(manager, sc);
+                case "2" -> projectService.editProject(manager, sc);
+                case "3" -> projectService.deleteProject(manager, sc);
+                case "4" -> projectService.toggleVisibility(manager, sc);
+                case "5" -> projectService.viewAllProjectsWithFilter(sc);
+                case "6" -> projectService.viewMyProjects(manager);
+                case "7" -> officerService.viewOfficerRegistrations(manager);
+                case "8" -> officerService.handleOfficerApproval(manager, sc);
+                case "9" -> applicantService.viewApplicantApplications(manager);
+                case "10" -> applicantService.handleApplicantApproval(manager, sc);
+                case "11" -> applicantService.handleWithdrawalRequests(manager, sc);
+                case "12" -> reportService.generateReports(manager, sc);
+                case "13" -> enquiryService.showEnquiryOptions(manager, sc);
+                case "14" -> feedbackService.viewAndResolveFeedback(manager, sc);
                 case "15" -> FeedbackAnalyticsService.generateManagerAnalytics(manager);
                 case "16" -> {
                     if (AuthService.changePassword(manager, sc)) return;

@@ -10,6 +10,7 @@ import src.model.HDBOfficer;
 import src.model.Invoice;
 import src.model.Project;
 import src.repository.ApplicantRepository;
+import src.repository.ProjectRepository;
 import src.util.ApplicantCsvMapper;
 import src.util.ProjectCsvMapper;
 
@@ -20,7 +21,7 @@ import src.util.ProjectCsvMapper;
  */
 public class OfficerBookingService implements IOfficerBookingService {
 
-
+    private static final ProjectRepository projectRepository = new ProjectCsvMapper();
     private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
 
 
@@ -107,7 +108,7 @@ public class OfficerBookingService implements IOfficerBookingService {
         if (app == null || officer.getAssignedProject() == null) return false;
 
         // Refresh full project info
-        Project fullProject = ProjectCsvMapper.loadAll().stream()
+        Project fullProject = projectRepository.loadAll().stream()
             .filter(p -> p.getProjectName().equalsIgnoreCase(officer.getAssignedProject().getProjectName()))
             .findFirst()
             .orElse(null);
@@ -128,7 +129,7 @@ public class OfficerBookingService implements IOfficerBookingService {
         Invoice invoice = HDBOfficer.generateInvoiceForBooking(app, nextInvoiceId);
         InvoiceService.addInvoice(invoice);
 
-        ProjectCsvMapper.updateProject(fullProject);
+        projectRepository.updateProject(fullProject);
 
         System.out.println("🧾 Invoice generated and saved (Invoice ID: " + invoice.getPaymentId() + ")");
         return true;

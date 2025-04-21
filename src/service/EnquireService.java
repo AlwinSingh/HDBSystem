@@ -2,6 +2,7 @@ package src.service;
 
 import src.model.*;
 import src.repository.EnquiryRepository;
+import src.repository.ProjectRepository;
 import src.util.EnquiryCsvMapper;
 import src.util.CsvUtil;
 import java.util.*;
@@ -17,6 +18,7 @@ import src.util.ProjectCsvMapper;
  */
 public class EnquireService {
     private static final EnquiryRepository enquiryRepository = new EnquiryCsvMapper();
+    private static final ProjectRepository projectRepository = new ProjectCsvMapper();
     /**
      * Loads all enquiries from the CSV file.
      *
@@ -391,7 +393,7 @@ public class EnquireService {
      * @param sc Scanner for user input.
      */
     public static void replyAsManager(HDBManager manager, Scanner sc) {
-        Set<String> managedProjects = ProjectCsvMapper.loadAll().stream()
+        Set<String> managedProjects = projectRepository.loadAll().stream()
                 .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
                 .map(Project::getProjectName)
                 .collect(Collectors.toSet());

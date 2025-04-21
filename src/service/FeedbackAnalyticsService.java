@@ -5,6 +5,7 @@ import src.model.FeedbackAnalytics;
 import src.model.HDBManager;
 import src.model.Project;
 import src.repository.FeedbackRepository;
+import src.repository.ProjectRepository;
 import src.util.FeedbackCsvMapper;
 import src.util.ProjectCsvMapper;
 
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
  * Provides analytics and insights on feedback data, both globally and per manager.
  */
 public class FeedbackAnalyticsService {
-
+    private static final ProjectRepository projectRepository = new ProjectCsvMapper();
     private static final FeedbackRepository feedbackRepository = new FeedbackCsvMapper();
     /**
      * Loads all feedback entries from the CSV file.
@@ -54,7 +55,7 @@ public class FeedbackAnalyticsService {
         List<Feedback> feedbackList = getAllFeedback();
 
         // Get project names owned by this manager
-        Set<String> myProjects = ProjectCsvMapper.loadAll().stream()
+        Set<String> myProjects = projectRepository.loadAll().stream()
                 .filter(p -> p.getManager() != null &&
                         p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
                 .map(Project::getProjectName)

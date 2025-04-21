@@ -5,6 +5,7 @@ import java.util.Scanner;
 import src.interfaces.IOfficerLocationService;
 import src.model.HDBOfficer;
 import src.model.Project;
+import src.repository.ProjectRepository;
 import src.util.ProjectCsvMapper;
 
 
@@ -13,7 +14,7 @@ import src.util.ProjectCsvMapper;
  * of their assigned HDB project, including address and geolocation.
  */
 public class OfficerLocationService implements IOfficerLocationService {
-
+    private static final ProjectRepository projectRepository = new ProjectCsvMapper();
     /**
      * Allows the officer to update the physical address and geolocation of their assigned project.
      *
@@ -81,7 +82,7 @@ public class OfficerLocationService implements IOfficerLocationService {
             return false;
         }
 
-        ProjectCsvMapper.updateProject(p);
+        projectRepository.updateProject(p);
         return true;
     }
 

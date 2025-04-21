@@ -6,10 +6,12 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import src.interfaces.IManagerOfficerApprovalService;
 import src.model.HDBManager;
 import src.model.HDBOfficer;
 import src.model.Project;
 import src.repository.OfficerRepository;
+import src.repository.ProjectRepository;
 import src.util.CsvUtil;
 import src.util.FilePath;
 import src.util.OfficerCsvMapper;
@@ -19,14 +21,16 @@ import src.util.ProjectCsvMapper;
  * Handles the approval workflow of HDB officers by project managers.
  * This includes viewing, approving, and rejecting officer registration requests.
  */
-public class ManagerOfficerApprovalService {
+public class ManagerOfficerApprovalService implements IManagerOfficerApprovalService {
+    private static final ProjectRepository projectRepository = new ProjectCsvMapper();
     private static final OfficerRepository officerRepository = new OfficerCsvMapper();
     /**
      * Displays all officer registration requests associated with the manager's projects.
      *
      * @param manager The currently logged-in HDB manager.
      */
-    public static void viewOfficerRegistrations(HDBManager manager) {
+    @Override
+    public void viewOfficerRegistrations(HDBManager manager) {
         List<Map<String, String>> officers = CsvUtil.read(FilePath.OFFICER_LIST_FILE);
         List<Map<String, String>> projects = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
 
@@ -61,8 +65,9 @@ public class ManagerOfficerApprovalService {
      * @param manager The logged-in manager.
      * @param sc      Scanner for user input.
      */
-    public static void handleOfficerApproval(HDBManager manager, Scanner sc) {
-        List<Project> allProjects = ProjectCsvMapper.loadAll();
+    @Override
+    public void handleOfficerApproval(HDBManager manager, Scanner sc) {
+        List<Project> allProjects = projectRepository.loadAll();
         List<HDBOfficer> allOfficers = officerRepository.loadAll(allProjects);
 
         List<HDBOfficer> pendingOfficers = allOfficers.stream()
@@ -118,7 +123,7 @@ public class ManagerOfficerApprovalService {
                 officer.setRegistrationStatus(HDBOfficer.RegistrationStatusType.APPROVED.name());
 
                 officerRepository.updateOfficer(officer);
-                ProjectCsvMapper.updateProject(assignedProject);
+                projectRepository.updateProject(assignedProject);
 
                 System.out.println("✅ Officer approved and added to project.");
             }

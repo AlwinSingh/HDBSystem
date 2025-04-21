@@ -2,6 +2,7 @@ package src.util;
 
 import src.model.*;
 import src.repository.ManagerRepository;
+import src.repository.ProjectRepository;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -11,7 +12,8 @@ import java.util.*;
  * Utility class for reading and writing {@link Project} objects to and from CSV.
  * Supports parsing of location, manager, officer, and applicant associations.
  */
-public class ProjectCsvMapper {
+public class ProjectCsvMapper implements ProjectRepository {
+
     private static final ManagerRepository managerRepository = new ManagerCsvMapper();
 
     private static String safeTrim(String value) {
@@ -48,7 +50,7 @@ public class ProjectCsvMapper {
      * @param row A row from the CSV file.
      * @return Parsed {@link Project} object.
      */
-    public static Project fromCsvRow(Map<String, String> row) {
+    public Project fromCsvRow(Map<String, String> row) {
         String name = safeTrim(row.get("Project Name"));
         String neighborhood = safeTrim(row.get("Neighborhood"));
 
@@ -113,7 +115,7 @@ public class ProjectCsvMapper {
      * @param p The Project object.
      * @return Map of {@link Project} data for CSV writing.
      */
-    public static Map<String, String> toCsvRow(Project p) {
+    public Map<String, String> toCsvRow(Project p) {
         Map<String, String> row = new LinkedHashMap<>();
 
         row.put("Project Name", p.getProjectName());
@@ -156,7 +158,7 @@ public class ProjectCsvMapper {
      *
      * @return List of valid {@link Project} objects.
      */
-    public static List<Project> loadAll() {
+    public List<Project> loadAll() {
         List<Map<String, String>> raw = CsvUtil.read(FilePath.PROJECT_LIST_FILE);
         List<Project> projects = new ArrayList<>();
         for (Map<String, String> row : raw) {
@@ -175,7 +177,7 @@ public class ProjectCsvMapper {
      *
      * @param projects List of {@link Project} to save.
      */
-    public static void saveAll(List<Project> projects) {
+    public void saveAll(List<Project> projects) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (Project p : projects) {
             rows.add(toCsvRow(p));
@@ -188,7 +190,7 @@ public class ProjectCsvMapper {
      *
      * @param project {@link Project} to be appended.
      */
-    public static void save(Project project) {
+    public void save(Project project) {
         CsvUtil.append(FilePath.PROJECT_LIST_FILE, toCsvRow(project));
     }
 
@@ -197,7 +199,7 @@ public class ProjectCsvMapper {
      *
      * @param updated {@link Project} with updated fields.
      */
-    public static void updateProject(Project updated) {
+    public void updateProject(Project updated) {
         List<Project> all = loadAll();
         for (int i = 0; i < all.size(); i++) {
             if (all.get(i).getProjectName().equalsIgnoreCase(updated.getProjectName())) {
@@ -213,7 +215,7 @@ public class ProjectCsvMapper {
      *
      * @param name The name of the {@link Project} to remove.
      */
-    public static void deleteProjectByName(String name) {
+    public void deleteProjectByName(String name) {
         List<Project> all = loadAll().stream()
             .filter(p -> !p.getProjectName().equalsIgnoreCase(name))
             .toList();

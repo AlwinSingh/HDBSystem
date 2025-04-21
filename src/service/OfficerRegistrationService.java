@@ -7,6 +7,7 @@ import src.model.Application;
 import src.model.HDBOfficer;
 import src.model.Project;
 import src.repository.OfficerRepository;
+import src.repository.ProjectRepository;
 import src.util.OfficerCsvMapper;
 import src.util.ProjectCsvMapper;
 
@@ -17,6 +18,7 @@ import src.util.ProjectCsvMapper;
  */
 public class OfficerRegistrationService implements IOfficerRegistrationService {
     private static final OfficerRepository officerRepository = new OfficerCsvMapper();
+    private static final ProjectRepository projectRepository = new ProjectCsvMapper();
     /**
      * Displays the officer's current registration status and their assigned project's details.
      *
@@ -92,7 +94,7 @@ public class OfficerRegistrationService implements IOfficerRegistrationService {
      * @return A list of available projects.
      */
     public List<Project> getAvailableProjectsForOfficer(HDBOfficer officer) {
-        return ProjectCsvMapper.loadAll().stream()
+        return projectRepository.loadAll().stream()
             .filter(Project::isVisible)
             .filter(p -> !p.getOfficerNRICs().contains(officer.getNric()))
             .toList();
@@ -106,7 +108,7 @@ public class OfficerRegistrationService implements IOfficerRegistrationService {
     public void browseAndFilterProjects(Scanner sc) {
         System.out.println("\n🔍 Browse & Filter Available Projects (for reference only)");
     
-        List<Project> all = ProjectCsvMapper.loadAll();
+        List<Project> all = projectRepository.loadAll();
         if (all.isEmpty()) {
             System.out.println("📭 No projects found.");
             return;

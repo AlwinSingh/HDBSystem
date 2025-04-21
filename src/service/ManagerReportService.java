@@ -3,6 +3,7 @@ package src.service;
 import java.time.LocalDate;
 import java.util.Scanner;
 
+import src.interfaces.IManagerReportService;
 import src.model.HDBManager;
 
 /**
@@ -12,7 +13,8 @@ import src.model.HDBManager;
  * Supports filtering by project name, flat type, payment status, and date range.
  */
 
-public class ManagerReportService {
+public class ManagerReportService implements IManagerReportService {
+
 
     /**
      * Launches a CLI report dashboard for the manager to:
@@ -26,7 +28,8 @@ public class ManagerReportService {
      * @param manager The currently logged-in HDB manager.
      * @param sc      The Scanner used for user input.
      */
-    public static void generateReports(HDBManager manager, Scanner sc) {
+    @Override
+    public void generateReports(HDBManager manager, Scanner sc) {
         while (true) {
             System.out.println("\n📊 Generate Applicant Booking Reports");
             System.out.println(" [1] 🔄 Generate Reports");

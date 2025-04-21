@@ -2,6 +2,8 @@ package src.model;
 
 import src.repository.ApplicantRepository;
 import src.repository.InvoiceRepository;
+import src.repository.ProjectRepository;
+import src.repository.ReceiptRepository;
 import src.util.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,6 +15,8 @@ import java.util.stream.Collectors;
 public class ReportGenerator {
     private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
     private static final InvoiceRepository invoiceRepository = new InvoiceCsvMapper();
+    private static final ProjectRepository projectRepository = new ProjectCsvMapper();
+    private static final ReceiptRepository receiptRepository = new ReceiptCsvMapper();
     /**
      * Generates reports for all applicants who have successfully booked flats.
      * Each report includes invoice and optional receipt details.
@@ -22,8 +26,8 @@ public class ReportGenerator {
     public List<Report> generateAllReports() {
         List<Applicant> applicants = applicantRepository.loadAll();
         List<Invoice> invoices = invoiceRepository.loadAll();
-        List<Receipt> receipts = ReceiptCsvMapper.loadAll();
-        List<Project> allProjects = ProjectCsvMapper.loadAll();  // 🔥 Load complete projects
+        List<Receipt> receipts = receiptRepository.loadAll();
+        List<Project> allProjects = projectRepository.loadAll();  // 🔥 Load complete projects
         List<Report> reports = new ArrayList<>();
     
         for (Applicant a : applicants) {
@@ -89,7 +93,7 @@ public class ReportGenerator {
      * @return A list of reports across the manager's projects.
      */
     public List<Report> generateReportsByManager(HDBManager manager) {
-        List<Project> allProjects = ProjectCsvMapper.loadAll();
+        List<Project> allProjects = projectRepository.loadAll();
 
         // Collect projects handled by this manager
         Set<String> projectNames = allProjects.stream()

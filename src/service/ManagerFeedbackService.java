@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 
+import src.interfaces.IManagerFeedbackService;
 import src.model.Feedback;
 import src.model.HDBManager;
 
@@ -11,7 +12,7 @@ import src.model.HDBManager;
  * Provides functionality for HDB managers to view, filter, and resolve feedback
  * submitted by applicants for the manager's assigned projects.
  */
-public class ManagerFeedbackService {
+public class ManagerFeedbackService implements IManagerFeedbackService {
 
     /**
      * Displays a feedback management menu for the manager, allowing:
@@ -27,7 +28,8 @@ public class ManagerFeedbackService {
      * @param manager The currently logged-in HDB manager.
      * @param sc      Scanner for reading user input.
      */
-    public static void viewAndResolveFeedback(HDBManager manager, Scanner sc) {
+    @Override
+    public void viewAndResolveFeedback(HDBManager manager, Scanner sc) {
         while (true) {
             System.out.println("\n📝 Feedback Management");
             System.out.println(" [1] View My Feedback");

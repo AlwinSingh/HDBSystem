@@ -1,6 +1,7 @@
 package src.service;
 
 import src.model.Project;
+import src.repository.ProjectRepository;
 import src.model.Amenities;
 import src.util.ProjectCsvMapper;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
  * and enriching each project with its associated list of amenities.
  */
 public class ProjectLoader {
-
+    private static final ProjectRepository projectRepository = new ProjectCsvMapper();
     /**
      * Loads all projects from the CSV file via {@link ProjectCsvMapper}
      * and injects the related amenities using {@link AmenitiesLoader}.
@@ -19,7 +20,7 @@ public class ProjectLoader {
      * @return A list of {@link Project} objects with amenities populated.
      */
     public static List<Project> loadProjects() {
-        List<Project> projects = ProjectCsvMapper.loadAll();
+        List<Project> projects = projectRepository.loadAll();
 
         for (Project p : projects) {
             List<Amenities> amenities = AmenitiesLoader.loadAmenitiesByProject(p.getProjectName());

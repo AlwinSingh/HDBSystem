@@ -1,6 +1,8 @@
 package src.util;
 
 import src.model.Report;
+import src.repository.ReportRepository;
+
 import java.time.LocalDate;
 import java.util.*;
 import static src.util.CsvUtil.*;
@@ -10,7 +12,8 @@ import static src.util.CsvUtil.*;
  * Utility class for handling reading and writing of {@link Report} objects to and from the CSV file.
  * Each row summarizes one applicant's booking outcome and payment status.
  */
-public class ReportCsvMapper {
+public class ReportCsvMapper implements ReportRepository {
+
     private static final String CSV_PATH = FilePath.REPORT_LIST_FILE;
 
     /**
@@ -19,7 +22,7 @@ public class ReportCsvMapper {
      *
      * @return List of reports.
      */
-    public static List<Report> loadAll() {
+    public List<Report> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);
         List<Report> list = new ArrayList<>();
 
@@ -54,7 +57,7 @@ public class ReportCsvMapper {
      *
      * @param reports The reports to save.
      */
-    public static void saveAll(List<Report> reports) {
+    public void saveAll(List<Report> reports) {
         List<Map<String, String>> rows = new ArrayList<>();
         for (Report r : reports) {
             Map<String, String> row = new LinkedHashMap<>();

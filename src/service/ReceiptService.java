@@ -1,6 +1,7 @@
 package src.service;
 
 import src.model.Receipt;
+import src.repository.ReceiptRepository;
 import src.util.ReceiptCsvMapper;
 
 import java.util.ArrayList;
@@ -13,10 +14,11 @@ import java.util.stream.Collectors;
  */
 
 public class ReceiptService {
+    private static final ReceiptRepository receiptRepository = new ReceiptCsvMapper();
     private static List<Receipt> receipts = new ArrayList<>();
 
     static {
-        receipts = ReceiptCsvMapper.loadAll();
+        receipts = receiptRepository.loadAll();
     }
 
     /**
@@ -26,7 +28,7 @@ public class ReceiptService {
      */
     public static void addReceipt(Receipt receipt) {
         receipts.add(receipt);
-        ReceiptCsvMapper.append(receipt); // Efficient: Append only the new one
+        receiptRepository.append(receipt); // Efficient: Append only the new one
     }
 
 
@@ -36,7 +38,7 @@ public class ReceiptService {
      * @return A list of all {@link Receipt} objects in the system.
      */
     public static List<Receipt> getAllReceipts() {
-        return ReceiptCsvMapper.loadAll(); // or your in-memory list
+        return receiptRepository.loadAll(); // or your in-memory list
     }
 
 
@@ -71,7 +73,7 @@ public class ReceiptService {
      * @return The matching {@link Receipt} object, or null if not found.
      */
     public static Receipt findByInvoiceId(int invoiceId) {
-        return ReceiptCsvMapper.loadAll().stream()
+        return receiptRepository.loadAll().stream()
             .filter(r -> r.getInvoice().getPaymentId() == invoiceId)
             .findFirst()
             .orElse(null);

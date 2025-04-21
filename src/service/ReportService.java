@@ -2,6 +2,8 @@ package src.service;
 
 import src.model.Report;
 import src.model.ReportGenerator;
+import src.repository.ReportRepository;
+import src.util.ReceiptCsvMapper;
 import src.util.ReportCsvMapper;
 
 import java.time.LocalDate;
@@ -13,8 +15,8 @@ import java.util.List;
  * Interacts with {@link ReportCsvMapper} and {@link ReportGenerator} to manage booking reports.
  */
 public class ReportService {
-
-    private static List<Report> reports = ReportCsvMapper.loadAll();
+    private static final ReportRepository reportRepository = new ReportCsvMapper();
+    private static List<Report> reports = reportRepository.loadAll();
 
     /**
      * Generates reports for all bookings and saves them to the CSV.
@@ -23,7 +25,7 @@ public class ReportService {
     public static void generateAndSaveReports() {
         ReportGenerator generator = new ReportGenerator();
         reports = generator.generateAllReports();
-        ReportCsvMapper.saveAll(reports);
+        reportRepository.saveAll(reports);
         System.out.println("✅ Reports generated and saved.");
     }
 

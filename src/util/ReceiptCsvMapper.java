@@ -3,7 +3,8 @@ package src.util;
 import src.model.Invoice;
 import src.model.PaymentMethod;
 import src.model.Receipt;
-
+import src.repository.ReceiptRepository;
+import src.util.ReportCsvMapper;
 import java.time.LocalDate;
 import java.util.*;
 import static src.util.CsvUtil.*;
@@ -12,7 +13,7 @@ import static src.util.CsvUtil.*;
  * Utility class for reading and writing {@link Receipt} objects to and from the CSV file.
  * Handles relationships with {@link Invoice} and stores complete transaction history.
  */
-public class ReceiptCsvMapper {
+public class ReceiptCsvMapper implements ReceiptRepository {
     private static final String CSV_PATH = FilePath.RECEIPT_LIST_FILE;
 
     /**
@@ -21,7 +22,7 @@ public class ReceiptCsvMapper {
      *
      * @return List of valid {@link Receipt} objects.
      */
-    public static List<Receipt> loadAll() {
+    public List<Receipt> loadAll() {
         List<Map<String, String>> rows = read(CSV_PATH);
         List<Receipt> list = new ArrayList<>();
 
@@ -71,7 +72,7 @@ public class ReceiptCsvMapper {
      *
      * @param receipts The receipts to write.
      */
-    public static void saveAll(List<Receipt> receipts) {
+    public void saveAll(List<Receipt> receipts) {
         List<Map<String, String>> rows = new ArrayList<>();
 
         for (Receipt r : receipts) {
@@ -97,7 +98,7 @@ public class ReceiptCsvMapper {
      *
      * @param r The {@link Receipt} object to append.
      */
-    public static void append(Receipt r) {
+    public void append(Receipt r) {
         Map<String, String> row = new LinkedHashMap<>();
         row.put("ReceiptID", r.getReceiptId());
         row.put("ApplicantName", r.getApplicantName());
