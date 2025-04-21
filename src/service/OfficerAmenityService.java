@@ -7,7 +7,7 @@ import src.interfaces.IOfficerAmenityService;
 import src.model.Amenities;
 import src.model.HDBOfficer;
 import src.model.Project;
-import src.util.AmenitiesCsvMapper;
+import src.repository.AmenitiesRepository;
 import src.util.InputValidator;
 
 
@@ -17,6 +17,12 @@ import src.util.InputValidator;
  * Officer must be registered and approved to perform these operations.
  */
 public class OfficerAmenityService implements IOfficerAmenityService {
+
+    private final AmenitiesRepository amenitiesRepository;
+
+    public OfficerAmenityService(AmenitiesRepository amenitiesRepository) {
+        this.amenitiesRepository = amenitiesRepository;
+    }
 
     /**
      * Adds a new amenity to the officer’s assigned project or updates an existing one.
@@ -70,7 +76,7 @@ public class OfficerAmenityService implements IOfficerAmenityService {
      * @param sc      Scanner for input.
      */
     private void addAmenity(Project project, Scanner sc) {
-        int nextId = AmenitiesCsvMapper.loadAll().stream()
+        int nextId = amenitiesRepository.loadAll().stream()
             .map(Amenities::getAmenityId)
             .max(Integer::compareTo)
             .orElse(0) + 1;
@@ -85,7 +91,7 @@ public class OfficerAmenityService implements IOfficerAmenityService {
         double dist = InputValidator.getDoubleInput(sc);
 
         Amenities newAmenity = new Amenities(nextId, type, name, dist, project.getProjectName());
-        AmenitiesCsvMapper.add(newAmenity);
+        amenitiesRepository.add(newAmenity);
         System.out.println("✅ Amenity added (ID=" + nextId + ").");
     }
 
@@ -96,7 +102,7 @@ public class OfficerAmenityService implements IOfficerAmenityService {
      * @param sc      Scanner for user input.
      */
     private void updateAmenity(Project project, Scanner sc) {
-        List<Amenities> amenities = AmenitiesCsvMapper.loadAll().stream()
+        List<Amenities> amenities = amenitiesRepository.loadAll().stream()
             .filter(a -> a.getProjectName().equalsIgnoreCase(project.getProjectName()))
             .toList();
 
@@ -149,7 +155,7 @@ public class OfficerAmenityService implements IOfficerAmenityService {
             }
         }
 
-        AmenitiesCsvMapper.update(target);
+        amenitiesRepository.update(target);
         System.out.println("✅ Amenity updated.");
     }
 

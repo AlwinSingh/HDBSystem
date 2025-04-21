@@ -81,20 +81,7 @@ public class ApplicantTest {
         //Change password
         "9",
         "password",
-        "superhero"
-            
-            
-
-
-
-
-
-
-
-
-
-
-        );
+        "superhero");
 
         System.setIn(new ByteArrayInputStream(inputSequence.getBytes()));
         ApplicantMenu.show(a);
