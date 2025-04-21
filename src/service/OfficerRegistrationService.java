@@ -2,8 +2,6 @@ package src.service;
 
 import java.util.List;
 import java.util.Scanner;
-
-import src.interfaces.IOfficerReceiptService;
 import src.interfaces.IOfficerRegistrationService;
 import src.model.Application;
 import src.model.HDBOfficer;
