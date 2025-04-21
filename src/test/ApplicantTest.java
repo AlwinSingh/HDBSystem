@@ -8,25 +8,23 @@ import src.service.ApplicantMenu;
 import src.service.AuthService;
 
 /**
- * Standalone test script to simulate a full applicant interaction flow.
- * Includes applying for a project, managing applications, paying invoices,
- * viewing receipts, submitting enquiries/feedback, and changing password.
+ * Test script to simulate an applicant's experience navigating eligible project filters.
+ * Steps:
+ * 1. Log in as an applicant.
+ * 2. Press 1 to view eligible projects.
+ * 3. Press 1 again to apply filter and type 'Clementi', then press Enter twice.
+ * 4. Press 2 to clear filters.
+ * 5. Press 0 to go back to the main menu.
  */
 public class ApplicantTest {
 
-    /**
-     * Runs a full test scenario for an applicant using input stream simulation.
-     * Automatically walks through the dashboard options and prints status updates.
-     *
-     * @param args Not used.
-     */
     public static void main(String[] args) {
         InputStream originalIn = System.in;
 
         String applicantNRIC = "T7654321B";
         String password      = "password";
 
-        System.out.println("=== 🧪 Running Applicant Test Flow ===\n");
+        System.out.println("=== 🧪 Running Applicant Filter Test ===\n");
 
         User user = AuthService.authenticate(applicantNRIC, password);
         if (!(user instanceof Applicant a)) {
@@ -34,23 +32,29 @@ public class ApplicantTest {
             return;
         }
 
-        // Simulate full dashboard flow using input injection
-        System.setIn(new ByteArrayInputStream((
-            "1\n" +                     // View eligible projects
-            "2\n1\n2-Room\nY\n" +       // Apply to first project with confirmation
-            "3\n" +                     // View application
-            "4\nY\n" +                   // Request withdrawal
-            "5\n1\n1\n" +               // View & Pay Invoice using PayNow
-            "6\n" +                     // View Receipts
-            "7\n1\nThis is a test enquiry\n0\n" +   // Submit enquiry & back
-            "8\n1\nAmazing service!\n0\n" +         // Submit feedback & back
-            "9\nnewpassword\nnewpassword\n" +       // Change password
-            "0\n"                       // Logout
-        ).getBytes()));
+        // Simulate input sequence:
+        // 1 - View eligible projects
+        // 1 - Apply filter
+        // Clementi (filter by neighborhood)
+        // <Enter> twice to skip optional filters
+        // 2 - Clear filters
+        // 0 - Return to previous menu
+        String inputSequence = String.join("\n",
+            "1",            // View eligible projects
+            "1",            // Filter by Neighborhood
+            "Clementi",     // Enter neighborhood filter
+            "",             // Skip min price
+            "",             // Skip max price
+            "2",            // Clear filters
+            "0",             // Return to main menu
+            "2",
+            "2"
+        );
 
+        System.setIn(new ByteArrayInputStream(inputSequence.getBytes()));
         ApplicantMenu.show(a);
-
         System.setIn(originalIn);
-        System.out.println("\n=== ✅ Applicant Flow Test Complete ===");
+
+        System.out.println("\n=== ✅ Applicant Filter Test Complete ===");
     }
 }
