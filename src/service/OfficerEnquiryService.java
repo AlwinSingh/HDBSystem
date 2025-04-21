@@ -3,6 +3,7 @@ package src.service;
 import java.util.List;
 import java.util.Scanner;
 
+import src.interfaces.IOfficerEnquiryService;
 import src.model.Enquiry;
 import src.model.HDBOfficer;
 import src.model.Project;
@@ -12,14 +13,15 @@ import src.util.EnquiryCsvMapper;
  * Handles enquiry-related actions for HDB officers.
  * Includes viewing and replying to enquiries associated with their assigned project.
  */
-public class OfficerEnquiryService {
+public class OfficerEnquiryService implements IOfficerEnquiryService {
+
     /**
      * Opens the enquiry handling interface for the officer, allowing them to view and respond to enquiries.
      *
      * @param officer The logged-in officer.
      * @param sc      Scanner for input.
      */
-    public static void handleEnquiries(HDBOfficer officer, Scanner sc) {
+    public void handleEnquiries(HDBOfficer officer, Scanner sc) {
         List<Enquiry> projectEnquiries = getPendingEnquiriesForProject(officer);
     
         if (projectEnquiries.isEmpty()) {
@@ -62,7 +64,7 @@ public class OfficerEnquiryService {
      * @param officer The logged-in officer.
      * @return A list of pending enquiries.
      */
-    public static List<Enquiry> getPendingEnquiriesForProject(HDBOfficer officer) {
+    public List<Enquiry> getPendingEnquiriesForProject(HDBOfficer officer) {
         Project assigned = officer.getAssignedProject();
         if (assigned == null || !"APPROVED".equalsIgnoreCase(officer.getRegistrationStatus())) return List.of();
 
@@ -81,7 +83,7 @@ public class OfficerEnquiryService {
      * @param reply   The reply message content.
      * @return True if reply is successful; false otherwise.
      */
-    public static boolean replyToEnquiry(Enquiry enquiry, HDBOfficer officer, String reply) {
+    public boolean replyToEnquiry(Enquiry enquiry, HDBOfficer officer, String reply) {
         enquiry.addReply(reply, officer);
         EnquiryCsvMapper.update(enquiry); // Efficient single-row update
         return true;

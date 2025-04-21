@@ -3,50 +3,61 @@ package src.service;
 import java.util.List;
 import java.util.Scanner;
 
-import src.model.Applicant;
-import src.model.HDBOfficer;
-import src.model.Invoice;
-import src.model.Payment;
-import src.model.Project;
-import src.model.Receipt;
+import src.interfaces.IOfficerInvoiceService;
+import src.interfaces.IOfficerReceiptService;
+import src.model.*;
 import src.repository.ApplicantRepository;
 import src.util.ApplicantCsvMapper;
 import src.util.ProjectCsvMapper;
 
 /**
- * Provides functionality for HDB Officers to manage receipts for applicants' payments.
- * Responsible for validating eligibility, generating receipts, and updating payment records.
+ * Service implementation for HDB officers to manage and generate receipts for invoices.
+ * This class adheres to the Interface Segregation Principle by implementing IOfficerReceiptService.
+ * It depends on an injected IOfficerInvoiceService to retrieve invoice data and interacts
+ * with repositories to update applicant and project information.
  */
-public class OfficerReceiptService {
-    private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
+public class OfficerReceiptService implements IOfficerReceiptService {
+    
+    private final IOfficerInvoiceService invoiceService;
+    private final ApplicantRepository applicantRepository;
 
     /**
-     * Generates a receipt for a payment made by an applicant within the officer’s project.
-     * Requires an existing invoice marked as "Awaiting Receipt".
+     * Constructs an OfficerReceiptService with a specified invoice service.
      *
-     * @param officer The logged-in officer.
-     * @param sc      Scanner for input.
+     * @param invoiceService An implementation of IOfficerInvoiceService used to retrieve invoice data.
      */
-    public static void generateReceipt(HDBOfficer officer, Scanner sc) {
+    public OfficerReceiptService(IOfficerInvoiceService invoiceService) {
+        this.invoiceService = invoiceService;
+        this.applicantRepository = new ApplicantCsvMapper();
+    }
+
+    /**
+     * Allows an HDB officer to generate a receipt for any invoice that is awaiting receipt generation
+     * under the officer’s assigned project. Presents a list of eligible invoices and prompts user input.
+     *
+     * @param officer The logged-in officer performing the receipt generation.
+     * @param sc      Scanner to capture user input.
+     */
+    @Override
+    public void generateReceipt(HDBOfficer officer, Scanner sc) {
         if (!"APPROVED".equalsIgnoreCase(officer.getRegistrationStatus())) {
             System.out.println("❌ Access denied. Officer registration status must be APPROVED to generate receipts.");
             return;
         }
-    
-        List<Invoice> awaitingReceipts = OfficerInvoiceService.getInvoicesAwaitingReceipt(officer);
-    
+
+        List<Invoice> awaitingReceipts = invoiceService.getInvoicesAwaitingReceipt(officer);
         if (awaitingReceipts.isEmpty()) {
             System.out.println("📭 No paid invoices awaiting receipts.");
             return;
         }
-    
+
         System.out.println("\n📋 Paid Invoices (Awaiting Receipt):");
         for (int i = 0; i < awaitingReceipts.size(); i++) {
             Invoice inv = awaitingReceipts.get(i);
             System.out.printf("[%d] Invoice #%d | %s | %s | $%.2f\n",
                 i + 1, inv.getPaymentId(), inv.getApplicantNRIC(), inv.getFlatType(), inv.getAmount());
         }
-    
+
         System.out.print("Select invoice to issue receipt for (0 to cancel): ");
         try {
             int idx = Integer.parseInt(sc.nextLine().trim());
@@ -55,27 +66,28 @@ public class OfficerReceiptService {
                 System.out.println("❌ Invalid selection.");
                 return;
             }
-    
+
             Invoice selectedInvoice = awaitingReceipts.get(idx - 1);
-            boolean success = OfficerReceiptService.generateReceiptForInvoice(officer, selectedInvoice);
-    
+            boolean success = generateReceiptForInvoice(officer, selectedInvoice);
             if (!success) {
                 System.out.println("❌ Receipt generation failed.");
             }
-    
+
         } catch (Exception e) {
             System.out.println("❌ Invalid input.");
         }
     }
 
     /**
-     * Generates a receipt for a specified invoice and updates related records.
+     * Issues a receipt for a specific invoice. Updates the invoice status to "PROCESSED"
+     * and synchronizes the corresponding payment status.
      *
-     * @param officer The officer issuing the receipt.
-     * @param invoice The invoice to generate a receipt for.
-     * @return True if receipt generation is successful; false otherwise.
+     * @param officer The officer responsible for the receipt.
+     * @param invoice The invoice to process.
+     * @return True if receipt was successfully generated and saved; false otherwise.
      */
-    public static boolean generateReceiptForInvoice(HDBOfficer officer, Invoice invoice) {
+    @Override
+    public boolean generateReceiptForInvoice(HDBOfficer officer, Invoice invoice) {
         if (!invoice.getProjectName().equalsIgnoreCase(officer.getAssignedProject().getProjectName())) {
             System.out.println("❌ You are not authorized to issue receipts for this project.");
             return false;
@@ -92,12 +104,7 @@ public class OfficerReceiptService {
             applicant.getApplication().setProject(fullProject);
         }
 
-        Receipt receipt = officer.generateReceipt(
-            applicant.getApplication(),
-            invoice.getPaymentId(),
-            invoice.getMethod()
-        );
-
+        Receipt receipt = officer.generateReceipt(applicant.getApplication(), invoice.getPaymentId(), invoice.getMethod());
         ReceiptService.addReceipt(receipt);
 
         invoice.setStatus(Payment.PaymentStatusType.PROCESSED.name());
@@ -105,8 +112,7 @@ public class OfficerReceiptService {
 
         Payment payment = PaymentService.getAllPayments().stream()
             .filter(p -> p.getPaymentId() == invoice.getPaymentId())
-            .findFirst()
-            .orElse(null);
+            .findFirst().orElse(null);
 
         if (payment != null) {
             payment.setStatus(Payment.PaymentStatusType.PROCESSED.name());
@@ -118,29 +124,28 @@ public class OfficerReceiptService {
     }
 
     /**
-     * Helper method to retrieve an applicant by NRIC.
+     * Finds and returns an applicant by their NRIC.
      *
      * @param nric The NRIC of the applicant.
-     * @return The matching Applicant, or null if not found.
+     * @return The matching Applicant or null if not found.
      */
-    public static Applicant findApplicantByNRIC(String nric) {
-    return applicantRepository.loadAll().stream()
-        .filter(a -> a.getNric().equalsIgnoreCase(nric))
-        .findFirst()
-        .orElse(null);
+    private Applicant findApplicantByNRIC(String nric) {
+        return applicantRepository.loadAll().stream()
+            .filter(a -> a.getNric().equalsIgnoreCase(nric))
+            .findFirst()
+            .orElse(null);
     }
 
     /**
-     * Helper method to retrieve a full project object by name.
+     * Retrieves the full project object from the repository by name.
      *
      * @param projectName The name of the project.
-     * @return The matching Project, or null if not found.
+     * @return The full Project object or null if not found.
      */
-    public static Project findFullProjectByName(String projectName) {
+    private Project findFullProjectByName(String projectName) {
         return ProjectCsvMapper.loadAll().stream()
             .filter(p -> p.getProjectName().equalsIgnoreCase(projectName))
             .findFirst()
             .orElse(null);
     }
-
 }

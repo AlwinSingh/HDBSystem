@@ -3,6 +3,7 @@ package src.service;
 import java.util.List;
 import java.util.Scanner;
 
+import src.interfaces.IOfficerBookingService;
 import src.model.Applicant;
 import src.model.Application;
 import src.model.HDBOfficer;
@@ -17,7 +18,8 @@ import src.util.ProjectCsvMapper;
  * Handles the booking of flats by HDB officers for applicants.
  * Includes logic to list bookable applicants, perform bookings, and generate invoices.
  */
-public class OfficerBookingService {
+public class OfficerBookingService implements IOfficerBookingService {
+
 
     private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
 
@@ -29,7 +31,7 @@ public class OfficerBookingService {
      * @param assignedProject The officer’s assigned project.
      * @return A list of bookable applicants.
      */
-    public static List<Applicant> getBookableApplicants(Project assignedProject) {
+    public List<Applicant> getBookableApplicants(Project assignedProject) {
         return applicantRepository.loadAll().stream()
             .filter(a -> a.getApplication() != null)
             .filter(a -> {
@@ -48,7 +50,7 @@ public class OfficerBookingService {
      * @param officer The logged-in officer.
      * @param sc      Scanner for input.
      */
-    public static void bookFlat(HDBOfficer officer, Scanner sc) {
+    public void bookFlat(HDBOfficer officer, Scanner sc) {
         Project assigned = officer.getAssignedProject();
         if (assigned == null) {
             System.out.println("❌ No assigned project.");
@@ -100,7 +102,7 @@ public class OfficerBookingService {
      * @param applicant The applicant to book for.
      * @return True if booking and invoice generation succeed; false otherwise.
      */
-    public static boolean bookFlatAndGenerateInvoice(HDBOfficer officer, Applicant applicant) {
+    public boolean bookFlatAndGenerateInvoice(HDBOfficer officer, Applicant applicant) {
         Application app = applicant.getApplication();
         if (app == null || officer.getAssignedProject() == null) return false;
 

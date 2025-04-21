@@ -1,6 +1,15 @@
 package src.service;
 
 import java.util.*;
+
+import src.interfaces.IOfficerAmenityService;
+import src.interfaces.IOfficerBookingService;
+import src.interfaces.IOfficerEnquiryService;
+import src.interfaces.IOfficerInvoiceService;
+import src.interfaces.IOfficerLocationService;
+import src.interfaces.IOfficerProjectViewService;
+import src.interfaces.IOfficerReceiptService;
+import src.interfaces.IOfficerRegistrationService;
 import src.model.*;
 
 /**
@@ -31,6 +40,16 @@ public class OfficerMenu {
     public static void show(HDBOfficer officer) {
         Scanner sc = new Scanner(System.in);
 
+        // Interface-based service declarations
+        IOfficerAmenityService amenityService = new OfficerAmenityService();
+        IOfficerEnquiryService enquiryService = new OfficerEnquiryService();
+        IOfficerLocationService locationService = new OfficerLocationService();
+        IOfficerInvoiceService invoiceService = new OfficerInvoiceService();
+        IOfficerReceiptService receiptService = new OfficerReceiptService(invoiceService);
+        IOfficerBookingService bookingService = new OfficerBookingService();
+        IOfficerRegistrationService registrationService = new OfficerRegistrationService();
+        IOfficerProjectViewService projectViewService = new OfficerProjectViewService();
+
         while (true) {
             System.out.println("\n===== 🧑‍💼 HDB Officer Dashboard =====");
             System.out.println("Welcome, Officer " + officer.getName());
@@ -55,15 +74,15 @@ public class OfficerMenu {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1" -> OfficerRegistrationService.viewOfficerRegistrationStatus(officer);
-                case "2" -> OfficerRegistrationService.browseAndFilterProjects(sc);
-                case "3" -> OfficerRegistrationService.registerForProject(officer, sc);
-                case "4" -> OfficerProjectViewService.viewAssignedProjectDetails(officer);
-                case "5" -> OfficerBookingService.bookFlat(officer, sc);
-                case "6" -> OfficerReceiptService.generateReceipt(officer, sc);
-                case "7" -> OfficerLocationService.updateLocation(officer, sc);
-                case "8" -> OfficerAmenityService.addOrUpdateAmenity(officer, sc);
-                case "9" -> OfficerEnquiryService.handleEnquiries(officer, sc);
+                case "1" -> registrationService.viewOfficerRegistrationStatus(officer);
+                case "2" -> registrationService.browseAndFilterProjects(sc);
+                case "3" -> registrationService.registerForProject(officer, sc);
+                case "4" -> projectViewService.viewAssignedProjectDetails(officer);
+                case "5" -> bookingService.bookFlat(officer, sc);
+                case "6" -> receiptService.generateReceipt(officer, sc);
+                case "7" -> locationService.updateLocation(officer, sc);
+                case "8" -> amenityService.addOrUpdateAmenity(officer, sc);
+                case "9" -> enquiryService.handleEnquiries(officer, sc);
                 case "10" -> {
                     if (AuthService.changePassword(officer, sc)) return;
                 }
