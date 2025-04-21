@@ -76,7 +76,9 @@ public class ApplicantMenu {
     
 
     /**
-     * Shows detailed information about the applicant's current application.
+     * Handles displaying the applicant's existing application.
+     * Shows detailed information including project name, location, flat type, price, and amenities.
+     * If no application exists, a warning is printed.
      */
     private static void viewingApplication(ApplicantContext ctx) {
         Application app = ctx.applicant.getApplication();

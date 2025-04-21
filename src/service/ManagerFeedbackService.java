@@ -7,11 +7,25 @@ import java.util.Scanner;
 import src.model.Feedback;
 import src.model.HDBManager;
 
+/**
+ * Provides functionality for HDB managers to view, filter, and resolve feedback
+ * submitted by applicants for the manager's assigned projects.
+ */
 public class ManagerFeedbackService {
 
     /**
-     * Provides full feedback management options to managers:
-     * viewing, filtering, and resolving feedback.
+     * Displays a feedback management menu for the manager, allowing:
+     * <ul>
+     *     <li>Viewing all feedback from the manager's projects</li>
+     *     <li>Viewing only unresolved feedback</li>
+     *     <li>Filtering feedback by applicant NRIC</li>
+     *     <li>Filtering feedback by a date range</li>
+     *     <li>Resolving a feedback entry</li>
+     *     <li>Returning to the previous menu</li>
+     * </ul>
+     *
+     * @param manager The currently logged-in HDB manager.
+     * @param sc      Scanner for reading user input.
      */
     public static void viewAndResolveFeedback(HDBManager manager, Scanner sc) {
         while (true) {

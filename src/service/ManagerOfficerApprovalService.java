@@ -14,11 +14,16 @@ import src.util.FilePath;
 import src.util.OfficerCsvMapper;
 import src.util.ProjectCsvMapper;
 
+/**
+ * Handles the approval workflow of HDB officers by project managers.
+ * This includes viewing, approving, and rejecting officer registration requests.
+ */
 public class ManagerOfficerApprovalService {
+    
     /**
-     * Displays all officer registration requests tied to the manager's projects.
+     * Displays all officer registration requests associated with the manager's projects.
      *
-     * @param manager The manager.
+     * @param manager The currently logged-in HDB manager.
      */
     public static void viewOfficerRegistrations(HDBManager manager) {
         List<Map<String, String>> officers = CsvUtil.read(FilePath.OFFICER_LIST_FILE);

@@ -20,6 +20,18 @@ public class Receipt {
     private String receiptId; // 🔄 Removed final
     private LocalDate issuedDate;
 
+    /**
+     * Constructs a new Receipt based on applicant and invoice details.
+     *
+     * @param applicantName   Applicant's full name.
+     * @param applicantNRIC   Applicant's NRIC.
+     * @param age             Applicant's age.
+     * @param maritalStatus   Applicant's marital status.
+     * @param projectName     Name of the project booked.
+     * @param neighborhood    Project's neighborhood.
+     * @param flatTypeBooked  Chosen flat type.
+     * @param invoice         Associated invoice.
+     */
     public Receipt(String applicantName, String applicantNRIC, int age, String maritalStatus,
                    String projectName, String neighborhood, String flatTypeBooked, Invoice invoice) {
         this.applicantName = applicantName;
@@ -44,7 +56,9 @@ public class Receipt {
     }
 
     /**
-     * Returns a formatted string displaying all receipt and payment details.
+     * Returns a multi-line string representation of this receipt.
+     *
+     * @return Formatted string containing all receipt details.
      */
     @Override
     public String toString() {
@@ -97,7 +111,9 @@ public class Receipt {
 
     /**
      * Sets the date this receipt was issued.
-     * Used during deserialization or CSV loading.
+     * Used during CSV loading/deserialization.
+     *
+     * @param issuedDate Date to assign.
      */
     public void setIssuedDate(LocalDate issuedDate) {
         this.issuedDate = issuedDate;
@@ -105,6 +121,8 @@ public class Receipt {
 
     /**
      * Sets the receipt ID manually — typically used during CSV deserialization.
+     *
+     * @param receiptId The receipt identifier string.
      */
     public void setReceiptId(String receiptId) {
         this.receiptId = receiptId;

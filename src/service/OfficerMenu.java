@@ -4,15 +4,30 @@ import java.util.*;
 import src.model.*;
 
 /**
- * Displays the HDB Officer dashboard and handles routing to officer-specific actions.
+ * CLI menu interface for logged-in HDB Officers.
+ * Provides access to registration, project management, invoicing, receipt generation,
+ * amenity/location updates, enquiry replies, and account operations.
+ *
+ * Handles user navigation and routes actions to the appropriate OfficerService or AuthService logic.
  */
+
 public class OfficerMenu {
 
     /**
-     * Launches the officer dashboard and processes user input to access various services.
+     * Displays the officer dashboard menu and routes each valid menu option to its function.
+     * 
+     * Supported options:
+     * <ul>
+     *   <li>View registration status, browse and register for projects</li>
+     *   <li>View project details, book flats, and generate receipts</li>
+     *   <li>Update project location and amenities</li>
+     *   <li>View and respond to enquiries</li>
+     *   <li>Change password, switch to applicant view, or log out</li>
+     * </ul>
      *
-     * @param officer The logged-in officer.
+     * @param officer The currently logged-in HDB officer.
      */
+
     public static void show(HDBOfficer officer) {
         Scanner sc = new Scanner(System.in);
 
@@ -40,15 +55,15 @@ public class OfficerMenu {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1" -> OfficerService.viewOfficerRegistrationStatus(officer);
-                case "2" -> OfficerService.browseAndFilterProjects(sc);
-                case "3" -> OfficerService.registerForProject(officer, sc);
-                case "4" -> OfficerService.viewAssignedProjectDetails(officer);
-                case "5" -> OfficerService.bookFlat(officer, sc);
-                case "6" -> OfficerService.generateReceipt(officer, sc);
-                case "7" -> OfficerService.updateLocation(officer, sc);
-                case "8" -> OfficerService.addOrUpdateAmenity(officer, sc);
-                case "9" -> OfficerService.handleEnquiries(officer, sc);
+                case "1" -> OfficerRegistrationService.viewOfficerRegistrationStatus(officer);
+                case "2" -> OfficerRegistrationService.browseAndFilterProjects(sc);
+                case "3" -> OfficerRegistrationService.registerForProject(officer, sc);
+                case "4" -> OfficerProjectViewService.viewAssignedProjectDetails(officer);
+                case "5" -> OfficerBookingService.bookFlat(officer, sc);
+                case "6" -> OfficerReceiptService.generateReceipt(officer, sc);
+                case "7" -> OfficerLocationService.updateLocation(officer, sc);
+                case "8" -> OfficerAmenityService.addOrUpdateAmenity(officer, sc);
+                case "9" -> OfficerEnquiryService.handleEnquiries(officer, sc);
                 case "10" -> {
                     if (AuthService.changePassword(officer, sc)) return;
                 }
@@ -56,13 +71,13 @@ public class OfficerMenu {
                     System.out.println("🔁 Switching to Applicant Dashboard...");
                     ApplicantMenu.show(officer);
                     return;
-                }                         
+                }
                 case "0" -> {
                     officer.logout();
                     return;
                 }
                 default -> System.out.println("❌ Invalid input. Please try again.");
             }
-        }
+        }    
     }
 }

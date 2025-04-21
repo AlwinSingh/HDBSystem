@@ -12,6 +12,17 @@ public class HDBManager extends User {
     private List<Project> managedProjects;
     private Project assignedProject;
 
+
+    /**
+     * Constructs a new HDBManager with the specified user details.
+     * Initializes the list of projects managed by this manager.
+     *
+     * @param nric           The manager's NRIC used for login.
+     * @param password       The login password for the manager.
+     * @param name           Full name of the manager.
+     * @param age            Age of the manager.
+     * @param maritalStatus  Marital status of the manager.
+     */
     public HDBManager(String nric, String password, String name, int age, String maritalStatus) {
         super(nric, password, name, age, maritalStatus);
         this.managedProjects = new ArrayList<>();

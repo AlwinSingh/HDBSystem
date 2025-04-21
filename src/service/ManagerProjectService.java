@@ -10,13 +10,21 @@ import src.model.Project;
 import src.model.ProjectLocation;
 import src.util.ProjectCsvMapper;
 
+/**
+ * Provides functionality for HDB managers to manage their housing projects.
+ * Managers can create, edit, delete, toggle visibility, and view projects.
+ * Also includes advanced filtering options.
+ */
+
 public class ManagerProjectService {
+    
     /**
-     * Allows the manager to create a new project, validate inputs,
-     * and save it to the system.
+     * Guides the manager through creating a new housing project.
+     * Includes validation for name uniqueness, unit counts, pricing,
+     * officer slot range, and application period constraints.
      *
-     * @param manager The logged-in HDB manager.
-     * @param sc      Scanner for user input.
+     * @param manager The currently logged-in HDB manager.
+     * @param sc      Scanner to receive user input.
      */
     public static void createProject(HDBManager manager, Scanner sc) {
         System.out.println("\n📌 Create New Project");
@@ -208,11 +216,13 @@ public class ManagerProjectService {
     }
 
     /**
-     * Allows a manager to delete one of their projects, if no officers or applicants are assigned.
+     * Deletes a project if no officers or applicants are currently associated with it.
+     * Requires confirmation before removal.
      *
-     * @param manager The logged-in manager.
-     * @param sc      Scanner for user input.
+     * @param manager The currently logged-in HDB manager.
+     * @param sc      Scanner to receive user input.
      */
+
     public static void deleteProject(HDBManager manager, Scanner sc) {
         List<Project> myProjects = ProjectCsvMapper.loadAll().stream()
             .filter(p -> p.getManager() != null && p.getManager().getNric().equalsIgnoreCase(manager.getNric()))
@@ -336,6 +346,13 @@ public class ManagerProjectService {
         LocalDate end = null;
     }
     
+    /**
+     * Displays all projects in the system and allows the manager
+     * to apply dynamic filters including project name, district, visibility,
+     * room availability, officer slots, and application period.
+     *
+     * @param sc Scanner to capture filter inputs.
+     */
 
     public static void viewAllProjectsWithFilter(Scanner sc) {
         List<Project> allProjects = ProjectCsvMapper.loadAll();

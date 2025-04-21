@@ -15,6 +15,10 @@ import src.util.CsvUtil;
 import src.util.FilePath;
 import src.util.ProjectCsvMapper;
 
+/**
+ * Provides services for HDB managers to review, approve/reject applicant submissions,
+ * and handle applicant withdrawal requests for their projects.
+ */
 public class ManagerApplicantApprovalService {
 
     private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
@@ -145,9 +149,13 @@ public class ManagerApplicantApprovalService {
     }
 
     /**
-     * Approves the applicant and deducts one unit of the selected flat type.
+     * Attempts to approve an applicant if the selected flat type has available units.
+     * If successful, it updates the project and applicant records.
      *
-     * @return True if successful; false if flats are unavailable.
+     * @param applicant The applicant to approve.
+     * @param project   The project to reserve a flat in.
+     * @param flatType  The flat type to be reserved.
+     * @return True if the application was approved, false if no units are available.
      */
     private static boolean approveApplicant(Applicant applicant, Project project, String flatType) {
         int available = flatType.equalsIgnoreCase("2-Room")
@@ -171,7 +179,11 @@ public class ManagerApplicantApprovalService {
     }
 
     /**
-     * Displays and resolves pending withdrawal requests from applicants.
+     * Allows the manager to approve or reject pending withdrawal requests
+     * made by applicants under their assigned projects.
+     *
+     * @param manager The logged-in HDB manager.
+     * @param sc      The scanner for user input.
      */
     public static void handleWithdrawalRequests(HDBManager manager, Scanner sc) {
         List<Applicant> applicants = applicantRepository.loadAll();

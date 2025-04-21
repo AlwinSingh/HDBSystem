@@ -15,6 +15,16 @@ public class ProjectLocation {
     private double lat;
     private double lng;
 
+    /**
+     * Constructs a new ProjectLocation with the specified details.
+     *
+     * @param locationId Unique identifier for this location.
+     * @param district   Administrative district (e.g., North, Central).
+     * @param town       Town or planning area (e.g., Yishun, Clementi).
+     * @param address    Street-level address.
+     * @param lat        Latitude coordinate.
+     * @param lng        Longitude coordinate.
+     */
     public ProjectLocation(int locationId, String district, String town, String address, double lat, double lng) {
         this.locationId = locationId;
         this.district = district;
@@ -34,12 +44,11 @@ public class ProjectLocation {
     }
 
     /**
-     * Stub for future integration — returns a list of nearby transport nodes.
+     * Placeholder for future enhancement. Intended to return nearby transport services.
      *
-     * @return Currently returns an empty list.
+     * @return An empty list currently; future versions may populate it dynamically.
      */
     public List<String> getNearbyTransport() {
-        // Stub - future implementation
         return new ArrayList<>();
     }
 

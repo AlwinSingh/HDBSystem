@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.util.*;
 
 /**
- * Represents an HDB housing project, including configuration of flats, officers, manager,
- * pricing, dates, and amenities.
+ * Represents an HDB housing project. Encapsulates project information including pricing,
+ * flat availability, officer assignments, application periods, and public visibility.
  */
 public class Project {
     private String projectName;
@@ -27,12 +27,27 @@ public class Project {
     private Set<String> officerNRICs = new HashSet<>();
     private Set<String> applicantNRICs = new HashSet<>();
 
+    /**
+     * Default constructor initializes empty amenity/officer/enquiry lists.
+     */
     public Project() {
         this.amenities = new ArrayList<>();
         this.officers = new ArrayList<>();
         this.enquiries = new ArrayList<>();
     }
 
+    /**
+     * Constructs a Project with all required fields.
+     *
+     * @param projectName  Name of the project.
+     * @param neighborhood Neighborhood name.
+     * @param openDate     Project open date.
+     * @param closeDate    Project close date.
+     * @param officerSlots Max number of officers.
+     * @param flats2Room   Total 2-room units.
+     * @param flats3Room   Total 3-room units.
+     * @param location     Project location.
+     */
     public Project(String projectName, String neighborhood, LocalDate openDate, LocalDate closeDate,
                    int officerSlots, int flats2Room, int flats3Room, ProjectLocation location) {
         this.projectName = projectName;
@@ -229,16 +244,16 @@ public class Project {
     }
 
     /**
-     * Removes an officer from the project.
+     * Removes the specific officer from the project.
      */
     public void removeOfficer(HDBOfficer o) {
         officers.remove(o);
     }
 
     /**
-     * Decreases the flat count for the given type, if not already 0.
+     * Reduces the number of available units for a flat type by 1 (if above 0).
      *
-     * @param flatType "2-Room" or "3-Room"
+     * @param flatType The flat type to decrement (e.g., "2-Room").
      */
     public void decrementFlatCount(String flatType) {
         if (flatType.equals("2-Room")) {

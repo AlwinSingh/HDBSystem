@@ -2,7 +2,7 @@ package src.model;
 
 /**
  * Abstract base class representing a user in the HDB system.
- * Shared by applicants, officers, and managers.
+ * This includes shared fields and methods for applicants, officers, and managers.
  */
 public abstract class User {
     protected String nric;
@@ -11,6 +11,15 @@ public abstract class User {
     protected int age;
     protected String maritalStatus;
 
+     /**
+     * Constructs a user with the specified personal information.
+     *
+     * @param nric          Unique NRIC identifier.
+     * @param password      Login password (plain text).
+     * @param name          Full name of the user.
+     * @param age           Age of the user.
+     * @param maritalStatus Marital status (e.g., "Single", "Married").
+     */
     public User(String nric, String password, String name, int age, String maritalStatus) {
         this.nric = nric;
         this.password = password;
@@ -21,7 +30,7 @@ public abstract class User {
 
     /**
      * Checks if the provided password matches the user's actual password.
-     * Not in use now....moved to AuthService.authenticate() method instead...
+     * used in AuthService.authenticate() method instead
      *
      * @param inputPassword The password to verify.
      * @return True if the password matches.
@@ -32,23 +41,31 @@ public abstract class User {
 
     /**
      * Prints a logout message to the console.
-     * Not in use now....moved to AuthService.logout() method instead...
+     * used in AuthService
      */
     public void logout() {
         System.out.println(name + " has logged out.");
     }
 
+    /**
+     * Returns the user's plain text password.
+     */
     public String getPassword() {
         return this.password;
     }
     
+    /**
+     * Updates the user's password (no validation or encryption).
+     *
+     * @param password The new password.
+     */
     public void setPassword(String password) {
         this.password = password;
     }
 
     /**
      * Replaces user's password with new password that has been input
-     * Not in use now...moved to AuthService.changePassword() method instead...
+     * used in AuthService.changePassword() method
      *
      * @param newPassword
      */

@@ -9,15 +9,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Loads and filters amenities based on a given project name.
+ * Utility service responsible for loading amenities from a CSV file.
+ * Supports filtering amenities by project name.
  */
 public class AmenitiesLoader {
 
     /**
-     * Returns a list of amenities that belong to the specified project.
+     * Loads all amenities associated with the specified project.
+     * Each amenity is matched by the "Project Name" column in the CSV.
      *
-     * @param projectName The name of the project to search for.
-     * @return A list of matching amenities.
+     * @param projectName The name of the project to filter amenities for.
+     * @return A list of {@link Amenities} objects linked to the specified project.
      */
     public static List<Amenities> loadAmenitiesByProject(String projectName) {
         List<Amenities> result = new ArrayList<>();

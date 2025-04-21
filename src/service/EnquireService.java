@@ -16,8 +16,6 @@ import src.util.ProjectCsvMapper;
  */
 public class EnquireService {
 
-
-
     /**
      * Loads all enquiries from the CSV file.
      *

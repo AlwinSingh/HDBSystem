@@ -22,10 +22,13 @@ public class HDBOfficer extends Applicant {
     }
 
     /**
-     * Registers the officer to handle a project, marking their status as PENDING.
+     * Attempts to register this officer to manage a given project.
+     * The officer must not already be registered to a project or have applied to the same one as an applicant.
      *
-     * @return True if registration is successful; false if already registered or has an application.
+     * @param project The project to register for.
+     * @return True if registration is submitted; false otherwise.
      */
+
     public boolean registerToHandleProject(Project project) {
         if (assignedProject != null) return false;
     
@@ -108,6 +111,11 @@ public class HDBOfficer extends Applicant {
         }
     }
 
+    /**
+     * Updates the officer's registration status.
+     *
+     * @param status New status string (e.g., "APPROVED", "REJECTED").
+     */
     public void setRegistrationStatus(String status) {
         this.registrationStatus = status;
     }
@@ -125,7 +133,9 @@ public class HDBOfficer extends Applicant {
     }
 
     /**
-     * Indicates that this user is an officer. Always returns true.
+     * Indicates that this user is an HDB officer.
+     *
+     * @return True for HDBOfficer.
      */
     @Override
     public boolean isOfficer() {

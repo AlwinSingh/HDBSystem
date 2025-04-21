@@ -153,7 +153,7 @@ public class AuthService {
         }
 
         System.out.println("✅ Password changed successfully.");
-        user.logout(); // use instance method
+        user.logout();
         return true;
     }
 }

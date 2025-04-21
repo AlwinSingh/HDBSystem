@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 /**
  * Represents a summary report entry for a booking and payment.
- * Includes applicant info, project and flat details, booking/payment status, and optional metadata.
+ * Includes key information about the applicant, flat, and transaction status.
  */
 public class Report {
     private String applicantName;
@@ -19,6 +19,21 @@ public class Report {
     private LocalDate bookingDate; // optional
     private String receiptId;      // optional
 
+    /**
+     * Constructs a new report entry summarizing a flat booking.
+     *
+     * @param applicantName    Name of the applicant.
+     * @param applicantNRIC    NRIC of the applicant.
+     * @param age              Age of the applicant.
+     * @param maritalStatus    Marital status of the applicant.
+     * @param projectName      Name of the project booked.
+     * @param flatTypeBooked   Type of flat booked (e.g., 2-Room).
+     * @param flatPrice        Price of the booked flat.
+     * @param bookingStatus    Booking status (e.g., BOOKED).
+     * @param paymentStatus    Payment status (e.g., PROCESSED).
+     * @param bookingDate      Date the booking was made (nullable).
+     * @param receiptId        Receipt ID issued after payment (nullable).
+     */
     public Report(String applicantName, String applicantNRIC, int age, String maritalStatus,
                   String projectName, String flatTypeBooked, double flatPrice,
                   String bookingStatus, String paymentStatus,
@@ -49,7 +64,7 @@ public class Report {
     public String getReceiptId() { return receiptId; }
 
     /**
-     * Returns a concise summary string of the report for console display.
+     * Returns a concise formatted summary string of the report for console display.
      */
     @Override
     public String toString() {

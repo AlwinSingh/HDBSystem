@@ -5,13 +5,26 @@ import java.util.Scanner;
 
 import src.model.HDBManager;
 
+/**
+ * Provides a additional CLI-based interface for HDB Managers to generate, view,
+ * and filter booking reports. Reports contain applicant, booking, and payment data.
+ *
+ * Supports filtering by project name, flat type, payment status, and date range.
+ */
+
 public class ManagerReportService {
 
     /**
-     * Allows managers to generate and view booking reports based on filters.
+     * Launches a CLI report dashboard for the manager to:
+     * <ul>
+     *   <li>Generate fresh booking reports from invoice and receipt data</li>
+     *   <li>View all existing reports</li>
+     *   <li>Filter reports by project, flat type, payment status, or booking date range</li>
+     * </ul>
+     * Prompts for input, performs basic validation, and shows appropriate output for each option.
      *
-     * @param manager The manager.
-     * @param sc      Scanner for input.
+     * @param manager The currently logged-in HDB manager.
+     * @param sc      The Scanner used for user input.
      */
     public static void generateReports(HDBManager manager, Scanner sc) {
         while (true) {
