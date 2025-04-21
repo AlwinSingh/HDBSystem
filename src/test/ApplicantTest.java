@@ -21,7 +21,7 @@ public class ApplicantTest {
     public static void main(String[] args) {
         InputStream originalIn = System.in;
 
-        String applicantNRIC = "T7654321B";
+        String applicantNRIC = "T2109876H";
         String password      = "password";
 
         System.out.println("=== 🧪 Running Applicant Filter Test ===\n");
@@ -50,7 +50,6 @@ public class ApplicantTest {
         //
         "2",
         "2",
-        "2-Room",
         "Y",
         "3",
         "4",
@@ -81,6 +80,7 @@ public class ApplicantTest {
         "9",
         "password",
         "superhero");
+        
 
         System.setIn(new ByteArrayInputStream(inputSequence.getBytes()));
         ApplicantMenu.show(a);
