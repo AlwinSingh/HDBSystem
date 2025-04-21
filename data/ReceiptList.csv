@@ -1,2 +1,1 @@
 ReceiptID,ApplicantName,ApplicantNRIC,ProjectName,FlatTypeBooked,IssuedDate,InvoiceID,AmountPaid,Method,Status
-R-F7DD023C,Sarah,T7654321B,ClementiLake,3-Room,2025-04-21,1,10000.0,CREDIT_CARD,PROCESSED
