@@ -1,1 +1,2 @@
 PaymentID,Amount,Date,Method,Status
+1,10000.0,2025-04-21,CREDIT_CARD,PROCESSED

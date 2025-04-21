@@ -43,7 +43,7 @@ public class ReceiptCsvMapper {
                 LocalDate issuedDate = LocalDate.parse(issuedDateStr);
 
                 PaymentMethod method = Arrays.stream(PaymentMethod.values())
-                        .filter(pm -> pm.toString().equalsIgnoreCase(methodRaw))
+                        .filter(pm -> pm.name().equalsIgnoreCase(methodRaw))
                         .findFirst()
                         .orElse(PaymentMethod.PAYNOW); // fallback method
 
@@ -55,7 +55,7 @@ public class ReceiptCsvMapper {
 
                 list.add(receipt);
             } catch (Exception e) {
-                System.err.println("⚠️ Skipping malformed row in ReceiptList.csv: " + e.getMessage());
+                System.err.println("Skipping row in ReceiptList.csv: " + e.getMessage());
             }
         }
 

@@ -2,4 +2,4 @@ Project Name,Neighborhood,Number of units for Type 1,Number of units for Type 2,
 Acacia Breeze,Yishun,199997,100000,1,350000.0,450000.0,true,2025-02-15,2025-03-20,101,NewDistrict,NewTown,NewAddress,1.23,103.45,T8765432F,Michael,S6543210I,
 ABCD,Jurong,2,3,4,150000.0,250000.0,true,2025-05-15,2025-06-10,102,West,Jurong,88 ABCD Rd,1.3325,103.7437,T1234567G,Jessica,,
 Alweo,Jurong,4,6,5,200000.0,500000.0,true,2022-12-12,2023-01-10,103,West,Jurong,78 Alweo Rd,1.3301,103.75,T1234567G,Jessica,,
-ClementiLake,Clementi,7,10,4,10000.0,10000.0,true,2025-04-16,2025-06-16,0,Clementi Ave,Clementi,Clementi Ave 69,100.0,101.0,T8765432F,Michael,T2109876H,
+ClementiLake,Clementi,7,9,3,10000.0,10000.0,true,2025-04-16,2025-06-16,0,Clementi Ave,Clementi,Clementi Ave 69,100.0,101.0,T8765432F,Michael,T2109876H,T7654321B

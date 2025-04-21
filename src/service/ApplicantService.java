@@ -178,6 +178,71 @@ public class ApplicantService {
     }
 
     /**
+     * Guides the applicant through applying to a project and selecting a flat type.
+     */
+    public static void applyForProject(Applicant applicant, Scanner sc){
+    
+        if (applicant.getApplication() != null) {
+            System.out.println("⚠️ You already have an active application for: "
+                    + applicant.getApplication().getProject().getProjectName()
+                    + " (Status: " + applicant.getApplication().getStatus() + ")");
+            return;
+        }
+    
+        List<Project> eligible = ApplicantService.getEligibleProjects(applicant);
+        if (eligible.isEmpty()) {
+            System.out.println("❌ No eligible projects available.");
+            return;
+        }
+    
+        for (int i = 0; i < eligible.size(); i++) {
+            Project p = eligible.get(i);
+            System.out.printf("[%d] %s (%s)\n", i + 1, p.getProjectName(), p.getNeighborhood());
+        }
+    
+        System.out.print("Enter project number to apply: ");
+        int choice = Integer.parseInt(sc.nextLine().trim()) - 1;
+        if (choice < 0 || choice >= eligible.size()) {
+            System.out.println("❌ Invalid selection.");
+            return;
+        }
+    
+        Project selected = eligible.get(choice);
+    
+        if (applicant instanceof HDBOfficer officer) {
+            Project assigned = officer.getAssignedProject();
+            String status = officer.getRegistrationStatus();
+
+            if (assigned != null &&
+                assigned.getProjectName().equalsIgnoreCase(selected.getProjectName()) &&
+                ("PENDING".equalsIgnoreCase(status) || "APPROVED".equalsIgnoreCase(status))) {
+                System.out.println("❌ You are already handling this project as an officer.");
+                return;
+            }
+        }
+    
+        String flatType = "2-Room";
+        if ("Married".equalsIgnoreCase(applicant.getMaritalStatus())) {
+            System.out.print("Choose flat type (2-Room/3-Room): ");
+            flatType = sc.nextLine().trim();
+        }
+    
+        System.out.print("Submit application for " + selected.getProjectName()
+                + " (" + flatType + ")? (Y/N): ");
+        if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
+            System.out.println("🔁 Application cancelled.");
+            return;
+        }
+    
+        boolean ok = ApplicantService.submitApplication(applicant, selected, flatType);
+        if (ok) {
+            System.out.println("✅ Application submitted. Status: " + Applicant.AppStatusType.PENDING.name() + ".");
+        } else {
+            System.out.println("❌ Application failed.");
+        }
+    }
+
+    /**
      * Applies for a selected project with the chosen flat type and saves updates to CSV.
      *
      * @return True if successful; false if already applied or any issues occur.
@@ -254,22 +319,30 @@ public class ApplicantService {
      */
     public static List<Invoice> getUnpaidInvoices(Applicant applicant) {
         return InvoiceService.getAllInvoices().stream()
-                .filter(inv -> inv.getApplicantNRIC().equalsIgnoreCase(applicant.getNric()))
-                .filter(inv -> !"Awaiting Receipt".equalsIgnoreCase(inv.getStatus()))
-                .sorted(Comparator.comparing(Invoice::getPaymentId))
-                .toList();
+            .filter(inv -> inv.getApplicantNRIC().equalsIgnoreCase(applicant.getNric()))
+            .filter(ApplicantService::isInvoiceUnpaid)
+            .sorted(Comparator.comparing(Invoice::getPaymentId))
+            .toList();
     }
+    
 
     /**
      * Updates an invoice to reflect successful payment via the selected method.
-     *
+     * Does safeguard checks to ensure payment is only done once
+     * 
      * @param method The payment method chosen by the user.
      */
     public static void processInvoicePayment(Applicant applicant, Invoice invoice, PaymentMethod method) {
+        if ("PROCESSED".equalsIgnoreCase(invoice.getStatus()) ||
+            "Awaiting Receipt".equalsIgnoreCase(invoice.getStatus())) {
+            System.out.println("❌ This invoice has already been paid or is pending receipt.");
+            return;
+        }
+    
         invoice.setMethod(method);
         invoice.setStatus("Awaiting Receipt");
         InvoiceService.updateInvoice(invoice);
-
+    
         int nextPaymentId = PaymentService.getNextPaymentId();
         Payment newPayment = new Payment(
                 nextPaymentId,
@@ -279,9 +352,16 @@ public class ApplicantService {
                 invoice.getStatus()
         );
         PaymentService.addPayment(newPayment);
-
+    
         System.out.println("💸 Payment successful via " + method + "!");
     }
+
+    public static boolean isInvoiceUnpaid(Invoice invoice) {
+        return !invoice.getStatus().equalsIgnoreCase("Awaiting Receipt")
+            && !invoice.getStatus().equalsIgnoreCase("PROCESSED");
+    }
+    
+    
 
     /**
      * Returns a list of receipts for all payments made by the applicant.

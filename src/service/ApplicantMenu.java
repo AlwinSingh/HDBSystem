@@ -48,7 +48,7 @@ public class ApplicantMenu {
     
             switch (choice) {
                 case "1" -> ApplicantService.handleViewEligibleProjects(applicant, sc);
-                case "2" -> applyForProject(new ApplicantContext(applicant, sc));
+                case "2" -> ApplicantService.applyForProject(applicant, sc);
                 case "3" -> viewingApplication(new ApplicantContext(applicant, sc));
                 case "4" -> requestWithdrawal(new ApplicantContext(applicant, sc));
                 case "5" -> viewAndPayInvoices(applicant, sc);
@@ -71,76 +71,6 @@ public class ApplicantMenu {
                 }
                 default -> System.out.println("❌ Invalid input. Please try again.");
             }
-        }
-    }
-    
-    
-
-    /**
-     * Guides the applicant through applying to a project and selecting a flat type.
-     */
-    private static void applyForProject(ApplicantContext ctx) {
-        Applicant applicant = ctx.applicant;
-        Scanner sc = ctx.scanner;
-    
-        if (applicant.getApplication() != null) {
-            System.out.println("⚠️ You already have an active application for: "
-                    + applicant.getApplication().getProject().getProjectName()
-                    + " (Status: " + applicant.getApplication().getStatus() + ")");
-            return;
-        }
-    
-        List<Project> eligible = ApplicantService.getEligibleProjects(applicant);
-        if (eligible.isEmpty()) {
-            System.out.println("❌ No eligible projects available.");
-            return;
-        }
-    
-        for (int i = 0; i < eligible.size(); i++) {
-            Project p = eligible.get(i);
-            System.out.printf("[%d] %s (%s)\n", i + 1, p.getProjectName(), p.getNeighborhood());
-        }
-    
-        System.out.print("Enter project number to apply: ");
-        int choice = Integer.parseInt(sc.nextLine().trim()) - 1;
-        if (choice < 0 || choice >= eligible.size()) {
-            System.out.println("❌ Invalid selection.");
-            return;
-        }
-    
-        Project selected = eligible.get(choice);
-    
-        // 🧠 Officer conflict check (moved here)
-        if (applicant instanceof HDBOfficer officer) {
-            Project assigned = officer.getAssignedProject();
-            String status = officer.getRegistrationStatus();
-    
-            if (assigned != null &&
-                assigned.getProjectName().equalsIgnoreCase(selected.getProjectName()) &&
-                "PENDING".equalsIgnoreCase(status)) {
-                System.out.println("❌ You are already registering to this project as an officer.");
-                return;
-            }
-        }
-    
-        String flatType = "2-Room";
-        if ("Married".equalsIgnoreCase(applicant.getMaritalStatus())) {
-            System.out.print("Choose flat type (2-Room/3-Room): ");
-            flatType = sc.nextLine().trim();
-        }
-    
-        System.out.print("Submit application for " + selected.getProjectName()
-                + " (" + flatType + ")? (Y/N): ");
-        if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
-            System.out.println("🔁 Application cancelled.");
-            return;
-        }
-    
-        boolean ok = ApplicantService.submitApplication(applicant, selected, flatType);
-        if (ok) {
-            System.out.println("✅ Application submitted. Status: " + Applicant.AppStatusType.PENDING.name() + ".");
-        } else {
-            System.out.println("❌ Application failed.");
         }
     }
     
@@ -281,18 +211,7 @@ public class ApplicantMenu {
      * Shows a list of unpaid invoices and handles user selection for payment.
      */
     private static void viewAndPayInvoices(Applicant applicant, Scanner sc) {
-        List<Invoice> allInvoices = InvoiceService.getAllInvoices().stream()
-            .filter(inv -> inv.getApplicantNRIC().equalsIgnoreCase(applicant.getNric()))
-            .toList();
-
-        if (allInvoices.isEmpty()) {
-            System.out.println("📭 You have no invoices at the moment.");
-            return;
-        }
-
-        List<Invoice> unpaidInvoices = allInvoices.stream()
-            .filter(inv -> !"Awaiting Receipt".equalsIgnoreCase(inv.getStatus()))
-            .toList();
+        List<Invoice> unpaidInvoices = ApplicantService.getUnpaidInvoices(applicant);
 
         if (unpaidInvoices.isEmpty()) {
             System.out.println("✅ All your invoices have already been paid.");
@@ -324,15 +243,17 @@ public class ApplicantMenu {
             System.out.print("➡️ Enter your choice: ");
             int methodChoice = Integer.parseInt(sc.nextLine().trim());
 
-            PaymentMethod method = null;
-            switch (methodChoice) {
-                case 1 -> method = PaymentMethod.PAYNOW;
-                case 2 -> method = PaymentMethod.BANK_TRANSFER;
-                case 3 -> method = PaymentMethod.CREDIT_CARD;
-                default -> System.out.println("❌ Invalid payment method.");
-            }
+            PaymentMethod method = switch (methodChoice) {
+                case 1 -> PaymentMethod.PAYNOW;
+                case 2 -> PaymentMethod.BANK_TRANSFER;
+                case 3 -> PaymentMethod.CREDIT_CARD;
+                default -> null;
+            };
 
-            if (method == null) return;
+            if (method == null) {
+                System.out.println("❌ Invalid payment method.");
+                return;
+            }
 
             ApplicantService.processInvoicePayment(applicant, selected, method);
 
