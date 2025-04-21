@@ -7,6 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Responsible for managing receipt operations including creation,
+ * retrieval, and lookups from both in-memory and CSV storage.
+ */
+
 public class ReceiptService {
     private static List<Receipt> receipts = new ArrayList<>();
 
@@ -28,7 +33,7 @@ public class ReceiptService {
     /**
      * Retrieves all receipts from the CSV file.
      *
-     * @return List of all receipts in the system.
+     * @return A list of all {@link Receipt} objects in the system.
      */
     public static List<Receipt> getAllReceipts() {
         return ReceiptCsvMapper.loadAll(); // or your in-memory list
@@ -36,10 +41,10 @@ public class ReceiptService {
 
 
     /**
-     * Retrieves receipts submitted by a specific applicant.
+     * Retrieves all receipts associated with a specific applicant by NRIC.
      *
-     * @param nric Applicant's NRIC.
-     * @return List of matching receipts.
+     * @param nric The NRIC of the applicant.
+     * @return A list of matching {@link Receipt} objects.
      */
     public static List<Receipt> getReceiptsByNRIC(String nric) {
         return receipts.stream()
@@ -48,10 +53,10 @@ public class ReceiptService {
     }
 
     /**
-     * Retrieves receipts associated with a given project.
+     * Retrieves all receipts associated with a specific project.
      *
      * @param projectName The name of the project.
-     * @return List of receipts for the project.
+     * @return A list of {@link Receipt} objects for the specified project.
      */
     public static List<Receipt> getReceiptsByProject(String projectName) {
         return receipts.stream()
@@ -60,10 +65,10 @@ public class ReceiptService {
     }
 
     /**
-     * Finds a receipt based on a given invoice ID.
+     * Finds a receipt based on the given invoice ID.
      *
      * @param invoiceId The ID of the invoice.
-     * @return Matching receipt or null if not found.
+     * @return The matching {@link Receipt} object, or null if not found.
      */
     public static Receipt findByInvoiceId(int invoiceId) {
         return ReceiptCsvMapper.loadAll().stream()

@@ -7,7 +7,14 @@ import src.model.Amenities;
 import src.model.HDBOfficer;
 import src.model.Project;
 import src.util.AmenitiesCsvMapper;
+import src.util.InputValidator;
 
+
+/**
+ * Handles the management of project amenities by an HDB officer.
+ * Includes functionality for adding and updating amenities for their assigned project.
+ * Officer must be registered and approved to perform these operations.
+ */
 public class OfficerAmenityService {
 
     /**
@@ -25,11 +32,24 @@ public class OfficerAmenityService {
         manageAmenityInteraction(officer.getAssignedProject(), sc);
     } 
 
+    /**
+     * Checks whether the officer is eligible to manage amenities.
+     * Eligibility requires an approved registration and an assigned project.
+     *
+     * @param officer The officer attempting to manage amenities.
+     * @return True if allowed; false otherwise.
+     */
     public static boolean canManageAmenities(HDBOfficer officer) {
         return "APPROVED".equalsIgnoreCase(officer.getRegistrationStatus())
             && officer.getAssignedProject() != null;
     }
 
+    /**
+     * Allows the officer to select whether to add or update an amenity.
+     *
+     * @param project The project to which the amenity is tied.
+     * @param sc      Scanner for user input.
+     */
     public static void manageAmenityInteraction(Project project, Scanner sc) {
         System.out.println("\n🏗️ Managing amenities for " + project.getProjectName());
         System.out.print("Would you like to (A)dd or (U)pdate an amenity? ");
@@ -42,6 +62,12 @@ public class OfficerAmenityService {
         }
     }
 
+    /**
+     * Adds a new amenity to the given project after collecting details from the user.
+     *
+     * @param project The project to add the amenity to.
+     * @param sc      Scanner for input.
+     */
     private static void addAmenity(Project project, Scanner sc) {
         int nextId = AmenitiesCsvMapper.loadAll().stream()
             .map(Amenities::getAmenityId)
@@ -55,13 +81,19 @@ public class OfficerAmenityService {
         String name = sc.nextLine().trim();
 
         System.out.print("Distance (km): ");
-        double dist = getDoubleInput(sc);
+        double dist = InputValidator.getDoubleInput(sc);
 
         Amenities newAmenity = new Amenities(nextId, type, name, dist, project.getProjectName());
         AmenitiesCsvMapper.add(newAmenity);
         System.out.println("✅ Amenity added (ID=" + nextId + ").");
     }
 
+    /**
+     * Allows the officer to update details of an existing amenity for the project.
+     *
+     * @param project The project whose amenities are being modified.
+     * @param sc      Scanner for user input.
+     */
     private static void updateAmenity(Project project, Scanner sc) {
         List<Amenities> amenities = AmenitiesCsvMapper.loadAll().stream()
             .filter(a -> a.getProjectName().equalsIgnoreCase(project.getProjectName()))
@@ -118,16 +150,6 @@ public class OfficerAmenityService {
 
         AmenitiesCsvMapper.update(target);
         System.out.println("✅ Amenity updated.");
-    }
-
-    private static double getDoubleInput(Scanner sc) {
-        while (true) {
-            try {
-                return Double.parseDouble(sc.nextLine().trim());
-            } catch (NumberFormatException e) {
-                System.out.print("❌ Invalid number. Please enter again: ");
-            }
-        }
     }
 
 }

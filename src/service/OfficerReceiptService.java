@@ -13,6 +13,10 @@ import src.repository.ApplicantRepository;
 import src.util.ApplicantCsvMapper;
 import src.util.ProjectCsvMapper;
 
+/**
+ * Provides functionality for HDB Officers to manage receipts for applicants' payments.
+ * Responsible for validating eligibility, generating receipts, and updating payment records.
+ */
 public class OfficerReceiptService {
     private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
 
@@ -64,6 +68,13 @@ public class OfficerReceiptService {
         }
     }
 
+    /**
+     * Generates a receipt for a specified invoice and updates related records.
+     *
+     * @param officer The officer issuing the receipt.
+     * @param invoice The invoice to generate a receipt for.
+     * @return True if receipt generation is successful; false otherwise.
+     */
     public static boolean generateReceiptForInvoice(HDBOfficer officer, Invoice invoice) {
         if (!invoice.getProjectName().equalsIgnoreCase(officer.getAssignedProject().getProjectName())) {
             System.out.println("❌ You are not authorized to issue receipts for this project.");
@@ -106,13 +117,25 @@ public class OfficerReceiptService {
         return true;
     }
 
-        public static Applicant findApplicantByNRIC(String nric) {
-        return applicantRepository.loadAll().stream()
-            .filter(a -> a.getNric().equalsIgnoreCase(nric))
-            .findFirst()
-            .orElse(null);
+    /**
+     * Helper method to retrieve an applicant by NRIC.
+     *
+     * @param nric The NRIC of the applicant.
+     * @return The matching Applicant, or null if not found.
+     */
+    public static Applicant findApplicantByNRIC(String nric) {
+    return applicantRepository.loadAll().stream()
+        .filter(a -> a.getNric().equalsIgnoreCase(nric))
+        .findFirst()
+        .orElse(null);
     }
 
+    /**
+     * Helper method to retrieve a full project object by name.
+     *
+     * @param projectName The name of the project.
+     * @return The matching Project, or null if not found.
+     */
     public static Project findFullProjectByName(String projectName) {
         return ProjectCsvMapper.loadAll().stream()
             .filter(p -> p.getProjectName().equalsIgnoreCase(projectName))

@@ -12,10 +12,23 @@ import src.repository.ApplicantRepository;
 import src.util.ApplicantCsvMapper;
 import src.util.ProjectCsvMapper;
 
+
+/**
+ * Handles the booking of flats by HDB officers for applicants.
+ * Includes logic to list bookable applicants, perform bookings, and generate invoices.
+ */
 public class OfficerBookingService {
 
     private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
 
+
+    /**
+     * Retrieves all applicants who are eligible to be booked under the officer’s assigned project.
+     * Only applicants with status SUCCESSFUL and matching project name are returned.
+     *
+     * @param assignedProject The officer’s assigned project.
+     * @return A list of bookable applicants.
+     */
     public static List<Applicant> getBookableApplicants(Project assignedProject) {
         return applicantRepository.loadAll().stream()
             .filter(a -> a.getApplication() != null)
@@ -78,6 +91,15 @@ public class OfficerBookingService {
         }
     }
 
+
+    /**
+     * Performs the booking and automatically generates an invoice for the booked applicant.
+     * Updates the applicant’s status, project availability, and persists all changes.
+     *
+     * @param officer   The officer performing the booking.
+     * @param applicant The applicant to book for.
+     * @return True if booking and invoice generation succeed; false otherwise.
+     */
     public static boolean bookFlatAndGenerateInvoice(HDBOfficer officer, Applicant applicant) {
         Application app = applicant.getApplication();
         if (app == null || officer.getAssignedProject() == null) return false;

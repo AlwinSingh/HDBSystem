@@ -7,11 +7,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+/**
+ * Service class responsible for managing payment-related operations.
+ * Handles persistence to CSV
+ * 
+ * This class supports loading, saving, updating, and retrieving payments.
+ */
 public class PaymentService {
     private static List<Payment> payments = new ArrayList<>();
 
     static {
-        payments = PaymentCsvMapper.loadAll();  // Load once into memory
+        payments = PaymentCsvMapper.loadAll();
     }
 
     // Append new payment to disk and in-memory list

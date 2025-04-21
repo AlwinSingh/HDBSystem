@@ -9,10 +9,17 @@ import src.model.Project;
 import src.util.OfficerCsvMapper;
 import src.util.ProjectCsvMapper;
 
+
+/**
+ * Provides functionality for HDB Officers to handle registration-related tasks.
+ * This includes checking registration status, browsing available projects, and registering for one.
+ */
 public class OfficerRegistrationService {
 
     /**
-     * Prints the officer's registration status and basic details of the assigned project.
+     * Displays the officer's current registration status and their assigned project's details.
+     *
+     * @param officer The logged-in HDB officer.
      */
     public static void viewOfficerRegistrationStatus(HDBOfficer officer) {
         System.out.println("🔍 Officer Registration Overview");
@@ -45,6 +52,13 @@ public class OfficerRegistrationService {
     }
 
 
+    /**
+     * Registers an officer to a selected project, checking for duplication with existing application or assignment.
+     *
+     * @param officer         The officer attempting to register.
+     * @param selectedProject The project to register for.
+     * @return True if registration succeeds, false otherwise.
+     */
     public static boolean registerForProject(HDBOfficer officer, Project selectedProject) {
         // Officer is already assigned to a project
         if (officer.getAssignedProject() != null) {
@@ -70,7 +84,12 @@ public class OfficerRegistrationService {
         return registered;
     }
     
-
+    /**
+     * Returns a list of projects that are publicly visible and not yet registered to the officer.
+     *
+     * @param officer The officer browsing projects.
+     * @return A list of available projects.
+     */
     public static List<Project> getAvailableProjectsForOfficer(HDBOfficer officer) {
         return ProjectCsvMapper.loadAll().stream()
             .filter(Project::isVisible)

@@ -7,6 +7,11 @@ import src.util.ReportCsvMapper;
 import java.time.LocalDate;
 import java.util.List;
 
+
+/**
+ * Service class for handling report generation, filtering, and display.
+ * Interacts with {@link ReportCsvMapper} and {@link ReportGenerator} to manage booking reports.
+ */
 public class ReportService {
 
     private static List<Report> reports = ReportCsvMapper.loadAll();
@@ -23,9 +28,9 @@ public class ReportService {
     }
 
     /**
-     * Returns all generated reports currently stored in memory.
+     * Returns all reports currently loaded in memory.
      *
-     * @return List of all reports.
+     * @return List of {@link Report} objects.
      */
     public static List<Report> getAllReports() {
         return reports;

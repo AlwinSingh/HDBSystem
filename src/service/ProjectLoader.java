@@ -5,18 +5,23 @@ import src.model.Amenities;
 import src.util.ProjectCsvMapper;
 import java.util.List;
 
+
+/**
+ * Utility service class responsible for loading Project data from CSV,
+ * and enriching each project with its associated list of amenities.
+ */
 public class ProjectLoader {
 
     /**
-     * Loads all projects from the CSV file and attaches related amenities.
+     * Loads all projects from the CSV file via {@link ProjectCsvMapper}
+     * and injects the related amenities using {@link AmenitiesLoader}.
      *
-     * @return List of all loaded Project objects.
+     * @return A list of {@link Project} objects with amenities populated.
      */
     public static List<Project> loadProjects() {
         List<Project> projects = ProjectCsvMapper.loadAll();
 
         for (Project p : projects) {
-            // Attach amenities from the separate CSV
             List<Amenities> amenities = AmenitiesLoader.loadAmenitiesByProject(p.getProjectName());
             p.setAmenities(amenities); 
         }

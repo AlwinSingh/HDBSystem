@@ -77,4 +77,20 @@ public class InputValidator {
             System.out.println("❌ Input cannot be empty.");
         }
     }
+
+        /**
+     * Prompts the user until they enter a valid double value.
+     *
+     * @param sc Scanner for input.
+     * @return The parsed double value.
+     */
+    public static double getDoubleInput(Scanner sc) {
+        while (true) {
+            try {
+                return Double.parseDouble(sc.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.print("❌ Invalid number. Please enter again: ");
+            }
+        }
+    }
 }

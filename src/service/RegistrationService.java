@@ -5,6 +5,11 @@ import src.model.Applicant;
 import src.repository.ApplicantRepository;
 import src.util.ApplicantCsvMapper;
 
+/**
+ * Handles the registration process for new applicants.
+ * This includes NRIC validation, age and marital status checks,
+ * and persistent storage using CSV mapping.
+ */
 public class RegistrationService {
     private static final ApplicantRepository applicantRepository = new ApplicantCsvMapper();
     /**

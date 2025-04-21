@@ -7,11 +7,22 @@ import src.model.HDBOfficer;
 import src.model.Project;
 import src.model.ProjectLocation;
 
+/**
+ * Provides view-related functionality for officers to inspect details
+ * about their assigned HDB project.
+ * strictly related to project viewing and summary generation.
+ */
 public class OfficerProjectViewService {
-    public static List<Amenities> getProjectAmenities(Project project) {
-        return project.getAmenities();
-    }
 
+    /**
+     * Generates a formatted string summarizing all key project information 
+     * for display in the console. Includes project metadata, flat availability,
+     * pricing, and officer registration status.
+     *
+     * @param p        The project to summarize.
+     * @param officer  The logged-in officer viewing the project.
+     * @return A human-readable summary string of the project.
+     */
     public static String getProjectSummary(Project p, HDBOfficer officer) {
         StringBuilder sb = new StringBuilder();
         ProjectLocation loc = p.getLocation();

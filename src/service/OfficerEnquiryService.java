@@ -8,6 +8,10 @@ import src.model.HDBOfficer;
 import src.model.Project;
 import src.util.EnquiryCsvMapper;
 
+/**
+ * Handles enquiry-related actions for HDB officers.
+ * Includes viewing and replying to enquiries associated with their assigned project.
+ */
 public class OfficerEnquiryService {
     /**
      * Opens the enquiry handling interface for the officer, allowing them to view and respond to enquiries.
@@ -51,6 +55,13 @@ public class OfficerEnquiryService {
         }
     }
 
+    /**
+     * Retrieves all pending enquiries related to the officer's assigned project.
+     * Only returns enquiries if the officer's registration is approved.
+     *
+     * @param officer The logged-in officer.
+     * @return A list of pending enquiries.
+     */
     public static List<Enquiry> getPendingEnquiriesForProject(HDBOfficer officer) {
         Project assigned = officer.getAssignedProject();
         if (assigned == null || !"APPROVED".equalsIgnoreCase(officer.getRegistrationStatus())) return List.of();
@@ -61,6 +72,15 @@ public class OfficerEnquiryService {
             .toList();
     }
 
+    /**
+     * Sends a reply to the selected enquiry and marks the enquiry as CLOSED.
+     * Saves the updated enquiry to CSV.
+     *
+     * @param enquiry The enquiry to reply to.
+     * @param officer The officer sending the reply.
+     * @param reply   The reply message content.
+     * @return True if reply is successful; false otherwise.
+     */
     public static boolean replyToEnquiry(Enquiry enquiry, HDBOfficer officer, String reply) {
         enquiry.addReply(reply, officer);
         EnquiryCsvMapper.update(enquiry); // Efficient single-row update

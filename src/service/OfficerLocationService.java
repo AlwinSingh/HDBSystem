@@ -6,6 +6,11 @@ import src.model.HDBOfficer;
 import src.model.Project;
 import src.util.ProjectCsvMapper;
 
+
+/**
+ * Provides functionality for officers to update the location details
+ * of their assigned HDB project, including address and geolocation.
+ */
 public class OfficerLocationService {
 
     /**
@@ -27,11 +32,24 @@ public class OfficerLocationService {
         }
     }
 
+    /**
+     * Checks if the officer is eligible to update project location.
+     *
+     * @param officer The HDB officer.
+     * @return True if officer is approved and has a project assigned.
+     */
     public static boolean canUpdateLocation(HDBOfficer officer) {
         return "APPROVED".equalsIgnoreCase(officer.getRegistrationStatus())
             && officer.getAssignedProject() != null;
     }
 
+    /**
+     * Interactively updates the address, district, town, and coordinates of the given project.
+     *
+     * @param p  The project whose location is to be updated.
+     * @param sc Scanner to capture input.
+     * @return True if update succeeds; false on coordinate parsing error.
+     */
     public static boolean updateProjectLocation(Project p, Scanner sc) {
         if (p == null) return false;
 
