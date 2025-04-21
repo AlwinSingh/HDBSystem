@@ -230,7 +230,7 @@ public class ApplicantMenu {
         List<Invoice> unpaidInvoices = invoiceService.getUnpaidInvoices(applicant);
 
         if (unpaidInvoices.isEmpty()) {
-            System.out.println("✅ All your invoices have already been paid.");
+            System.out.println("You have no invoices to pay.");
             return;
         }
 
