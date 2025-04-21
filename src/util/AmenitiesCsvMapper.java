@@ -1,13 +1,16 @@
 package src.util;
 
 import src.model.Amenities;
+import src.repository.AmenitiesRepository;
+
 import java.util.*;
 
 /**
  * Utility class for loading, saving, appending, and updating amenities
  * in the CSV file defined by {@link FilePath#AMENITIES_LIST_FILE}.
  */
-public class AmenitiesCsvMapper {
+public class AmenitiesCsvMapper implements AmenitiesRepository {
+
     private static final String CSV = FilePath.AMENITIES_LIST_FILE;
 
     /**
@@ -15,7 +18,7 @@ public class AmenitiesCsvMapper {
      *
      * @return List of amenities.
      */
-    public static List<Amenities> loadAll() {
+    public List<Amenities> loadAll() {
         List<Map<String,String>> rows = CsvUtil.read(CSV);
         List<Amenities> out = new ArrayList<>();
 
@@ -36,7 +39,7 @@ public class AmenitiesCsvMapper {
      *
      * @param all The list of amenities to save.
      */
-    public static void saveAll(List<Amenities> all) {
+    public void saveAll(List<Amenities> all) {
         List<Map<String,String>> rows = new ArrayList<>();
         for (Amenities a : all) {
             Map<String,String> m = new LinkedHashMap<>();
@@ -55,7 +58,7 @@ public class AmenitiesCsvMapper {
      *
      * @param amenity The amenity to add.
      */
-    public static void add(Amenities amenity) {
+    public void add(Amenities amenity) {
         CsvUtil.append(CSV, toCsvRow(amenity));
     }
 
@@ -80,7 +83,7 @@ public class AmenitiesCsvMapper {
      *
      * @param updatedAmenity The updated amenity object.
      */
-    public static void update(Amenities updatedAmenity) {
+    public void update(Amenities updatedAmenity) {
         List<Amenities> all = loadAll();
         for (int i = 0; i < all.size(); i++) {
             if (all.get(i).getAmenityId() == updatedAmenity.getAmenityId()) {

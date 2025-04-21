@@ -11,6 +11,7 @@ import src.interfaces.IOfficerProjectViewService;
 import src.interfaces.IOfficerReceiptService;
 import src.interfaces.IOfficerRegistrationService;
 import src.model.*;
+import src.util.AmenitiesCsvMapper;
 
 /**
  * CLI menu interface for logged-in HDB Officers.
@@ -41,7 +42,7 @@ public class OfficerMenu {
         Scanner sc = new Scanner(System.in);
 
         // Interface-based service declarations
-        IOfficerAmenityService amenityService = new OfficerAmenityService();
+        IOfficerAmenityService amenityService = new OfficerAmenityService(new AmenitiesCsvMapper());
         IOfficerEnquiryService enquiryService = new OfficerEnquiryService();
         IOfficerLocationService locationService = new OfficerLocationService();
         IOfficerInvoiceService invoiceService = new OfficerInvoiceService();
