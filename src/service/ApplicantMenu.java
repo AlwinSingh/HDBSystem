@@ -1,14 +1,28 @@
 package src.service;
 
 import java.util.*;
+
+import src.interfaces.IApplicantApplicationService;
+import src.interfaces.IApplicantFeedbackService;
+import src.interfaces.IApplicantInvoiceService;
+import src.interfaces.IApplicantProjectViewService;
+import src.interfaces.IApplicantReceiptService;
 import src.model.*;
+import src.util.FeedbackCsvMapper;
+import src.util.InvoiceCsvMapper;
+import src.util.ProjectCsvMapper;
 
 /**
  * Displays the menu and handles input actions for logged-in applicants.
  * This includes applications, enquiries, payments, feedback, and account actions.
  */
 public class ApplicantMenu {
-
+    private static final ApplicantApplicationService applicationService = new ApplicantApplicationService();
+    private static final ApplicantProjectViewService projectViewService = new ApplicantProjectViewService();
+    private static final ApplicantEligibilityService eligibilityService = new ApplicantEligibilityService();
+    private static final ApplicantFeedbackService feedbackService = new ApplicantFeedbackService();
+    private static final ApplicantInvoiceService invoiceService = new ApplicantInvoiceService();
+    private static final ApplicantReceiptService receiptService = new ApplicantReceiptService();
     /**
      * Shows the main dashboard menu for the applicant and  and routes input to the correct actions.
      *
@@ -47,8 +61,8 @@ public class ApplicantMenu {
             String choice = sc.nextLine().trim();
     
             switch (choice) {
-                case "1" -> ApplicantService.handleViewEligibleProjects(applicant, sc);
-                case "2" -> ApplicantService.applyForProject(applicant, sc);
+                case "1"  -> projectViewService.handleViewEligibleProjects(applicant, sc);
+                case "2"  -> applicationService.applyForProject(applicant, sc);
                 case "3" -> viewingApplication(new ApplicantContext(applicant, sc));
                 case "4" -> requestWithdrawal(new ApplicantContext(applicant, sc));
                 case "5" -> viewAndPayInvoices(applicant, sc);
@@ -122,7 +136,7 @@ public class ApplicantMenu {
         Scanner sc = ctx.scanner;
         Applicant applicant = ctx.applicant;
 
-        if (!ApplicantService.canWithdraw(applicant)) {
+        if (!applicationService.canWithdraw(applicant)) {
             return;
         }
 
@@ -132,7 +146,7 @@ public class ApplicantMenu {
             return;
         }
 
-        ApplicantService.submitWithdrawalRequest(applicant);
+        applicationService.submitWithdrawalRequest(applicant);
         System.out.println("✅ Withdrawal request submitted.");
     }
 
@@ -188,7 +202,7 @@ public class ApplicantMenu {
                         System.out.println("❌ Feedback cannot be empty.");
                         break;
                     }
-                    boolean ok = ApplicantService.submitFeedback(applicant, message);
+                    boolean ok = feedbackService.submitFeedback(applicant, message);
                     if (!ok) {
                         System.out.println("❌ You must have an active application to submit feedback.");
                     }
@@ -213,7 +227,7 @@ public class ApplicantMenu {
      * Shows a list of unpaid invoices and handles user selection for payment.
      */
     private static void viewAndPayInvoices(Applicant applicant, Scanner sc) {
-        List<Invoice> unpaidInvoices = ApplicantService.getUnpaidInvoices(applicant);
+        List<Invoice> unpaidInvoices = invoiceService.getUnpaidInvoices(applicant);
 
         if (unpaidInvoices.isEmpty()) {
             System.out.println("✅ All your invoices have already been paid.");
@@ -257,7 +271,7 @@ public class ApplicantMenu {
                 return;
             }
 
-            ApplicantService.processInvoicePayment(applicant, selected, method);
+            invoiceService.processInvoicePayment(applicant, selected, method);
 
         } catch (Exception e) {
             System.out.println("❌ Invalid input.");
@@ -269,7 +283,7 @@ public class ApplicantMenu {
      * Displays all receipts issued to the applicant.
      */
     private static void viewReceipts(Applicant applicant) {
-        List<Receipt> myReceipts = ApplicantService.getReceiptsByApplicant(applicant);
+        List<Receipt> myReceipts = receiptService.getReceiptsByApplicant(applicant);
 
         if (myReceipts.isEmpty()) {
             System.out.println("📭 No receipts found for your account.");

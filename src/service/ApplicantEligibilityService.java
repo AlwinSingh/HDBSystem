@@ -2,10 +2,15 @@ package src.service;
 
 import java.time.LocalDate;
 
+import src.interfaces.IApplicantEligibilityService;
 import src.model.Applicant;
 import src.model.Project;
 
-public class ApplicantEligibilityService {
+/**
+ * Service responsible for validating an applicant's eligibility to apply for a housing project.
+ * This class is stateless and only provides a utility method.
+ */
+public class ApplicantEligibilityService implements IApplicantEligibilityService {
     
     /**
      * Checks if an applicant is eligible to apply for a given project.
@@ -14,7 +19,8 @@ public class ApplicantEligibilityService {
      * @param project   The project being considered.
      * @return True if the applicant meets the age and marital criteria; false otherwise.
      */
-    public static boolean isEligible(Applicant applicant, Project project) {
+    @Override
+    public boolean isEligible(Applicant applicant, Project project) {
         String status = applicant.getMaritalStatus();
         int age = applicant.getAge();
 
