@@ -1,46 +1,146 @@
 package src;
 
-import src.model.User;
-import src.service.ProjectService;
-import src.service.UserService;
-import src.util.ConsoleUtils;
+import java.util.Scanner;
+
+import src.interfaces.IManagerApplicantApprovalService;
+import src.interfaces.IManagerEnquiryService;
+import src.interfaces.IManagerFeedbackService;
+import src.interfaces.IManagerOfficerApprovalService;
+import src.interfaces.IManagerProjectService;
+import src.interfaces.IManagerReportService;
+import src.model.*;
+import src.service.ApplicantMenu;
+import src.service.AuthService;
+import src.service.ManagerApplicantApprovalService;
+import src.service.ManagerEnquiryService;
+import src.service.ManagerFeedbackService;
+import src.service.ManagerMenu;
+import src.service.ManagerOfficerApprovalService;
+import src.service.ManagerProjectService;
+import src.service.ManagerReportService;
+import src.service.OfficerMenu;
+import src.service.RegistrationService;
 import src.util.InputValidator;
 
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * Main entry point for the BTO Application System.
+ * <p>
+ * Presents a console-based user interface allowing users to:
+ * - Log in as an Applicant, HDB Officer, or HDB Manager
+ * - Register as a new Applicant
+ * - Exit the application
+ * <p>
+ * Based on the login role, the system routes users to the appropriate dashboard.
+ */
 public class Main {
-    private static UserService userService = null;
-    private static ProjectService projectService = null;
+    public static final Scanner sc = new Scanner(System.in);
 
+    /**
+     * Starts the main menu loop for the BTO system.
+     * Allows login, registration, or exit.
+     *
+     * @param args Not used.
+     */
     public static void main(String[] args) {
-        userService = new UserService(); // Load from CSV....
-        projectService = new ProjectService(userService);
-
-        ConsoleUtils.clear();
-        ConsoleUtils.slowPrint("===== Welcome to the BTO Management System =====", 60);
-        ConsoleUtils.lineBreak();
-
         while (true) {
-            String nric = InputValidator.getNonEmptyString("\nEnter NRIC (or type EXIT): ");
-            if (nric.equalsIgnoreCase("EXIT")) break;
+            System.out.println("\n===== BTO Application System =====");
+            System.out.println("1. Login");
+            System.out.println("2. Register as Applicant");
+            System.out.println("0. Exit");
+            System.out.print("➡️ Enter your choice: ");
+            String choice = sc.nextLine().trim();
 
-            String password = InputValidator.getNonEmptyString("Enter Password: ");
-
-            User user = null;
-            user = userService.authenticateUser(nric, password); // Authenticate against CSV records that were loaded in...
-
-            if (user != null) {
-                ConsoleUtils.clear();
-                System.out.println("Login successful. Welcome, " + user.getClass().getSimpleName() + " " + user.getName() + "!");
-                ConsoleUtils.lineBreak();
-                user.showMenu(projectService, userService); // ConsoleUtils us used inside menus too
-                ConsoleUtils.clear(); // Clear screen after logout
-            } else {
-                System.out.println("❌ Invalid NRIC or Password.");
+            switch (choice) {
+                case "1" -> handleLogin(sc);
+                case "2" -> RegistrationService.registerApplicant(sc);
+                case "0" -> {
+                    System.out.println("👋 Goodbye!");
+                    return;
+                }
+                default -> System.out.println("❌ Invalid choice. Try again.");
             }
         }
-
-        ConsoleUtils.slowPrint("System shutting down. Goodbye!", 20);
     }
+
+    /**
+     * Handles the login process for all supported user roles.
+     * <p>
+     * Prompts the user for NRIC and password, authenticates the credentials,
+     * and then routes to the corresponding dashboard:
+     * - Applicants are routed to {@link ApplicantMenu}
+     * - HDB Officers are routed to {@link OfficerMenu}, or prompted to choose between Applicant/Officer view if dual-role
+     * - HDB Managers are routed to {@link ManagerMenu}
+     *
+     * @param sc The {@link Scanner} instance for user input.
+     */
+    private static void handleLogin(Scanner sc) {
+        System.out.println("\n🔐 Login");
+    
+        System.out.print("Enter NRIC: ");
+        String nric = sc.nextLine().trim();
+        if (!nric.matches("^[ST]\\d{7}[A-Z]$")) {
+            System.out.println("❌ Invalid NRIC format. Must be like S1234567A.");
+            return;
+        }
+    
+        System.out.print("Enter Password: ");
+        String password = sc.nextLine();
+    
+        User user = AuthService.authenticate(nric, password);
+    
+        if (user == null) {
+            System.out.println("❌ Invalid credentials.");
+            return;
+        }
+    
+        System.out.println("\n✅ Welcome, " + user.getName());
+    
+        if (user instanceof HDBManager manager) {
+            System.out.println("🔓 Logged in as HDB Manager (" + manager.getNric() + ")");
+            IManagerProjectService projectService = new ManagerProjectService();
+            IManagerOfficerApprovalService officerService = new ManagerOfficerApprovalService();
+            IManagerApplicantApprovalService applicantService = new ManagerApplicantApprovalService();
+            IManagerReportService reportService = new ManagerReportService();
+            IManagerEnquiryService enquiryService = new ManagerEnquiryService();
+            IManagerFeedbackService feedbackService = new ManagerFeedbackService();
+
+            ManagerMenu menu = new ManagerMenu(
+                projectService,
+                officerService,
+                applicantService,
+                reportService,
+                enquiryService,
+                feedbackService
+            );
+            menu.show(manager);
+
+        } else if (user instanceof HDBOfficer officer) {
+            boolean hasProject = officer.getAssignedProject() != null;
+            boolean hasPendingStatus = officer.getRegistrationStatus() != null;
+    
+            if (!hasProject && !hasPendingStatus) {
+                System.out.println("🔓 Logged in as HDB Officer (" + officer.getNric() + ")");
+                System.out.println("You are an HDB Officer and also eligible to apply as an Applicant.");
+                System.out.println("1. Access Officer Dashboard");
+                System.out.println("2. Access Applicant Dashboard");
+                System.out.println("0. Logout");
+                int roleChoice = InputValidator.getIntInRange("➡️ Enter your choice: ", 0, 2);
+    
+                switch (roleChoice) {
+                    case 1 -> OfficerMenu.show(officer);
+                    case 2 -> ApplicantMenu.show(officer);
+                    case 0 -> {
+                        System.out.println("👋 Logging out...");
+                        return;
+                    }
+                }
+            } else {
+                OfficerMenu.show(officer);
+            }
+        } else if (user instanceof Applicant applicant) {
+            System.out.println("🔓 Logged in as Applicant (" + applicant.getNric() + ")");
+            ApplicantMenu.show(applicant);
+        }
+    }   
+
 }

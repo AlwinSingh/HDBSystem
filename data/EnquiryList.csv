@@ -1,0 +1,8 @@
+EnquiryId,Content,Status,ApplicantNric,ApplicantName,ProjectName,Replies
+1,What is the waiting time for booking?,PENDING,S1234567A,Sarah,Acacia Breeze,
+2,Are 3-room flats available?,CLOSED,S2345678B,John,Palm Residences,Manager:Yes
+3,How do I cancel my application?,PENDING,S3456789C,Alice,Acacia Breeze,
+4,Is there a clinic nearby?,PENDING,S4567890D,David,Sunset Grove,
+5,When does the application close?,CLOSED,S5678901E,Grace,Palm Residences,Manager:Applications close on 2025-03-20
+6,nice,CLOSED,T7654321B,Sarah,ClementiLake,Daniel:Very nice
+

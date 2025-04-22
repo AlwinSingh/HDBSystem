@@ -1,56 +1,79 @@
 package src.util;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
+
+/**
+ * Utility class for validating and collecting user input via the console.
+ * Provides reusable methods for ensuring correct formats for integers, doubles, and strings.
+ */
 public class InputValidator {
-    private static final Scanner sc = new Scanner(System.in);
-    private static final DateTimeFormatter[] dateFormats = new DateTimeFormatter[]{
-            DateTimeFormatter.ofPattern("dd-MM-yyyy")
-    };
 
-    public static int getInt(String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            String input = sc.nextLine();
-            try {
-                return Integer.parseInt(input.trim());
-            } catch (NumberFormatException e) {
-                System.out.println("❌ Please enter a valid integer.");
-            }
-        }
-    }
+    private static final Scanner sc = new Scanner(System.in); // Shared static scanner
 
+    /**
+     * Prompts the user until a valid integer within the specified range is entered.
+     *
+     * @param prompt Message to display.
+     * @param min    Minimum acceptable value.
+     * @param max    Maximum acceptable value.
+     * @return Validated integer within range.
+     */
     public static int getIntInRange(String prompt, int min, int max) {
-        while (true) {
-            int value = getInt(prompt);
-            if (value >= min && value <= max) return value;
-            System.out.printf("❌ Please enter a number between %d and %d.\n", min, max);
-        }
-    }
+        int choice;
 
-    public static double getDouble(String prompt) {
         while (true) {
             System.out.print(prompt);
-            String input = sc.nextLine();
             try {
-                return Double.parseDouble(input.trim());
+                choice = Integer.parseInt(sc.nextLine().trim());
+                if (choice >= min && choice <= max) {
+                    return choice;
+                } else {
+                    System.out.println("❌ Please enter a number between " + min + " and " + max + ".");
+                }
             } catch (NumberFormatException e) {
-                System.out.println("❌ Please enter a valid number (e.g. 350000 or 499999.99).");
+                System.out.println("❌ Invalid input. Please enter a valid number.");
             }
         }
     }
 
-    public static double getDoubleInRange(String prompt, double min, double max) {
+    /**
+     * Prompts for a positive integer (greater than 0).
+     *
+     * @param prompt Message to display.
+     * @return Validated positive integer.
+     */
+    public static int getPositiveInt(String prompt) {
+        return getIntInRange(prompt, 1, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Prompts for a positive double (greater than 0).
+     *
+     * @param prompt Message to display.
+     * @return Validated positive double.
+     */
+    public static double getPositiveDouble(String prompt) {
+        double value;
+
         while (true) {
-            double value = getDouble(prompt);
-            if (value >= min && value <= max) return value;
-            System.out.printf("❌ Please enter a value between %.2f and %.2f.\n", min, max);
+            System.out.print(prompt);
+            try {
+                value = Double.parseDouble(sc.nextLine().trim());
+                if (value > 0) return value;
+                System.out.println("❌ Please enter a positive number.");
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Invalid input. Please enter a valid number.");
+            }
         }
     }
 
+    /**
+     * Prompts the user until a non-empty string is entered.
+     *
+     * @param prompt Message to display.
+     * @return Non-empty trimmed string.
+     */
     public static String getNonEmptyString(String prompt) {
         while (true) {
             System.out.print(prompt);
@@ -60,27 +83,19 @@ public class InputValidator {
         }
     }
 
-    public static boolean getYesNo(String prompt) {
+        /**
+     * Prompts the user until they enter a valid double value.
+     *
+     * @param sc Scanner for input.
+     * @return The parsed double value.
+     */
+    public static double getDoubleInput(Scanner sc) {
         while (true) {
-            System.out.print(prompt + " (Y/N): ");
-            String input = sc.nextLine().trim().toUpperCase();
-            if (input.equals("Y")) return true;
-            if (input.equals("N")) return false;
-            System.out.println("❌ Please enter Y or N.");
-        }
-    }
-
-    public static LocalDate getDate(String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            String input = sc.nextLine().trim();
-            for (DateTimeFormatter format : dateFormats) {
-                try {
-                    return LocalDate.parse(input, format);
-                } catch (DateTimeParseException ignored) {}
+            try {
+                return Double.parseDouble(sc.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.print("❌ Invalid number. Please enter again: ");
             }
-            //System.out.println("❌ Invalid date format. Use YYYY-MM-DD or M/D/YYYY.");
-            System.out.println("❌ Invalid date format. Use DD-MM-YYYY.");
         }
     }
 }

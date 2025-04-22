@@ -1,75 +1,76 @@
 package src.model;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
 
+/**
+ * Represents an HDB housing project. Encapsulates project information including pricing,
+ * flat availability, officer assignments, application periods, and public visibility.
+ */
 public class Project {
-    private String name;
-    private String neighbourhood;
-
-    private int units2Room;
-    private int units3Room;
-
-    private double price2Room;
-    private double price3Room;
-
+    private String projectName;
+    private String neighborhood;
     private LocalDate openDate;
     private LocalDate closeDate;
+    private boolean isVisible;
+    private double price2Room;
+    private double price3Room;
+    private int officerSlots;
+    private int availableFlats2Room;
+    private int availableFlats3Room;
+    private ProjectLocation location;
+    private List<Amenities> amenities;
+    private List<HDBOfficer> officers;
+    private List<Enquiry> enquiries;
+    private HDBManager manager;
 
-    private String managerName;
+    private Set<String> officerNRICs = new HashSet<>();
+    private Set<String> applicantNRICs = new HashSet<>();
 
-    private int officerSlot;
-    private List<String> officerNames;
+    /**
+     * Default constructor initializes empty amenity/officer/enquiry lists.
+     */
+    public Project() {
+        this.amenities = new ArrayList<>();
+        this.officers = new ArrayList<>();
+        this.enquiries = new ArrayList<>();
+    }
 
-    private String managerNRIC; // A project is only assigned to 1 manager...
-    private List<String> officerNRICs;
-    private List<String> applicantNRICs;
-
-    private boolean visibility;
-
-    public Project(String name, String neighbourhood, int units2Room, double price2Room,
-                   int units3Room, double price3Room, LocalDate openDate, LocalDate closeDate,
-                   String managerName, int officerSlot, List<String> officerNames,
-                   String managerNRIC, List<String> officerNRICs, List<String> applicantNRICs, boolean visibility) {
-        this.name = name;
-        this.neighbourhood = neighbourhood;
-        this.units2Room = units2Room;
-        this.price2Room = price2Room;
-        this.units3Room = units3Room;
-        this.price3Room = price3Room;
+    /**
+     * Constructs a Project with all required fields.
+     *
+     * @param projectName  Name of the project.
+     * @param neighborhood Neighborhood name.
+     * @param openDate     Project open date.
+     * @param closeDate    Project close date.
+     * @param officerSlots Max number of officers.
+     * @param flats2Room   Total 2-room units.
+     * @param flats3Room   Total 3-room units.
+     * @param location     Project location.
+     */
+    public Project(String projectName, String neighborhood, LocalDate openDate, LocalDate closeDate,
+                   int officerSlots, int flats2Room, int flats3Room, ProjectLocation location) {
+        this.projectName = projectName;
+        this.neighborhood = neighborhood;
         this.openDate = openDate;
         this.closeDate = closeDate;
-        this.managerName = managerName;
-        this.officerSlot = officerSlot;
-        this.officerNames = officerNames;
-        this.managerNRIC = managerNRIC;
-        this.officerNRICs = officerNRICs;
-        this.applicantNRICs = applicantNRICs;
-        this.visibility = visibility;
+        this.isVisible = false;
+        this.officerSlots = officerSlots;
+        this.availableFlats2Room = flats2Room;
+        this.availableFlats3Room = flats3Room;
+        this.location = location;
+        this.amenities = new ArrayList<>();
+        this.officers = new ArrayList<>();
+        this.enquiries = new ArrayList<>();
     }
 
-    public String getName() {
-        return name;
+    // Getters
+    public String getProjectName() {
+        return projectName;
     }
 
-    public String getNeighbourhood() {
-        return neighbourhood;
-    }
-
-    public int getTwoRoomUnits() {
-        return units2Room;
-    }
-
-    public int getThreeRoomUnits() {
-        return units3Room;
-    }
-
-    public double getTwoRoomPrice() {
-        return price2Room;
-    }
-
-    public double getThreeRoomPrice() {
-        return price3Room;
+    public String getNeighborhood() {
+        return neighborhood;
     }
 
     public LocalDate getOpenDate() {
@@ -80,94 +81,221 @@ public class Project {
         return closeDate;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setTwoRoomUnits(int units2Room) {
-        this.units2Room = units2Room;
-    }
-
-    public void setTwoRoomPrice(double price2Room) {
-        this.price2Room = price2Room;
-    }
-
-    public void setThreeRoomUnits(int units3Room) {
-        this.units3Room = units3Room;
-    }
-
-    public void setThreeRoomPrice(double price3Room) {
-        this.price3Room = price3Room;
-    }
-
-    public void setOpenDate(LocalDate openDate) {
-        this.openDate = openDate;
-    }
-
-    public void setCloseDate(LocalDate closeDate) {
-        this.closeDate = closeDate;
-    }
-
-    public boolean isOpen() {
-        LocalDate today = LocalDate.now();
-        return !today.isBefore(openDate) && !today.isAfter(closeDate);
-    }
-
     public boolean isVisible() {
-        return visibility;
+        return isVisible;
     }
 
-    public void setVisibility(boolean visible) {
-        this.visibility = visible;
+    public double getPrice2Room() {
+        return price2Room;
     }
 
-    public boolean hasAvailableUnits(String flatType) {
-        if ("2-Room".equalsIgnoreCase(flatType)) {
-            return units2Room > 0;
-        } else if ("3-Room".equalsIgnoreCase(flatType)) {
-            return units3Room > 0;
-        }
-        return false;
+    public double getPrice3Room() {
+        return price3Room;
     }
 
-    public void addApplicant(String applicantNric) {
-        if (!applicantNRICs.contains(applicantNric)) {
-            applicantNRICs.add(applicantNric);
-        }
+    public int getOfficerSlots() {
+        return officerSlots;
     }
 
-    public String getManagerNRIC() {
-        return managerNRIC;
+    /**
+     * Returns remaining units for the specified flat type.
+     *
+     * @param flatType "2-Room" or "3-Room".
+     * @return Number of units available.
+     */
+    public int getRemainingFlats(String flatType) {
+        return switch (flatType) {
+            case "2-Room" -> availableFlats2Room;
+            case "3-Room" -> availableFlats3Room;
+            default -> 0;
+        };
     }
 
-    public List<String> getOfficerNames() {
-        return officerNames;
+    public ProjectLocation getLocation() {
+        return location;
     }
 
-    public List<String> getOfficerNRICs() {
+    public List<Amenities> getAmenities() {
+        return amenities;
+    }
+
+    public List<HDBOfficer> getOfficers() {
+        return officers;
+    }
+
+    public List<Enquiry> getEnquiries() {
+        return enquiries;
+    }
+
+    public HDBManager getManager() {
+        return this.manager;
+    }
+
+    public Set<String> getOfficerNRICs() {
         return officerNRICs;
     }
 
-    public List<String> getApplicantNRICs() {
+    public Set<String> getApplicantNRICs() {
         return applicantNRICs;
     }
 
-    public String getManagerName() {
-        return managerName;
+    public int getAvailableFlats2Room() {
+        return availableFlats2Room;
+    }
+    
+    public int getAvailableFlats3Room() {
+        return availableFlats3Room;
+    }
+    
+    
+    
+    // Setters
+    public void setProjectName(String name) {
+        this.projectName = name;
     }
 
-    public int getOfficerSlot() {
-        return officerSlot;
+    public void setNeighborhood(String n) {
+        this.neighborhood = n;
     }
 
-    public void displaySummary() {
-        System.out.println("--- Project: " + name + " ---");
-        System.out.println("Location: " + neighbourhood);
-        System.out.println("Application Period: " + openDate + " to " + closeDate);
-        System.out.println("2-Room Units Left: " + units2Room + " ($" + price2Room + ")");
-        System.out.println("3-Room Units Left: " + units3Room + " ($" + price3Room + ")");
-        //System.out.println("Visibility: " + (visibility ? "ON" : "OFF"));
-        System.out.println("\n");
+    public void setOpenDate(LocalDate d) {
+        this.openDate = d;
+    }
+
+    public void setCloseDate(LocalDate d) {
+        this.closeDate = d;
+    }
+
+    public void setVisible(boolean v) {
+        this.isVisible = v;
+    }
+
+    public void setOfficerSlots(int officerSlots) {
+        this.officerSlots = officerSlots;
+    }
+
+    public void setAvailableFlats2Room(int availableFlats2Room) {
+        this.availableFlats2Room = availableFlats2Room;
+    }
+
+    public void setAvailableFlats3Room(int availableFlats3Room) {
+        this.availableFlats3Room = availableFlats3Room;
+    }
+
+    public void setPrice2Room(double price) {
+        this.price2Room = price;
+    }
+
+    public void setPrice3Room(double price) {
+        this.price3Room = price;
+    }
+
+    public void setLocation(ProjectLocation location) {
+        this.location = location;
+    }
+
+    public void setAmenities(List<Amenities> amenities) {
+        this.amenities = amenities;
+    }
+
+    public void setOfficers(List<HDBOfficer> officers) {
+        this.officers = officers;
+    }
+
+    public void setEnquiries(List<Enquiry> enquiries) {
+        this.enquiries = enquiries;
+    }
+
+    public void setManager(HDBManager manager) {
+        this.manager = manager;
+    }
+
+    public void setOfficerNRICs(Set<String> officerNRICs) {
+        this.officerNRICs = officerNRICs;
+    }
+
+    public void setApplicantNRICs(Set<String> applicantNRICs) {
+        this.applicantNRICs = applicantNRICs;
+    }
+
+    // Helper methods
+
+    /**
+     * Marks the project as open (visible to public).
+     */
+    public void openProject() {
+        this.isVisible = true;
+    }
+
+    /**
+     * Marks the project as closed (hidden from public view).
+     */
+    public void closeProject() {
+        this.isVisible = false;
+    }
+
+    /**
+     * Adds an officer to the project if slots are available.
+     */
+    public void addOfficer(HDBOfficer o) {
+        if (officers.size() < officerSlots) {
+            officers.add(o);
+        }
+    }
+
+    /**
+     * Removes the specific officer from the project.
+     */
+    public void removeOfficer(HDBOfficer o) {
+        officers.remove(o);
+    }
+
+    /**
+     * Reduces the number of available units for a flat type by 1 (if above 0).
+     *
+     * @param flatType The flat type to decrement (e.g., "2-Room").
+     */
+    public void decrementFlatCount(String flatType) {
+        if (flatType.equals("2-Room")) {
+            availableFlats2Room = Math.max(0, availableFlats2Room - 1);
+        } else if (flatType.equals("3-Room")) {
+            availableFlats3Room = Math.max(0, availableFlats3Room - 1);
+        }
+    }
+
+    /**
+     * Adds an officer's NRIC to the project.
+     *
+     * @param nric Officer's NRIC.
+     */
+    public void addOfficerNric(String nric) {
+        officerNRICs.add(nric);
+    }
+
+    /**
+     * Removes an officer's NRIC from the project.
+     *
+     * @param nric Officer's NRIC.
+     */
+    public void removeOfficerNric(String nric) {
+        officerNRICs.remove(nric);
+    }
+
+    /**
+     * Adds an applicant's NRIC to the project.
+     *
+     * @param nric Applicant's NRIC.
+     */
+    public void addApplicantNric(String nric) {
+        applicantNRICs.add(nric);
+    }
+
+    /**
+     * Removes an applicant's NRIC from the project.
+     *
+     * @param nric Applicant's NRIC.
+     */
+    public void removeApplicantNric(String nric) {
+        applicantNRICs.remove(nric);
     }
 }
-

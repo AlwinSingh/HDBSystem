@@ -1,0 +1,146 @@
+package src.model;
+
+import java.time.LocalDate;
+import java.util.List;
+
+/**
+ * Represents an HDB Officer, extending an Applicant.
+ * Officers can register for projects, manage bookings, and generate receipts.
+ */
+public class HDBOfficer extends Applicant {
+    private Project assignedProject;
+    private String registrationStatus; // e.g., PENDING, APPROVED, REJECTED
+
+    public enum RegistrationStatusType {
+        PENDING,
+        APPROVED,
+        REJECTED
+    }
+
+    public HDBOfficer(String nric, String password, String name, int age, String maritalStatus) {
+        super(nric, password, name, age, maritalStatus);
+    }
+
+    /**
+     * Attempts to register this officer to manage a given project.
+     * The officer must not already be registered to a project or have applied to the same one as an applicant.
+     *
+     * @param project The project to register for.
+     * @return True if registration is submitted; false otherwise.
+     */
+
+    public boolean registerToHandleProject(Project project) {
+        if (assignedProject != null) return false;
+    
+        if (application != null &&
+            application.getProject().getProjectName().equalsIgnoreCase(project.getProjectName())) {
+            return false; 
+        }
+    
+        this.assignedProject = project;
+        this.registrationStatus = RegistrationStatusType.PENDING.name();
+        return true;
+    }
+    
+    /**
+     * Books a flat for an applicant if assigned to the same project and already approved.
+     */
+    public void bookFlat(Application app, String flatType) {
+        if (assignedProject != null && app.getProject().equals(assignedProject)) {
+            if (app.getStatus().equalsIgnoreCase(AppStatusType.SUCCESSFUL.name())) {
+                app.setStatus(AppStatusType.BOOKED.name());
+                assignedProject.decrementFlatCount(flatType);
+            }
+        }
+    }
+
+    /**
+     * Generates a receipt for a processed booking by this officer.
+     */
+    public Receipt generateReceipt(Application app, int nextPaymentId, PaymentMethod selectedMethod) {
+        double price = app.getFlatPrice();
+    
+        Invoice invoice = new Invoice(
+            nextPaymentId,
+            price,
+            LocalDate.now(),
+            selectedMethod,
+            Payment.PaymentStatusType.PROCESSED.name(),
+            app.getApplicant().getNric(),
+            app.getProject().getProjectName(),
+            app.getFlatType()
+        );
+    
+        return new Receipt(
+            app.getApplicant().getName(),
+            app.getApplicant().getNric(),
+            app.getApplicant().getAge(),
+            app.getApplicant().getMaritalStatus(),
+            app.getProject().getProjectName(),
+            app.getProject().getNeighborhood(),
+            app.getFlatType(),
+            invoice
+        );
+    }
+
+    /**
+     * Generates an invoice (unpaid) for a successful application.
+     */
+    public static Invoice generateInvoiceForBooking(Application app, int paymentId) {
+        return new Invoice(
+            paymentId,
+            app.getFlatPrice(),
+            LocalDate.now(),
+            null,  
+            "Awaiting Payment",
+            app.getApplicant().getNric(),
+            app.getProject().getProjectName(),
+            app.getFlatType()
+        );
+    }
+
+    /**
+     * Sets the assigned project using a project name and a list of all available projects.
+     */
+    public void setAssignedProjectByName(String projectName, List<Project> allProjects) {
+        for (Project p : allProjects) {
+            if (p.getProjectName().equalsIgnoreCase(projectName)) {
+                this.assignedProject = p;
+                return;
+            }
+        }
+    }
+
+    /**
+     * Updates the officer's registration status.
+     *
+     * @param status New status string (e.g., "APPROVED", "REJECTED").
+     */
+    public void setRegistrationStatus(String status) {
+        this.registrationStatus = status;
+    }
+
+    public String getRegistrationStatus() {
+        return registrationStatus;
+    }
+
+    public Project getAssignedProject() {
+        return assignedProject;
+    }
+
+    public void setAssignedProject(Project project) {
+        this.assignedProject = project;
+    }
+
+    /**
+     * Indicates that this user is an HDB officer.
+     *
+     * @return True for HDBOfficer.
+     */
+    @Override
+    public boolean isOfficer() {
+        return true;
+    }
+
+    
+}
