@@ -1,0 +1,7 @@
+src
+src.interfaces
+src.model
+src.repository
+src.service
+src.test
+src.util

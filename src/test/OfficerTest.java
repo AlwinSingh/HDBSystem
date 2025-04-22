@@ -4,52 +4,60 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import src.model.HDBOfficer;
 import src.model.User;
-import src.service.AuthService;
 import src.service.OfficerMenu;
+import src.service.AuthService;
 
 /**
- * Standalone test script to simulate a full officer interaction flow.
- * Covers project registration, updating location, booking flats,
- * handling enquiries, and generating receipts.
+ * Test script to simulate an officer experience navigating registering for a project.
  */
 public class OfficerTest {
-    /**
-     * Runs an automated officer test by injecting simulated console inputs.
-     * Exercises key functionalities in the Officer dashboard.
-     *
-     * @param args Not used.
-     */
+
     public static void main(String[] args) {
         InputStream originalIn = System.in;
 
-        String officerNRIC = "T2109876H";
-        String password    = "password";
+        String applicantNRIC = "T1234567J";
+        String password      = "password";
 
-        System.out.println("=== 🧪 Running Officer Test Flow ===\n");
+        System.out.println("=== 🧪 Running Applicant Filter Test ===\n");
 
-        User user = AuthService.authenticate(officerNRIC, password);
-        if (!(user instanceof HDBOfficer o)) {
+        User user = AuthService.authenticate(applicantNRIC, password);
+        if (!(user instanceof HDBOfficer a)) {
             System.out.println("❌ Officer login failed.");
             return;
         }
 
-        // Simulated flow:
-        System.setIn(new ByteArrayInputStream((
-            "1\n" + // View registration status
-            "2\n1\n" + // Register for project (first one)
-            "3\n" + // View assigned project details
-            "7\nTest District\nTest Town\n123 Test St\n1.234567\n103.987654\n" + // Update location
-            "8\nClinic\nSunshine Clinic\n0.5\n" + // Add amenity
-            "6\n1\nWill look into it.\n" + // Enquiry response
-            "4\n1\n" + // Book flat for first applicant
-            "5\n1\n" + // Generate receipt for first eligible invoice
-            "9\nnewofficerpass\nnewofficerpass\n" + // Change password
-            "0\n" // Logout
-        ).getBytes()));
+  
+        String inputSequence = String.join("\n",
+        "1",            // Enter Officer Dashboard
+        "1",            // View Registration Status
+        "2",     // Browse & Filter Available Projects (for reference only)
+        "1",             // Filter by Project Name
+        "Acacia",             // Enter partial project name
+        "5",            // Clear filters
+        "0",             // Return to main menu
+                            //
+        "3",            // Register for Project
+        "1",            //Available Projects, choose to register, return to main menu
+        "4",            //Displays project details
+        "5",            //Perform bookings
+        "6",            //Generate Receipts
+        "7",            //Update location
+        "8",            //Add Amenity
+        "9",            //View & reply to Enquiries
+        "10",           //Change password
+        "password",     //current password
+        "password",            //new password
+        "1", //relog
+        "T1234567J",
+        "password",
+        "11"         //Applicant Dashboard
+        );
+        
 
-        OfficerMenu.show(o);
-
+        System.setIn(new ByteArrayInputStream(inputSequence.getBytes()));
+        OfficerMenu.show(a);
         System.setIn(originalIn);
-        System.out.println("\n=== ✅ Officer Flow Test Complete ===");
+
+        System.out.println("\n=== ✅ Officer Filter Test Complete ===");
     }
 }

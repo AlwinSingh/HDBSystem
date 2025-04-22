@@ -8,13 +8,7 @@ import src.service.ApplicantMenu;
 import src.service.AuthService;
 
 /**
- * Test script to simulate an applicant's experience navigating eligible project filters.
- * Steps:
- * 1. Log in as an applicant.
- * 2. Press 1 to view eligible projects.
- * 3. Press 1 again to apply filter and type 'Clementi', then press Enter twice.
- * 4. Press 2 to clear filters.
- * 5. Press 0 to go back to the main menu.
+ * Test script to simulate an Single > 35 years old Officer as a applicant's experience navigating around the menu.
  */
 public class ApplicantTestForSingle {
 
