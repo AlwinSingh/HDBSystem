@@ -63,11 +63,10 @@ public class ApplicantApplicationService implements IApplicantApplicationService
     
         Project selected = eligible.get(choice);
     
-        if (applicant.isOfficer()) {
-            HDBOfficer officer = (HDBOfficer) applicant;
+        if (applicant instanceof HDBOfficer officer) {
             Project assigned = officer.getAssignedProject();
             String status = officer.getRegistrationStatus();
-
+        
             if (assigned != null &&
                 assigned.getProjectName().equalsIgnoreCase(selected.getProjectName()) &&
                 ("PENDING".equalsIgnoreCase(status) || "APPROVED".equalsIgnoreCase(status))) {
@@ -75,6 +74,7 @@ public class ApplicantApplicationService implements IApplicantApplicationService
                 return;
             }
         }
+        
     
         String flatType = "2-Room";
         if ("Married".equalsIgnoreCase(applicant.getMaritalStatus())) {
